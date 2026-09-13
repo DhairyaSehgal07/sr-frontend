@@ -1,0 +1,63 @@
+---
+description: shadcn/ui typography — official utility classes for text (radix-nova)
+globs: "**/*.{tsx,jsx}"
+alwaysApply: false
+---
+
+# Typography (shadcn/ui)
+
+We do not ship default typography styles. Use these **official** Tailwind utility patterns from [shadcn/ui Typography](https://ui.shadcn.com/docs/components/radix/typography) (radix-nova). Do not invent one-off text sizes when a pattern below fits.
+
+## Headings
+
+| Element | Classes |
+|---------|---------|
+| **h1** | `scroll-m-20 text-4xl font-extrabold tracking-tight text-balance` (centered variant adds `text-center`) |
+| **h2** | `scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0` (section spacing: `mt-10`) |
+| **h3** | `scroll-m-20 text-2xl font-semibold tracking-tight` (section spacing: `mt-8`) |
+| **h4** | `scroll-m-20 text-xl font-semibold tracking-tight` |
+
+## Body & prose
+
+| Element | Classes |
+|---------|---------|
+| **p** | `leading-7 [&:not(:first-child)]:mt-6` |
+| **Lead** | `text-xl text-muted-foreground` (intro; demo also uses `leading-7`) |
+| **Large** | `text-lg font-semibold` |
+| **Small** | `text-sm leading-none font-medium` (on `<small>`) |
+| **Muted** | `text-sm text-muted-foreground` |
+| **blockquote** | `mt-6 border-l-2 pl-6 italic` |
+| **Inline link** | `font-medium text-primary underline underline-offset-4` |
+
+## Lists & tables
+
+| Element | Classes |
+|---------|---------|
+| **ul** | `my-6 ml-6 list-disc [&>li]:mt-2` |
+| **table wrapper** | `my-6 w-full overflow-y-auto` |
+| **table** | `w-full` |
+| **tr** | `m-0 border-t p-0 even:bg-muted` |
+| **th** | `border px-4 py-2 text-left font-bold [&[align=center]]:text-center [&[align=right]]:text-right` |
+| **td** | `border px-4 py-2 text-left [&[align=center]]:text-center [&[align=right]]:text-right` |
+
+## Code
+
+| Element | Classes |
+|---------|---------|
+| **inline code** | `relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold` |
+
+## RTL
+
+For RTL locales, use logical properties: `border-s-2 ps-6`, `ms-6`, `text-start` instead of `border-l-2 pl-6`, `ml-6`, `text-left`. Set `dir` on the container. See [RTL guide](https://ui.shadcn.com/docs/rtl).
+
+## Examples
+
+```tsx
+// ✅ blockquote (official)
+<blockquote className="mt-6 border-l-2 pl-6 italic">
+  &quot;After all,&quot; he said, &quot;everyone enjoys a good joke.&quot;
+</blockquote>
+
+// ❌ avoid custom blockquote styling when the official pattern applies
+<blockquote className="border-l-2 border-primary/30 pl-3 text-xs italic text-muted-foreground" />
+```

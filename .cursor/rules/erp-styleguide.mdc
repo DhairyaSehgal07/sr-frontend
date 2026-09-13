@@ -1,0 +1,222 @@
+---
+description: ERP UI style guide — typography, numbers, data density, and mobile patterns for Kapur Cold Storage
+alwaysApply: true
+---
+
+# Kapur Cold Storage — ERP Style Guide
+
+This app is an **operations ERP** (daybook, inventory, ledgers, reports). UI must stay **readable under long shifts**, **scannable in data-heavy screens**, and **polished on phones** used on the warehouse floor.
+
+**Stack:** React, Tailwind v4, shadcn/ui, CSS variables in `src/index.css`. Do not invent parallel color systems—use semantic tokens (`background`, `foreground`, `primary`, `muted-foreground`, `destructive`, etc.).
+
+---
+
+## 1. Typography
+
+| Role | Font | Classes |
+|------|------|---------|
+| Body, forms, tables | Inter (`font-sans`) | `text-sm` default; `leading-normal` or `leading-relaxed` for paragraphs |
+| Page & section titles | Outfit (`font-heading`) | `font-heading text-xl font-semibold tracking-tight` (page), `text-base font-semibold` (section) |
+| Labels & captions | Inter | `text-sm font-medium` (label), `text-xs text-muted-foreground` (hint) |
+| Micro copy only | Inter | `text-xs` — never for primary data or amounts |
+
+**Readability rules**
+
+- Minimum **14px (`text-sm`)** for any data the user must read or compare; **16px (`text-base`)** for form inputs (prevents iOS zoom on focus).
+- Never use `text-[10px]` or `text-[11px]` for numbers, IDs, or ledger lines.
+- **Contrast:** body text = `text-foreground`; secondary = `text-muted-foreground` only for labels/hints, not amounts or statuses.
+- **Truncation:** `truncate` + `min-w-0` on flex children; always pair with `title` attribute or tooltip for full value.
+- Headings: `text-foreground` only — avoid `text-muted-foreground` on titles.
+
+```tsx
+// Page header
+<h1 className="font-heading truncate text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+  Daybook
+</h1>
+
+// Section inside a page
+<h2 className="font-heading text-base font-semibold text-foreground">Today&apos;s entries</h2>
+```
+
+---
+
+## 2. Numbers, currency & quantities (ERP-critical)
+
+All monetary values, weights, bag counts, and rates must be **easy to scan and align**.
+
+| Rule | Implementation |
+|------|----------------|
+| Tabular alignment | `tabular-nums` on every numeric cell and stat |
+| Font for figures | Prefer `font-sans tabular-nums`; use `font-mono tabular-nums` only for IDs, voucher numbers, or codes |
+| Amounts | `text-sm font-medium text-foreground`; negatives: `text-destructive` + leading minus, never parentheses alone |
+| Decimals | Consistent precision per domain (e.g. money: 2, weight: 3); format in code with `Intl`, not raw floats in UI |
+| Alignment | Amounts & quantities: **`text-right`** in tables; labels stay left |
+| Locale | Default **`en-IN`** for display (`Intl.NumberFormat`, `Intl.DateTimeFormat`) unless product specifies otherwise |
+| Large numbers | Use grouping (e.g. `12,34,567.89`); for very large totals consider compact notation in cards only, full value in detail/tooltip |
+| Units | Separate column or muted suffix: `500 <span class="text-muted-foreground">kg</span>` — never bury unit inside the number string |
+
+```tsx
+<span className="tabular-nums text-sm font-medium text-foreground">
+  {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount)}
+</span>
+```
+
+**Do not:** center-align money columns, use `text-xs` for totals, or rely on color alone for debit/credit (add `+` / `−` or DR/CR label).
+
+---
+
+## 3. Color & semantic status
+
+Map ERP states to tokens — do not hardcode hex colors.
+
+| Meaning | Pattern |
+|---------|---------|
+| Primary action | `Button` variant `default` (`primary`) |
+| Secondary / filter | `outline` or `secondary` |
+| Danger / delete / failed | `destructive` variant or `text-destructive` |
+| Draft / pending | `Badge variant="secondary"` + icon or text label |
+| Success / posted | `text-primary` or subtle `bg-primary/10 text-primary` badge |
+| Disabled nav | shadcn `disabled` on `SidebarMenuButton` — already in `app-sidebar.tsx` |
+| Charts | `--chart-1` … `--chart-5` from theme only |
+
+Status badges: **icon or text + color** (e.g. "Posted", "Draft") — WCAG requires more than hue.
+
+---
+
+## 4. Layout & page structure
+
+Authenticated shell: `SidebarProvider` → `AppSidebar` + `SidebarInset` → `AppTopbar` → content (`max-w-7xl`).
+
+```
+┌ Sidebar ─┬─ Topbar (h-14) ─────────────────────┐
+│          ├─ Page padding: p-4 sm:p-6 ───────────┤
+│          │  └ max-w-7xl content ────────────────┘
+└──────────┴──────────────────────────────────────┘
+```
+
+- **Page padding:** `p-4 sm:p-6`; reduce to `p-4` on mobile when vertical space matters.
+- **Vertical rhythm:** `gap-4` between blocks, `gap-6` between major sections.
+- **Cards:** `Card` for grouped forms and summary panels; one primary action per card footer.
+- **Sticky chrome:** Topbar stays fixed height `h-14`; table toolbars may use `sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80`.
+
+---
+
+## 5. Forms & data entry
+
+Follow patterns from `login-form.tsx`:
+
+- Inputs: **`h-11 text-base`** on mobile-critical forms; default shadcn `Input` on dense desktop tables.
+- Touch targets: minimum **44×44px** — use `h-11`, `size-10`/`size-11` icon buttons, adequate `gap` between fields.
+- `inputMode` / `type`: `tel` + `inputMode="numeric"` for mobile numbers; `decimal` for weights/rates.
+- Labels: `FieldLabel` + `FieldDescription` + `FieldError`; errors must be readable (`text-destructive text-sm`).
+- Primary submit: full width on mobile (`w-full h-11`), inline on desktop when appropriate.
+- **Keyboard:** logical tab order; Enter submits single-purpose forms; don’t trap focus in modals without escape.
+
+---
+
+## 6. Tables & dense lists (core ERP)
+
+Default pattern for ledger/daybook/inventory lists:
+
+```tsx
+<div className="relative w-full overflow-auto rounded-lg border border-border">
+  <table className="w-full caption-bottom text-sm">
+    <thead className="border-b border-border bg-muted/50">
+      <tr className="text-left">
+        <th className="h-10 px-3 font-medium text-muted-foreground">Party</th>
+        <th className="h-10 px-3 text-right font-medium text-muted-foreground">Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr className="border-b border-border transition-colors hover:bg-muted/50">
+        <td className="px-3 py-2.5">…</td>
+        <td className="px-3 py-2.5 text-right tabular-nums">…</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+```
+
+| Rule | Detail |
+|------|--------|
+| Row height | Comfortable `py-2.5`–`py-3`; compact `py-2` only in explicitly “compact” views |
+| Header | `bg-muted/50`, `text-muted-foreground font-medium`, sticky header on long lists |
+| Zebra | Optional `even:bg-muted/30` — keep subtle |
+| Mobile | Wrapper `overflow-x-auto`; consider **sticky first column** (`sticky left-0 z-10 bg-background`) for row identity |
+| Empty | Centered message + primary action — never a bare table |
+| Loading | `Skeleton` rows matching column layout — no spinners-only tables |
+
+---
+
+## 7. Mobile & responsive
+
+Breakpoint: **`md` (768px)** — matches `useIsMobile()` / sidebar behavior.
+
+| Area | Mobile | Desktop |
+|------|--------|---------|
+| Sidebar | Sheet / icon rail via shadcn `Sidebar` | Expanded `collapsible="icon"` |
+| Topbar | `SidebarTrigger` + truncated title; hide username (`hidden lg:inline`) | Full user chip |
+| Tables | Horizontal scroll + sticky first col; card list alternative for &lt;5 columns | Full table |
+| Dialogs | Prefer `Sheet` side `bottom` or full-screen for complex forms | `Dialog` centered |
+| Spacing | `p-4`, `gap-3` | `p-6`, `gap-4`–`gap-6` |
+| Toasts | `position: "bottom-right"` (see login) — avoid covering primary FAB |
+
+**Mobile elegance**
+
+- No horizontal page overflow — `min-w-0` on flex children, `overflow-x-auto` only on table wrappers.
+- Avoid nested scroll areas (sidebar + page + card) without clear affordance.
+- Primary actions: bottom-aligned or full-width on narrow screens.
+- Test **320px** width and **safe-area-inset** for notched devices when adding fixed footers.
+
+---
+
+## 8. Icons, buttons & actions
+
+- Icons: `lucide-react`, default `size-4`; `size-3.5` only in compact table rows.
+- One **primary** button per view; destructive actions require confirmation.
+- Icon-only controls: `aria-label` required (see `ThemeToggle` in `app-topbar.tsx`).
+- Button sizes: `default` / `sm` in toolbars; `h-11` for main mobile CTAs.
+
+---
+
+## 9. Feedback & states
+
+- **Toast:** `sonner` for success/error after mutations.
+- **Loading:** `Loader2 className="size-4 animate-spin"` inline; disable button while pending.
+- **Skeleton:** match final layout dimensions — prevents layout shift.
+- **Errors:** human-readable message; retry when network-related.
+
+---
+
+## 10. Accessibility & field conditions
+
+- Focus: visible ring (`focus-visible:ring-ring/30`) — do not remove outlines.
+- Target **WCAG AA** contrast for `foreground` on `background` and `primary-foreground` on `primary`.
+- Support **dark mode** via `next-themes` — every new surface must work in `.dark` tokens.
+- Bright environments: avoid low-contrast gray-on-gray for critical numbers; use `text-foreground` for data.
+
+---
+
+## 11. Checklist before shipping UI
+
+- [ ] All amounts use `tabular-nums` and correct alignment
+- [ ] No critical text below 14px; inputs ≥ 16px on mobile forms
+- [ ] Semantic colors + text/icon for status
+- [ ] Table/list works at 375px with scroll or card fallback
+- [ ] Touch targets ≥ 44px where tapped frequently
+- [ ] Uses theme tokens only (no random `gray-*` / `green-*`)
+- [ ] Headings use `font-heading`; body uses `font-sans`
+- [ ] Empty, loading, and error states implemented
+
+---
+
+## 12. Anti-patterns (avoid)
+
+- Decorative fonts, excessive rounded corners on tables, or gradient text on numbers
+- `opacity-50` on entire rows to mean “inactive” — use badge or strikethrough label
+- Centered multi-column numeric tables
+- Multiple competing primary buttons
+- Custom CSS files per feature — use Tailwind + shadcn variants
+- Europe/US-only date or currency formats in an Indian cold-storage context
+
+When adding new routes, register titles in `routeTitles` (`app-topbar.tsx`) and nav in `app-sidebar.tsx` for consistent chrome.
