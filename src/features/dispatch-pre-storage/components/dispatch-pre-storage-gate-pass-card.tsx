@@ -74,6 +74,15 @@ function formatOptionalInt(value: number | undefined) {
   return value != null ? value.toLocaleString('en-IN') : '—';
 }
 
+function formatBillBook(value: string | number | undefined) {
+  if (value == null || value === '') return '—';
+  return String(value);
+}
+
+function formatInr(amount: number) {
+  return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount);
+}
+
 function nikasiTotalBags(bagSize: readonly NikasiGatePassBagSizeItem[]): number {
   return bagSize.reduce((sum, row) => sum + row.quantityIssued, 0);
 }
@@ -93,6 +102,9 @@ export function DispatchPreStorageGatePassCard({
   const dispatchParty = gatePass.dispatchLedgerId;
   const totalBags = nikasiTotalBags(gatePass.bagSize);
   const createdBy = gatePass.createdBy?.name ?? '—';
+  const showCostPerBag = gatePass.bagSize.some(
+    (row) => row.costPerBag != null && Number.isFinite(row.costPerBag),
+  );
 
   return (
     <Card className="card-hover overflow-hidden border-border/60">
@@ -234,11 +246,7 @@ export function DispatchPreStorageGatePassCard({
                       value={formatOptionalInt(gatePass.bitliNumber)}
                       valueClassName="tabular-nums"
                     />
-                    <InfoBlock
-                      label="Bill book"
-                      value={formatOptionalInt(gatePass.billBook)}
-                      valueClassName="tabular-nums"
-                    />
+                    <InfoBlock label="Bill book" value={formatBillBook(gatePass.billBook)} />
                     <InfoBlock
                       label="Bilti book"
                       value={formatOptionalInt(gatePass.biltiBook)}
@@ -276,6 +284,11 @@ export function DispatchPreStorageGatePassCard({
                           <th className="h-10 px-3 text-right text-xs font-medium text-muted-foreground">
                             Qty issued
                           </th>
+                          {showCostPerBag ? (
+                            <th className="h-10 px-3 text-right text-xs font-medium text-muted-foreground">
+                              Cost / bag
+                            </th>
+                          ) : null}
                         </tr>
                       </thead>
                       <tbody>
@@ -289,6 +302,13 @@ export function DispatchPreStorageGatePassCard({
                             <td className="px-3 py-2.5 text-right font-medium text-foreground tabular-nums">
                               {slot.quantityIssued.toLocaleString('en-IN')}
                             </td>
+                            {showCostPerBag ? (
+                              <td className="px-3 py-2.5 text-right font-medium text-foreground tabular-nums">
+                                {slot.costPerBag != null && Number.isFinite(slot.costPerBag)
+                                  ? formatInr(slot.costPerBag)
+                                  : '—'}
+                              </td>
+                            ) : null}
                           </tr>
                         ))}
                       </tbody>

@@ -43,6 +43,7 @@ function normalizeBagSize(pass: NikasiGatePassReportItem): DispatchReportBagSize
     size: asString(item.size),
     variety: asString(item.variety),
     quantityIssued: asQuantity(item.quantityIssued),
+    costPerBag: item.costPerBag != null ? asQuantity(item.costPerBag) : undefined,
   }));
 }
 
@@ -69,6 +70,7 @@ function normalizeNikasiGatePass(pass: NikasiGatePassReportItem): DispatchReport
     isBooked: pass.isBooked == null ? '' : pass.isBooked ? 'true' : 'false',
     billNumber: asString(pass.billNumber),
     bitliNumber: asString(pass.bitliNumber),
+    billBookId: asString(pass.billBookId),
     billBook: asString(pass.billBook),
     biltiBook: asString(pass.biltiBook),
     netWeightKg: asString(pass.netWeight),

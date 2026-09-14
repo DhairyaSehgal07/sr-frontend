@@ -3,6 +3,7 @@ import type { WheelEvent } from 'react';
 import { BAG_SIZES, POTATO_VARIETY_OPTIONS } from '@/lib/constants';
 
 import type {
+  CreateNikasiGatePassBagSizeItem,
   CreateNikasiGatePassBody,
   NikasiGatePassBagSizeItem,
   UpdateNikasiGatePassBody,
@@ -15,12 +16,14 @@ export type DispatchPreStorageBagSizeRow = {
   isExtra: boolean;
   variety: string;
   quantityIssued: string;
+  costPerBag: string;
 };
 
 export type DispatchPreStorageBagSizeSummary = {
   size: string;
   variety: string;
   quantityIssued: number;
+  costPerBag: number | undefined;
 };
 
 export type DispatchPreStorageSummaryValues = {
@@ -32,6 +35,7 @@ export type DispatchPreStorageSummaryValues = {
   billNumber: string;
   biltiNo: string;
   billBook: string;
+  billBookId: string;
   biltiBook: string;
   from: string;
   to: string;
@@ -42,9 +46,23 @@ export type DispatchPreStorageSummaryValues = {
   remarks: string;
 };
 
+const MONGO_OBJECT_ID_PATTERN = /^[a-fA-F0-9]{24}$/;
+
+const inrFormatter = new Intl.NumberFormat('en-IN', {
+  style: 'currency',
+  currency: 'INR',
+});
+
 export const numericInputProps = {
   type: 'number' as const,
   min: 0,
+  onWheel: (e: WheelEvent<HTMLInputElement>) => e.currentTarget.blur(),
+};
+
+export const decimalInputProps = {
+  type: 'number' as const,
+  min: 0,
+  step: '0.01',
   onWheel: (e: WheelEvent<HTMLInputElement>) => e.currentTarget.blur(),
 };
 
@@ -54,11 +72,16 @@ export function createDefaultBagSizeRows(): DispatchPreStorageBagSizeRow[] {
     isExtra: false,
     variety: '',
     quantityIssued: '',
+    costPerBag: '',
   }));
 }
 
 export function createEmptyBagSizeRow(): DispatchPreStorageBagSizeRow {
-  return { size: '', isExtra: true, variety: '', quantityIssued: '' };
+  return { size: '', isExtra: true, variety: '', quantityIssued: '', costPerBag: '' };
+}
+
+function formatCostPerBagField(value: number | undefined): string {
+  return value != null && Number.isFinite(value) ? String(value) : '';
 }
 
 export function gatePassBagSizeToRows(
@@ -72,6 +95,7 @@ export function gatePassBagSizeToRows(
       isExtra: false,
       variety: match?.variety ?? '',
       quantityIssued: match != null && match.quantityIssued > 0 ? String(match.quantityIssued) : '',
+      costPerBag: formatCostPerBagField(match?.costPerBag),
     };
   });
 
@@ -82,6 +106,7 @@ export function gatePassBagSizeToRows(
         isExtra: true,
         variety: row.variety,
         quantityIssued: String(row.quantityIssued),
+        costPerBag: formatCostPerBagField(row.costPerBag),
       });
     }
   }
@@ -99,6 +124,49 @@ export function parseOptionalNumber(value: string): number {
   if (value === '') return 0;
   const parsed = Number(value);
   return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+export function parseCostPerBagInput(value: string): number | undefined {
+  const trimmed = value.trim();
+  if (trimmed === '') return undefined;
+  const parsed = Number(trimmed);
+  if (!Number.isFinite(parsed) || parsed < 0) return Number.NaN;
+  return parsed;
+}
+
+export function isValidCostPerBag(value: number | undefined): value is number {
+  return value != null && Number.isFinite(value) && value >= 0;
+}
+
+export function billedAmountPaise(costPerBag: number, quantityIssued: number): number {
+  return Math.round(costPerBag * quantityIssued * 100);
+}
+
+export function hasPositiveBilledAmount(
+  rows: readonly Pick<DispatchPreStorageBagSizeSummary, 'costPerBag' | 'quantityIssued'>[],
+): boolean {
+  return rows.some(
+    (row) =>
+      isValidCostPerBag(row.costPerBag) &&
+      billedAmountPaise(row.costPerBag, row.quantityIssued) > 0,
+  );
+}
+
+export function lineBilledAmount(costPerBag: number | undefined, quantityIssued: number): number {
+  if (!isValidCostPerBag(costPerBag)) return 0;
+  return costPerBag * quantityIssued;
+}
+
+export function totalBilledAmount(rows: readonly DispatchPreStorageBagSizeSummary[]): number {
+  return rows.reduce((sum, row) => sum + lineBilledAmount(row.costPerBag, row.quantityIssued), 0);
+}
+
+export function formatInr(amount: number): string {
+  return inrFormatter.format(amount);
+}
+
+export function isMongoObjectId(value: string): boolean {
+  return MONGO_OBJECT_ID_PATTERN.test(value.trim());
 }
 
 export function parseOptionalPositiveInt(value: string): number | undefined {
@@ -141,6 +209,12 @@ export function formatWeightKg(value: number, maximumFractionDigits = 2): string
   })} kg`;
 }
 
+function issuedBagRows(
+  values: DispatchPreStorageSummaryValues,
+): DispatchPreStorageBagSizeSummary[] {
+  return values.bagSize.filter((row) => row.quantityIssued > 0 && row.size.trim() !== '');
+}
+
 export function buildSummaryValues(input: {
   gatePassNo: string;
   manualGatePassNumber: string;
@@ -150,6 +224,7 @@ export function buildSummaryValues(input: {
   billNumber: string;
   biltiNo: string;
   billBook: string;
+  billBookId?: string;
   biltiBook: string;
   from: string;
   to: string;
@@ -175,6 +250,7 @@ export function buildSummaryValues(input: {
     billNumber: input.billNumber,
     biltiNo: input.biltiNo,
     billBook: input.billBook,
+    billBookId: (input.billBookId ?? '').trim(),
     biltiBook: input.biltiBook,
     from: input.from,
     to: input.to,
@@ -183,6 +259,7 @@ export function buildSummaryValues(input: {
       size: row.size.trim(),
       variety: normalizeVariety(row.variety),
       quantityIssued: parseOptionalNumber(row.quantityIssued),
+      costPerBag: parseCostPerBagInput(row.costPerBag),
     })),
     netWeight: netWeightKg,
     averageWeightPerBag: calculateAverageWeightPerBagKg(netWeightKg, totalBags),
@@ -190,28 +267,55 @@ export function buildSummaryValues(input: {
   };
 }
 
-function buildActiveBagSizePayload(
+function assertIssuedLinesHaveVariety(rows: DispatchPreStorageBagSizeSummary[]): void {
+  if (rows.some((row) => normalizeVariety(row.variety) === '')) {
+    throw new Error('Select variety for each issued bag line.');
+  }
+}
+
+function buildUpdateBagSizePayload(
   values: DispatchPreStorageSummaryValues,
 ): NikasiGatePassBagSizeItem[] {
-  const activeBags = values.bagSize.filter(
-    (row) => row.quantityIssued > 0 && row.size.trim() !== '',
-  );
+  const activeBags = issuedBagRows(values);
 
   if (activeBags.length === 0) {
     throw new Error('Enter at least one bag line with quantity.');
   }
 
-  const bagSizePayload = activeBags.map((row) => ({
+  assertIssuedLinesHaveVariety(activeBags);
+
+  return activeBags.map((row) => ({
     size: row.size,
     variety: normalizeVariety(row.variety),
     quantityIssued: row.quantityIssued,
   }));
+}
 
-  if (bagSizePayload.some((row) => row.variety === '')) {
-    throw new Error('Select variety for each issued bag line.');
+function buildCreateBagSizePayload(
+  values: DispatchPreStorageSummaryValues,
+): CreateNikasiGatePassBagSizeItem[] {
+  const activeBags = issuedBagRows(values);
+
+  if (activeBags.length === 0) {
+    throw new Error('Enter at least one bag line with quantity.');
   }
 
-  return bagSizePayload;
+  assertIssuedLinesHaveVariety(activeBags);
+
+  if (activeBags.some((row) => !isValidCostPerBag(row.costPerBag))) {
+    throw new Error('Enter cost per bag for each issued bag line.');
+  }
+
+  if (!hasPositiveBilledAmount(activeBags)) {
+    throw new Error('Enter a billed amount greater than zero on at least one bag line.');
+  }
+
+  return activeBags.map((row) => ({
+    size: row.size,
+    variety: normalizeVariety(row.variety),
+    quantityIssued: row.quantityIssued,
+    costPerBag: row.costPerBag as number,
+  }));
 }
 
 function applyOptionalFieldsToBody<
@@ -223,15 +327,19 @@ function applyOptionalFieldsToBody<
     billBook?: string;
     biltiBook?: string;
   },
->(body: T, values: DispatchPreStorageSummaryValues): T {
+>(body: T, values: DispatchPreStorageSummaryValues, options?: { includeBillBook?: boolean }): T {
   const billNumber = parseOptionalPositiveInt(values.billNumber);
   if (billNumber != null) body.billNumber = billNumber;
 
   const bitliNumber = parseOptionalPositiveInt(values.biltiNo);
   if (bitliNumber != null) body.bitliNumber = bitliNumber;
 
-  const billBook = values.billBook.trim();
-  if (billBook) body.billBook = billBook;
+  if (options?.includeBillBook !== false) {
+    const billBook = values.billBook.trim();
+    if (billBook && Number.isInteger(Number(billBook)) && Number(billBook) > 0) {
+      body.billBook = billBook;
+    }
+  }
 
   const biltiBook = values.biltiBook.trim();
   if (biltiBook) body.biltiBook = biltiBook;
@@ -252,6 +360,10 @@ export function buildCreateApiBody(
   gatePassNo: number,
   isBooked: boolean,
 ): CreateNikasiGatePassBody {
+  if (!isMongoObjectId(values.billBookId)) {
+    throw new Error('Select a bill book.');
+  }
+
   const body: CreateNikasiGatePassBody = {
     dispatchLedgerId: values.dispatchLedgerId,
     gatePassNo,
@@ -261,12 +373,13 @@ export function buildCreateApiBody(
     from: values.from,
     to: values.to,
     truckNumber: values.truckNumber,
-    bagSize: buildActiveBagSizePayload(values),
+    billBookId: values.billBookId.trim(),
+    bagSize: buildCreateBagSizePayload(values),
     netWeight: values.netWeight,
     averageWeightPerBag: values.averageWeightPerBag,
   };
 
-  applyOptionalFieldsToBody(body, values);
+  applyOptionalFieldsToBody(body, values, { includeBillBook: false });
   body.idempotencyKey = crypto.randomUUID();
 
   return body;
@@ -284,7 +397,7 @@ export function buildUpdateApiBody(
     from: values.from,
     to: values.to,
     truckNumber: values.truckNumber,
-    bagSize: buildActiveBagSizePayload(values),
+    bagSize: buildUpdateBagSizePayload(values),
     netWeight: values.netWeight,
     averageWeightPerBag: values.averageWeightPerBag,
   };
@@ -299,9 +412,21 @@ export function buildUpdateApiBody(
   return body;
 }
 
+function issuedLinesHaveValidCost(values: DispatchPreStorageSummaryValues): boolean {
+  const issued = issuedBagRows(values);
+  if (issued.length === 0) return false;
+  return (
+    issued.every((row) => isValidCostPerBag(row.costPerBag)) && hasPositiveBilledAmount(issued)
+  );
+}
+
 export function canSubmitSummaryValues(
   values: DispatchPreStorageSummaryValues | null,
-  options?: { requireGatePassNo?: boolean; gatePassNumberReady?: boolean },
+  options?: {
+    requireGatePassNo?: boolean;
+    gatePassNumberReady?: boolean;
+    requireBillBookId?: boolean;
+  },
 ): boolean {
   if (!values) return false;
   if (options?.requireGatePassNo !== false && !values.gatePassNo) return false;
@@ -309,5 +434,11 @@ export function canSubmitSummaryValues(
 
   const hasActiveBags = values.bagSize.some((row) => row.quantityIssued > 0);
 
-  return Boolean(values.dispatchLedgerId && values.category && hasActiveBags);
+  if (!values.dispatchLedgerId || !values.category || !hasActiveBags) return false;
+
+  if (options?.requireBillBookId) {
+    return isMongoObjectId(values.billBookId) && issuedLinesHaveValidCost(values);
+  }
+
+  return true;
 }

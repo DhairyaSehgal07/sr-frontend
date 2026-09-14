@@ -56,7 +56,10 @@ import {
   parseOptionalNumber,
   type DispatchPreStorageBagSizeRow,
 } from '@/features/dispatch-pre-storage/forms/dispatch-pre-storage-form-utils';
-import { isValidRequiredPositiveInt } from '@/features/dispatch-pre-storage/schemas/dispatch-pre-storage-form-schema';
+import {
+  isNamedBillBookValue,
+  isValidRequiredPositiveInt,
+} from '@/features/dispatch-pre-storage/schemas/dispatch-pre-storage-form-schema';
 import { nikasiGatePassToEditFormValues } from '@/features/dispatch-pre-storage/utils/nikasi-gate-pass-to-edit-form-values';
 
 const CATEGORY_ITEMS: ComboboxOption[] = DISPATCH_PRE_STORAGE_CATEGORIES.map((value) => ({
@@ -154,6 +157,8 @@ function EditDispatchPreStorageFormFields({ gatePass }: EditDispatchPreStorageFo
   const [reviewOpen, setReviewOpen] = useState(false);
   const [billBookTouched, setBillBookTouched] = useState(false);
   const [biltiBookTouched, setBiltiBookTouched] = useState(false);
+  const isNamedBillBook =
+    Boolean(gatePass.billBookId) || isNamedBillBookValue(initialValues.billBook);
 
   const sortedDispatchLedgers = useMemo(
     () => filterAndSortOptions(dispatchLedgerSearch, dispatchLedgerOptions),
@@ -193,6 +198,7 @@ function EditDispatchPreStorageFormFields({ gatePass }: EditDispatchPreStorageFo
         billNumber,
         biltiNo,
         billBook,
+        billBookId: gatePass.billBookId ?? '',
         biltiBook,
         from,
         to,
@@ -217,6 +223,7 @@ function EditDispatchPreStorageFormFields({ gatePass }: EditDispatchPreStorageFo
       bagSize,
       netWeight,
       remarks,
+      gatePass.billBookId,
     ],
   );
 
@@ -487,24 +494,38 @@ function EditDispatchPreStorageFormFields({ gatePass }: EditDispatchPreStorageFo
                     />
                   </Field>
 
-                  <Field data-invalid={billBookTouched && !isValidRequiredPositiveInt(billBook)}>
-                    <FieldLabel htmlFor="dispatch-pre-storage-bill-book">Bill book</FieldLabel>
-                    <Input
-                      {...numericInputProps}
-                      id="dispatch-pre-storage-bill-book"
-                      name="billBook"
-                      value={billBook}
-                      onBlur={() => setBillBookTouched(true)}
-                      onChange={(e) => setBillBook(e.target.value)}
-                      inputMode="numeric"
-                      placeholder="e.g. 1"
-                      aria-invalid={billBookTouched && !isValidRequiredPositiveInt(billBook)}
-                      className="tabular-nums"
-                    />
-                    {billBookTouched && !isValidRequiredPositiveInt(billBook) ? (
-                      <FieldError>Must be a whole number greater than zero.</FieldError>
-                    ) : null}
-                  </Field>
+                  {isNamedBillBook ? (
+                    <Field>
+                      <FieldLabel htmlFor="dispatch-pre-storage-bill-book">Bill book</FieldLabel>
+                      <Input
+                        id="dispatch-pre-storage-bill-book"
+                        name="billBook"
+                        value={billBook}
+                        readOnly
+                        tabIndex={-1}
+                        className="bg-muted/30"
+                      />
+                    </Field>
+                  ) : (
+                    <Field data-invalid={billBookTouched && !isValidRequiredPositiveInt(billBook)}>
+                      <FieldLabel htmlFor="dispatch-pre-storage-bill-book">Bill book</FieldLabel>
+                      <Input
+                        {...numericInputProps}
+                        id="dispatch-pre-storage-bill-book"
+                        name="billBook"
+                        value={billBook}
+                        onBlur={() => setBillBookTouched(true)}
+                        onChange={(e) => setBillBook(e.target.value)}
+                        inputMode="numeric"
+                        placeholder="e.g. 1"
+                        aria-invalid={billBookTouched && !isValidRequiredPositiveInt(billBook)}
+                        className="tabular-nums"
+                      />
+                      {billBookTouched && !isValidRequiredPositiveInt(billBook) ? (
+                        <FieldError>Must be a whole number greater than zero.</FieldError>
+                      ) : null}
+                    </Field>
+                  )}
 
                   <Field data-invalid={biltiBookTouched && !isValidRequiredPositiveInt(biltiBook)}>
                     <FieldLabel htmlFor="dispatch-pre-storage-bilti-book">Bilti book</FieldLabel>

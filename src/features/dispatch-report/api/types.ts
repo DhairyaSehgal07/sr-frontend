@@ -3,6 +3,7 @@ export type DispatchReportBagSizeItem = {
   size: string;
   variety: string;
   quantityIssued: number;
+  costPerBag?: number;
 };
 
 export type DispatchReportRow = {
@@ -22,6 +23,7 @@ export type DispatchReportRow = {
   isBooked: string;
   billNumber: string;
   bitliNumber: string;
+  billBookId: string;
   billBook: string;
   biltiBook: string;
   netWeightKg: string;
@@ -43,6 +45,7 @@ export type NikasiGatePassReportBagSize = {
   size?: string;
   variety?: string;
   quantityIssued?: number;
+  costPerBag?: number;
 };
 
 export type NikasiGatePassReportItem = {
@@ -62,6 +65,7 @@ export type NikasiGatePassReportItem = {
   isBooked?: boolean;
   billNumber?: number;
   bitliNumber?: number;
+  billBookId?: string;
   billBook?: string;
   biltiBook?: string;
   category: string;

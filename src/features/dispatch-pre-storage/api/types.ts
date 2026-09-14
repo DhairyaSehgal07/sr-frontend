@@ -2,6 +2,14 @@ export type NikasiGatePassBagSizeItem = {
   size: string;
   variety: string;
   quantityIssued: number;
+  costPerBag?: number;
+};
+
+export type CreateNikasiGatePassBagSizeItem = {
+  size: string;
+  variety: string;
+  quantityIssued: number;
+  costPerBag: number;
 };
 
 export type CreateNikasiGatePassBody = {
@@ -13,14 +21,14 @@ export type CreateNikasiGatePassBody = {
   from: string;
   to: string;
   truckNumber: string;
-  bagSize: NikasiGatePassBagSizeItem[];
+  bagSize: CreateNikasiGatePassBagSizeItem[];
   netWeight: number;
   averageWeightPerBag: number;
+  billBookId: string;
   /** Maps to `billNumber` on backend */
   billNumber?: number;
   /** Maps to `bitliNumber` on backend */
   bitliNumber?: number;
-  billBook?: string;
   biltiBook?: string;
   manualGatePassNumber?: number;
   remarks?: string;
@@ -70,7 +78,9 @@ export type NikasiGatePass = {
   truckNumber: string;
   billNumber?: number;
   bitliNumber?: number;
-  billBook?: number;
+  billBookId?: string;
+  /** Book name from the selected bill book (legacy records may be numeric). */
+  billBook?: string | number;
   biltiBook?: number;
   bagSize: NikasiGatePassBagSizeItem[];
   netWeight: number;
@@ -168,6 +178,7 @@ export type DispatchPreStorageFormValues = {
     isExtra: boolean;
     variety: string;
     quantityIssued: string;
+    costPerBag: string;
   }>;
   netWeight: string;
   remarks: string;

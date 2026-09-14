@@ -12,7 +12,7 @@ export const requiredPositiveIntField = z
   .refine(isPositiveIntString, 'Must be a whole number greater than zero');
 
 export const dispatchPreStorageBookFieldsSchema = z.object({
-  billBook: z.string(),
+  billBook: z.string().trim().min(1, 'This field is required.'),
   biltiBook: z.string(),
 });
 
@@ -23,7 +23,7 @@ export const editDispatchPreStorageFormSchema = z.object({
   category: z.string().trim().min(1, 'Category is required.'),
   billNumber: z.string(),
   biltiNo: z.string(),
-  billBook: requiredPositiveIntField,
+  billBook: z.string().trim().min(1, 'This field is required.'),
   biltiBook: requiredPositiveIntField,
   from: z.string().trim().min(1, 'From is required'),
   to: z.string().trim().min(1, 'To is required'),
@@ -36,4 +36,8 @@ export type EditDispatchPreStorageFormValues = z.infer<typeof editDispatchPreSto
 
 export function isValidRequiredPositiveInt(value: string): boolean {
   return requiredPositiveIntField.safeParse(value).success;
+}
+
+export function isNamedBillBookValue(value: string): boolean {
+  return value.trim() !== '' && !isValidRequiredPositiveInt(value);
 }

@@ -25,6 +25,7 @@ import { Route as AuthenticatedDispatchPreStorageReportRouteImport } from './rou
 import { Route as AuthenticatedDispatchIndexRouteImport } from './routes/_authenticated/dispatch.index'
 import { Route as AuthenticatedDispatchIdRouteImport } from './routes/_authenticated/dispatch.$id'
 import { Route as AuthenticatedDispatchReportRouteImport } from './routes/_authenticated/dispatch.report'
+import { Route as AuthenticatedFinancesIndexRouteImport } from './routes/_authenticated/finances.index'
 import { Route as AuthenticatedGradingIndexRouteImport } from './routes/_authenticated/grading.index'
 import { Route as AuthenticatedGradingIdRouteImport } from './routes/_authenticated/grading.$id'
 import { Route as AuthenticatedGradingEditHistoryRouteImport } from './routes/_authenticated/grading.edit-history'
@@ -36,6 +37,8 @@ import { Route as AuthenticatedIncomingReportRouteImport } from './routes/_authe
 import { Route as AuthenticatedOutgoingIndexRouteImport } from './routes/_authenticated/outgoing.index'
 import { Route as AuthenticatedPeopleIndexRouteImport } from './routes/_authenticated/people.index'
 import { Route as AuthenticatedPeopleIdRouteImport } from './routes/_authenticated/people.$id'
+import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings.index'
+import { Route as AuthenticatedSettingsBillBooksRouteImport } from './routes/_authenticated/settings.bill-books'
 import { Route as AuthenticatedStorageIndexRouteImport } from './routes/_authenticated/storage.index'
 import { Route as AuthenticatedStorageIdRouteImport } from './routes/_authenticated/storage.$id'
 import { Route as AuthenticatedStorageEditHistoryRouteImport } from './routes/_authenticated/storage.edit-history'
@@ -133,6 +136,12 @@ const AuthenticatedDispatchReportRoute =
     path: '/dispatch/report',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedFinancesIndexRoute =
+  AuthenticatedFinancesIndexRouteImport.update({
+    id: '/finances/',
+    path: '/finances/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedGradingIndexRoute =
   AuthenticatedGradingIndexRouteImport.update({
     id: '/grading/',
@@ -196,6 +205,18 @@ const AuthenticatedPeopleIdRoute = AuthenticatedPeopleIdRouteImport.update({
   path: '/people/$id',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedSettingsIndexRoute =
+  AuthenticatedSettingsIndexRouteImport.update({
+    id: '/settings/',
+    path: '/settings/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedSettingsBillBooksRoute =
+  AuthenticatedSettingsBillBooksRouteImport.update({
+    id: '/settings/bill-books',
+    path: '/settings/bill-books',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedStorageIndexRoute =
   AuthenticatedStorageIndexRouteImport.update({
     id: '/storage/',
@@ -257,6 +278,7 @@ export interface FileRoutesByFullPath {
   '/incoming/edit-history': typeof AuthenticatedIncomingEditHistoryRoute
   '/incoming/report': typeof AuthenticatedIncomingReportRoute
   '/people/$id': typeof AuthenticatedPeopleIdRoute
+  '/settings/bill-books': typeof AuthenticatedSettingsBillBooksRoute
   '/storage/$id': typeof AuthenticatedStorageIdRoute
   '/storage/edit-history': typeof AuthenticatedStorageEditHistoryRoute
   '/storage/report': typeof AuthenticatedStorageReportRoute
@@ -265,10 +287,12 @@ export interface FileRoutesByFullPath {
   '/booking/': typeof AuthenticatedBookingIndexRoute
   '/dispatch-pre-storage/': typeof AuthenticatedDispatchPreStorageIndexRoute
   '/dispatch/': typeof AuthenticatedDispatchIndexRoute
+  '/finances/': typeof AuthenticatedFinancesIndexRoute
   '/grading/': typeof AuthenticatedGradingIndexRoute
   '/incoming/': typeof AuthenticatedIncomingIndexRoute
   '/outgoing/': typeof AuthenticatedOutgoingIndexRoute
   '/people/': typeof AuthenticatedPeopleIndexRoute
+  '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/storage/': typeof AuthenticatedStorageIndexRoute
   '/transfer/': typeof AuthenticatedTransferIndexRoute
   '/storage/chamber-breakdown/$chamber': typeof AuthenticatedStorageChamberBreakdownChamberRoute
@@ -292,6 +316,7 @@ export interface FileRoutesByTo {
   '/incoming/edit-history': typeof AuthenticatedIncomingEditHistoryRoute
   '/incoming/report': typeof AuthenticatedIncomingReportRoute
   '/people/$id': typeof AuthenticatedPeopleIdRoute
+  '/settings/bill-books': typeof AuthenticatedSettingsBillBooksRoute
   '/storage/$id': typeof AuthenticatedStorageIdRoute
   '/storage/edit-history': typeof AuthenticatedStorageEditHistoryRoute
   '/storage/report': typeof AuthenticatedStorageReportRoute
@@ -300,10 +325,12 @@ export interface FileRoutesByTo {
   '/booking': typeof AuthenticatedBookingIndexRoute
   '/dispatch-pre-storage': typeof AuthenticatedDispatchPreStorageIndexRoute
   '/dispatch': typeof AuthenticatedDispatchIndexRoute
+  '/finances': typeof AuthenticatedFinancesIndexRoute
   '/grading': typeof AuthenticatedGradingIndexRoute
   '/incoming': typeof AuthenticatedIncomingIndexRoute
   '/outgoing': typeof AuthenticatedOutgoingIndexRoute
   '/people': typeof AuthenticatedPeopleIndexRoute
+  '/settings': typeof AuthenticatedSettingsIndexRoute
   '/storage': typeof AuthenticatedStorageIndexRoute
   '/transfer': typeof AuthenticatedTransferIndexRoute
   '/storage/chamber-breakdown/$chamber': typeof AuthenticatedStorageChamberBreakdownChamberRoute
@@ -329,6 +356,7 @@ export interface FileRoutesById {
   '/_authenticated/incoming/edit-history': typeof AuthenticatedIncomingEditHistoryRoute
   '/_authenticated/incoming/report': typeof AuthenticatedIncomingReportRoute
   '/_authenticated/people/$id': typeof AuthenticatedPeopleIdRoute
+  '/_authenticated/settings/bill-books': typeof AuthenticatedSettingsBillBooksRoute
   '/_authenticated/storage/$id': typeof AuthenticatedStorageIdRoute
   '/_authenticated/storage/edit-history': typeof AuthenticatedStorageEditHistoryRoute
   '/_authenticated/storage/report': typeof AuthenticatedStorageReportRoute
@@ -337,10 +365,12 @@ export interface FileRoutesById {
   '/_authenticated/booking/': typeof AuthenticatedBookingIndexRoute
   '/_authenticated/dispatch-pre-storage/': typeof AuthenticatedDispatchPreStorageIndexRoute
   '/_authenticated/dispatch/': typeof AuthenticatedDispatchIndexRoute
+  '/_authenticated/finances/': typeof AuthenticatedFinancesIndexRoute
   '/_authenticated/grading/': typeof AuthenticatedGradingIndexRoute
   '/_authenticated/incoming/': typeof AuthenticatedIncomingIndexRoute
   '/_authenticated/outgoing/': typeof AuthenticatedOutgoingIndexRoute
   '/_authenticated/people/': typeof AuthenticatedPeopleIndexRoute
+  '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/storage/': typeof AuthenticatedStorageIndexRoute
   '/_authenticated/transfer/': typeof AuthenticatedTransferIndexRoute
   '/_authenticated/storage/chamber-breakdown/$chamber': typeof AuthenticatedStorageChamberBreakdownChamberRoute
@@ -366,6 +396,7 @@ export interface FileRouteTypes {
     | '/incoming/edit-history'
     | '/incoming/report'
     | '/people/$id'
+    | '/settings/bill-books'
     | '/storage/$id'
     | '/storage/edit-history'
     | '/storage/report'
@@ -374,10 +405,12 @@ export interface FileRouteTypes {
     | '/booking/'
     | '/dispatch-pre-storage/'
     | '/dispatch/'
+    | '/finances/'
     | '/grading/'
     | '/incoming/'
     | '/outgoing/'
     | '/people/'
+    | '/settings/'
     | '/storage/'
     | '/transfer/'
     | '/storage/chamber-breakdown/$chamber'
@@ -401,6 +434,7 @@ export interface FileRouteTypes {
     | '/incoming/edit-history'
     | '/incoming/report'
     | '/people/$id'
+    | '/settings/bill-books'
     | '/storage/$id'
     | '/storage/edit-history'
     | '/storage/report'
@@ -409,10 +443,12 @@ export interface FileRouteTypes {
     | '/booking'
     | '/dispatch-pre-storage'
     | '/dispatch'
+    | '/finances'
     | '/grading'
     | '/incoming'
     | '/outgoing'
     | '/people'
+    | '/settings'
     | '/storage'
     | '/transfer'
     | '/storage/chamber-breakdown/$chamber'
@@ -437,6 +473,7 @@ export interface FileRouteTypes {
     | '/_authenticated/incoming/edit-history'
     | '/_authenticated/incoming/report'
     | '/_authenticated/people/$id'
+    | '/_authenticated/settings/bill-books'
     | '/_authenticated/storage/$id'
     | '/_authenticated/storage/edit-history'
     | '/_authenticated/storage/report'
@@ -445,10 +482,12 @@ export interface FileRouteTypes {
     | '/_authenticated/booking/'
     | '/_authenticated/dispatch-pre-storage/'
     | '/_authenticated/dispatch/'
+    | '/_authenticated/finances/'
     | '/_authenticated/grading/'
     | '/_authenticated/incoming/'
     | '/_authenticated/outgoing/'
     | '/_authenticated/people/'
+    | '/_authenticated/settings/'
     | '/_authenticated/storage/'
     | '/_authenticated/transfer/'
     | '/_authenticated/storage/chamber-breakdown/$chamber'
@@ -573,6 +612,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDispatchReportRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/finances/': {
+      id: '/_authenticated/finances/'
+      path: '/finances'
+      fullPath: '/finances/'
+      preLoaderRoute: typeof AuthenticatedFinancesIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/grading/': {
       id: '/_authenticated/grading/'
       path: '/grading'
@@ -650,6 +696,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPeopleIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/settings/': {
+      id: '/_authenticated/settings/'
+      path: '/settings'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof AuthenticatedSettingsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/settings/bill-books': {
+      id: '/_authenticated/settings/bill-books'
+      path: '/settings/bill-books'
+      fullPath: '/settings/bill-books'
+      preLoaderRoute: typeof AuthenticatedSettingsBillBooksRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/storage/': {
       id: '/_authenticated/storage/'
       path: '/storage'
@@ -720,6 +780,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedIncomingEditHistoryRoute: typeof AuthenticatedIncomingEditHistoryRoute
   AuthenticatedIncomingReportRoute: typeof AuthenticatedIncomingReportRoute
   AuthenticatedPeopleIdRoute: typeof AuthenticatedPeopleIdRoute
+  AuthenticatedSettingsBillBooksRoute: typeof AuthenticatedSettingsBillBooksRoute
   AuthenticatedStorageIdRoute: typeof AuthenticatedStorageIdRoute
   AuthenticatedStorageEditHistoryRoute: typeof AuthenticatedStorageEditHistoryRoute
   AuthenticatedStorageReportRoute: typeof AuthenticatedStorageReportRoute
@@ -728,10 +789,12 @@ interface AuthenticatedRouteChildren {
   AuthenticatedBookingIndexRoute: typeof AuthenticatedBookingIndexRoute
   AuthenticatedDispatchPreStorageIndexRoute: typeof AuthenticatedDispatchPreStorageIndexRoute
   AuthenticatedDispatchIndexRoute: typeof AuthenticatedDispatchIndexRoute
+  AuthenticatedFinancesIndexRoute: typeof AuthenticatedFinancesIndexRoute
   AuthenticatedGradingIndexRoute: typeof AuthenticatedGradingIndexRoute
   AuthenticatedIncomingIndexRoute: typeof AuthenticatedIncomingIndexRoute
   AuthenticatedOutgoingIndexRoute: typeof AuthenticatedOutgoingIndexRoute
   AuthenticatedPeopleIndexRoute: typeof AuthenticatedPeopleIndexRoute
+  AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute
   AuthenticatedStorageIndexRoute: typeof AuthenticatedStorageIndexRoute
   AuthenticatedTransferIndexRoute: typeof AuthenticatedTransferIndexRoute
   AuthenticatedStorageChamberBreakdownChamberRoute: typeof AuthenticatedStorageChamberBreakdownChamberRoute
@@ -759,6 +822,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedIncomingEditHistoryRoute: AuthenticatedIncomingEditHistoryRoute,
   AuthenticatedIncomingReportRoute: AuthenticatedIncomingReportRoute,
   AuthenticatedPeopleIdRoute: AuthenticatedPeopleIdRoute,
+  AuthenticatedSettingsBillBooksRoute: AuthenticatedSettingsBillBooksRoute,
   AuthenticatedStorageIdRoute: AuthenticatedStorageIdRoute,
   AuthenticatedStorageEditHistoryRoute: AuthenticatedStorageEditHistoryRoute,
   AuthenticatedStorageReportRoute: AuthenticatedStorageReportRoute,
@@ -768,10 +832,12 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDispatchPreStorageIndexRoute:
     AuthenticatedDispatchPreStorageIndexRoute,
   AuthenticatedDispatchIndexRoute: AuthenticatedDispatchIndexRoute,
+  AuthenticatedFinancesIndexRoute: AuthenticatedFinancesIndexRoute,
   AuthenticatedGradingIndexRoute: AuthenticatedGradingIndexRoute,
   AuthenticatedIncomingIndexRoute: AuthenticatedIncomingIndexRoute,
   AuthenticatedOutgoingIndexRoute: AuthenticatedOutgoingIndexRoute,
   AuthenticatedPeopleIndexRoute: AuthenticatedPeopleIndexRoute,
+  AuthenticatedSettingsIndexRoute: AuthenticatedSettingsIndexRoute,
   AuthenticatedStorageIndexRoute: AuthenticatedStorageIndexRoute,
   AuthenticatedTransferIndexRoute: AuthenticatedTransferIndexRoute,
   AuthenticatedStorageChamberBreakdownChamberRoute:

@@ -31,9 +31,13 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
-import type {
-  DispatchPreStorageBagSizeSummary,
-  DispatchPreStorageSummaryValues,
+import {
+  formatInr,
+  isValidCostPerBag,
+  lineBilledAmount,
+  totalBilledAmount,
+  type DispatchPreStorageBagSizeSummary,
+  type DispatchPreStorageSummaryValues,
 } from '@/features/dispatch-pre-storage/forms/dispatch-pre-storage-form-utils';
 
 export type {
@@ -150,6 +154,8 @@ function DispatchPreStorageReviewSummary({
 }) {
   const rows = activeBagRows(values.bagSize);
   const totalIssued = rows.reduce((sum, row) => sum + row.quantityIssued, 0);
+  const billedTotal = totalBilledAmount(rows);
+  const showCostColumns = rows.some((row) => isValidCostPerBag(row.costPerBag));
   const routeLabel =
     values.from.trim() && values.to.trim()
       ? `${values.from.trim()} → ${values.to.trim()}`
@@ -184,10 +190,11 @@ function DispatchPreStorageReviewSummary({
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         <StatPill label="Qty issued" value={totalIssued.toLocaleString('en-IN')} />
         <StatPill label="Net weight" value={formatKg(values.netWeight)} />
         <StatPill label="Avg / bag" value={formatKg(values.averageWeightPerBag)} />
+        <StatPill label="Billed" value={formatInr(billedTotal)} />
       </div>
 
       <div className="space-y-2">
@@ -251,6 +258,16 @@ function DispatchPreStorageReviewSummary({
                   <th className="h-10 px-3 text-right font-medium text-muted-foreground">
                     Qty issued
                   </th>
+                  {showCostColumns ? (
+                    <>
+                      <th className="h-10 px-3 text-right font-medium text-muted-foreground">
+                        Cost / bag
+                      </th>
+                      <th className="h-10 px-3 text-right font-medium text-muted-foreground">
+                        Amount
+                      </th>
+                    </>
+                  ) : null}
                 </tr>
               </thead>
               <tbody>
@@ -264,6 +281,16 @@ function DispatchPreStorageReviewSummary({
                     <td className="px-3 py-2.5 text-right font-medium tabular-nums">
                       {row.quantityIssued.toLocaleString('en-IN')}
                     </td>
+                    {showCostColumns ? (
+                      <>
+                        <td className="px-3 py-2.5 text-right font-medium tabular-nums">
+                          {isValidCostPerBag(row.costPerBag) ? formatInr(row.costPerBag) : '—'}
+                        </td>
+                        <td className="px-3 py-2.5 text-right font-medium tabular-nums">
+                          {formatInr(lineBilledAmount(row.costPerBag, row.quantityIssued))}
+                        </td>
+                      </>
+                    ) : null}
                   </tr>
                 ))}
               </tbody>
@@ -282,6 +309,13 @@ function DispatchPreStorageReviewSummary({
             icon={Package2}
             valueClassName="font-semibold tabular-nums"
           />
+          {showCostColumns ? (
+            <DetailRow
+              label="Billed amount"
+              value={formatInr(billedTotal)}
+              valueClassName="font-semibold tabular-nums"
+            />
+          ) : null}
         </SummaryCard>
       </div>
 

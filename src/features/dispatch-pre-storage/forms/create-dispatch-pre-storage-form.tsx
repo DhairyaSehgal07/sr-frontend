@@ -41,6 +41,7 @@ import { useDispatchLedgers } from '@/features/people/api/use-dispatch-ledgers';
 import { useGetReceiptVoucherNumber, voucherNumberKeys } from '@/hooks/use-get-voucher-number';
 import { queryClient } from '@/lib/queryClient';
 import { useCreateNikasiGatePass } from '@/features/dispatch-pre-storage/api/use-create-nikasi-gate-pass';
+import { useBillBooks } from '@/features/settings/api/use-bill-books';
 import { DispatchPreStorageSummarySheet } from '@/features/dispatch-pre-storage/forms/dispatch-pre-storage-summary-sheet';
 import {
   buildCreateApiBody,
@@ -49,10 +50,16 @@ import {
   canSubmitSummaryValues,
   createDefaultBagSizeRows,
   createEmptyBagSizeRow,
+  decimalInputProps,
+  formatInr,
   formatOptionalNumber,
   formatWeightKg,
+  hasPositiveBilledAmount,
+  isMongoObjectId,
+  isValidCostPerBag,
   numericInputProps,
   parseOptionalNumber,
+  totalBilledAmount,
   type DispatchPreStorageBagSizeRow,
 } from '@/features/dispatch-pre-storage/forms/dispatch-pre-storage-form-utils';
 
@@ -69,6 +76,7 @@ const CreateDispatchPreStorageForm = () => {
     isError: isVoucherNumberError,
   } = useGetReceiptVoucherNumber('nikasi-gate-pass');
   const { mutateAsync: createNikasiGatePass, isPending: isSubmitting } = useCreateNikasiGatePass();
+  const { data: billBooksData } = useBillBooks({ isActive: 'true' });
 
   const isGatePassNumberReady =
     !isLoadingVoucherNumber && !isVoucherNumberError && nextVoucherNumber != null;
@@ -82,13 +90,22 @@ const CreateDispatchPreStorageForm = () => {
     [dispatchLedgersData],
   );
 
+  const billBookOptions = useMemo<ComboboxOption[]>(
+    () =>
+      (billBooksData ?? []).map((book) => ({
+        id: book._id,
+        label: book.name,
+      })),
+    [billBooksData],
+  );
+
   const [manualGatePassNumber, setManualGatePassNumber] = useState('');
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [dispatchLedgerId, setDispatchLedgerId] = useState('');
   const [category, setCategory] = useState('');
   const [billNumber, setBillNumber] = useState('');
   const [biltiNo, setBiltiNo] = useState('');
-  const [billBook, setBillBook] = useState('');
+  const [billBookId, setBillBookId] = useState('');
   const [biltiBook, setBiltiBook] = useState('');
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
@@ -101,6 +118,8 @@ const CreateDispatchPreStorageForm = () => {
   const [dispatchLedgerComboboxOpen, setDispatchLedgerComboboxOpen] = useState(false);
   const [categorySearch, setCategorySearch] = useState('');
   const [categoryComboboxOpen, setCategoryComboboxOpen] = useState(false);
+  const [billBookSearch, setBillBookSearch] = useState('');
+  const [billBookComboboxOpen, setBillBookComboboxOpen] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
 
   const sortedDispatchLedgers = useMemo(
@@ -110,6 +129,15 @@ const CreateDispatchPreStorageForm = () => {
   const sortedCategories = useMemo(
     () => filterAndSortOptions(categorySearch, CATEGORY_ITEMS),
     [categorySearch],
+  );
+  const sortedBillBooks = useMemo(
+    () => filterAndSortOptions(billBookSearch, billBookOptions),
+    [billBookSearch, billBookOptions],
+  );
+
+  const billBookLabel = useMemo(
+    () => billBookOptions.find((book) => book.id === billBookId)?.label ?? '',
+    [billBookId, billBookOptions],
   );
 
   const totalQuantityIssued = useMemo(
@@ -144,7 +172,8 @@ const CreateDispatchPreStorageForm = () => {
         category,
         billNumber,
         biltiNo,
-        billBook,
+        billBook: billBookLabel,
+        billBookId,
         biltiBook,
         from,
         to,
@@ -161,7 +190,8 @@ const CreateDispatchPreStorageForm = () => {
       category,
       billNumber,
       biltiNo,
-      billBook,
+      billBookLabel,
+      billBookId,
       biltiBook,
       from,
       to,
@@ -179,6 +209,7 @@ const CreateDispatchPreStorageForm = () => {
 
   const canSubmit = canSubmitSummaryValues(summaryValues, {
     gatePassNumberReady: isGatePassNumberReady,
+    requireBillBookId: true,
   });
 
   const handleOpenReview = () => {
@@ -195,6 +226,33 @@ const CreateDispatchPreStorageForm = () => {
       );
       return;
     }
+    if (!summaryValues.dispatchLedgerId || !summaryValues.category) {
+      toast.error('Select dispatch ledger and category.', { position: 'bottom-right' });
+      return;
+    }
+    if (!isMongoObjectId(summaryValues.billBookId)) {
+      toast.error('Select a bill book.', { position: 'bottom-right' });
+      return;
+    }
+
+    const issuedLines = summaryValues.bagSize.filter(
+      (row) => row.quantityIssued > 0 && row.size.trim() !== '',
+    );
+    if (issuedLines.length === 0) {
+      toast.error('Enter at least one bag line with quantity.', { position: 'bottom-right' });
+      return;
+    }
+    if (issuedLines.some((row) => !isValidCostPerBag(row.costPerBag))) {
+      toast.error('Enter cost per bag for each issued bag line.', { position: 'bottom-right' });
+      return;
+    }
+    if (!hasPositiveBilledAmount(issuedLines)) {
+      toast.error('Enter a billed amount greater than zero on at least one bag line.', {
+        position: 'bottom-right',
+      });
+      return;
+    }
+
     setReviewOpen(true);
   };
 
@@ -241,6 +299,8 @@ const CreateDispatchPreStorageForm = () => {
     setDispatchLedgerComboboxOpen(false);
     setCategorySearch('');
     setCategoryComboboxOpen(false);
+    setBillBookSearch('');
+    setBillBookComboboxOpen(false);
   };
 
   const resetForm = () => {
@@ -250,7 +310,7 @@ const CreateDispatchPreStorageForm = () => {
     setCategory('');
     setBillNumber('');
     setBiltiNo('');
-    setBillBook('');
+    setBillBookId('');
     setBiltiBook('');
     setFrom('');
     setTo('');
@@ -463,13 +523,21 @@ const CreateDispatchPreStorageForm = () => {
 
                   <Field>
                     <FieldLabel htmlFor="dispatch-pre-storage-bill-book">Bill book</FieldLabel>
-                    <Input
+                    <SearchableOptionCombobox
                       id="dispatch-pre-storage-bill-book"
-                      name="billBook"
-                      value={billBook}
-                      onChange={(e) => setBillBook(e.target.value)}
-                      placeholder="e.g. Book A"
-                      autoComplete="off"
+                      name="billBookId"
+                      value={billBookId}
+                      onValueChange={setBillBookId}
+                      onBlur={() => {}}
+                      isInvalid={false}
+                      placeholder="Search bill books..."
+                      emptyMessage="No active bill books."
+                      options={billBookOptions}
+                      sortedOptions={sortedBillBooks}
+                      search={billBookSearch}
+                      setSearch={setBillBookSearch}
+                      open={billBookComboboxOpen}
+                      setOpen={setBillBookComboboxOpen}
                     />
                   </Field>
 
@@ -494,18 +562,22 @@ const CreateDispatchPreStorageForm = () => {
                   Bag Lines
                 </FieldLegend>
                 <FieldDescription>
-                  Enter variety and quantity issued for each bag size. Use Add more for an extra
-                  size line. Rows with zero quantity are ignored on submit.
+                  Enter variety, quantity issued, and cost per bag for each size. Issued lines
+                  require a rate in rupees. At least one line must have a billed amount greater than
+                  zero. Rows with zero quantity are ignored on submit.
                 </FieldDescription>
 
                 <div className="mt-5 rounded-lg border border-border">
                   <div className="hidden border-b border-border bg-muted/50 px-3 py-2.5 lg:grid lg:grid-cols-12 lg:gap-2">
-                    <div className="col-span-3 text-sm font-medium text-muted-foreground">Size</div>
-                    <div className="col-span-4 text-sm font-medium text-muted-foreground">
+                    <div className="col-span-2 text-sm font-medium text-muted-foreground">Size</div>
+                    <div className="col-span-3 text-sm font-medium text-muted-foreground">
                       Variety
                     </div>
-                    <div className="col-span-3 text-right text-sm font-medium text-muted-foreground">
+                    <div className="col-span-2 text-right text-sm font-medium text-muted-foreground">
                       Quantity Issued
+                    </div>
+                    <div className="col-span-3 text-right text-sm font-medium text-muted-foreground">
+                      Cost / bag (₹)
                     </div>
                     <div className="col-span-2" aria-hidden />
                   </div>
@@ -516,7 +588,7 @@ const CreateDispatchPreStorageForm = () => {
                         key={index}
                         className="grid grid-cols-1 gap-3 px-3 py-3 lg:grid-cols-12 lg:items-start lg:gap-2 lg:py-2.5"
                       >
-                        <div className="lg:col-span-3">
+                        <div className="lg:col-span-2">
                           {row.isExtra ? (
                             <BagSizeSelectField
                               id={`dispatch-pre-storage-bag-size-${index}-size`}
@@ -533,7 +605,7 @@ const CreateDispatchPreStorageForm = () => {
                           )}
                         </div>
 
-                        <div className="lg:col-span-4">
+                        <div className="lg:col-span-3">
                           <Field>
                             <FieldLabel
                               htmlFor={`dispatch-pre-storage-bag-size-${index}-variety`}
@@ -562,7 +634,7 @@ const CreateDispatchPreStorageForm = () => {
                           </Field>
                         </div>
 
-                        <div className="lg:col-span-3">
+                        <div className="lg:col-span-2">
                           <Field>
                             <FieldLabel
                               htmlFor={`dispatch-pre-storage-bag-size-${index}-quantity-issued`}
@@ -582,7 +654,32 @@ const CreateDispatchPreStorageForm = () => {
                                 })
                               }
                               placeholder="e.g. 100"
-                              className="text-right tabular-nums"
+                              className="text-right text-base tabular-nums lg:text-sm"
+                            />
+                          </Field>
+                        </div>
+
+                        <div className="lg:col-span-3">
+                          <Field>
+                            <FieldLabel
+                              htmlFor={`dispatch-pre-storage-bag-size-${index}-cost-per-bag`}
+                              className="lg:sr-only"
+                            >
+                              Cost per bag (row {index + 1})
+                            </FieldLabel>
+                            <Input
+                              {...decimalInputProps}
+                              id={`dispatch-pre-storage-bag-size-${index}-cost-per-bag`}
+                              name={`bagSize.${index}.costPerBag`}
+                              inputMode="decimal"
+                              value={row.costPerBag}
+                              onChange={(e) =>
+                                updateBagSizeRow(index, {
+                                  costPerBag: e.target.value,
+                                })
+                              }
+                              placeholder="e.g. 250"
+                              className="text-right text-base tabular-nums lg:text-sm"
                             />
                           </Field>
                         </div>
@@ -695,7 +792,7 @@ const CreateDispatchPreStorageForm = () => {
                   </Field>
                 </FieldGroup>
 
-                <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                   <div className="rounded-lg border border-border bg-muted/30 px-4 py-3">
                     <div className="text-sm font-medium text-muted-foreground">Quantity issued</div>
                     <div className="mt-1 font-heading text-xl font-semibold tabular-nums text-foreground">
@@ -712,6 +809,12 @@ const CreateDispatchPreStorageForm = () => {
                     <div className="text-sm font-medium text-muted-foreground">Avg. per bag</div>
                     <div className="mt-1 font-heading text-xl font-semibold tabular-nums text-foreground">
                       {formatWeightKg(averageWeightPerBagKg)}
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-border bg-muted/30 px-4 py-3">
+                    <div className="text-sm font-medium text-muted-foreground">Billed amount</div>
+                    <div className="mt-1 font-heading text-xl font-semibold tabular-nums text-foreground">
+                      {formatInr(summaryValues ? totalBilledAmount(summaryValues.bagSize) : 0)}
                     </div>
                   </div>
                 </div>

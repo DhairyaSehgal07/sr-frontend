@@ -5,6 +5,7 @@ import {
   BookOpen,
   ChevronRight,
   FileBarChart,
+  IndianRupee,
   Layers,
   Settings,
   Users,
@@ -72,6 +73,12 @@ const coreNavItems: NavItem[] = [
     icon: Layers,
     to: '/additional',
     activePaths: ['/additional'],
+  },
+  {
+    name: 'Finances',
+    icon: IndianRupee,
+    to: '/finances',
+    activePaths: ['/finances'],
   },
 ];
 
@@ -174,6 +181,8 @@ function NavMain() {
 
 export function AppSidebar() {
   const coldStorageName = useAuthStore((s) => s.user?.coldStorageId.name);
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const settingsActive = isPathActive(pathname, ['/settings']);
 
   return (
     <Sidebar collapsible="icon" variant="inset">
@@ -210,9 +219,11 @@ export function AppSidebar() {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton disabled tooltip="Settings">
-              <Settings />
-              <span>Settings</span>
+            <SidebarMenuButton asChild isActive={settingsActive} tooltip="Settings">
+              <Link to="/settings">
+                <Settings />
+                <span>Settings</span>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
