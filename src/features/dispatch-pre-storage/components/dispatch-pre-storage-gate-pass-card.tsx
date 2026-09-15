@@ -32,6 +32,7 @@ import type {
   NikasiGatePassBagSizeItem,
 } from '@/features/dispatch-pre-storage/api/types';
 import { nikasiAccent } from '@/features/dispatch-pre-storage/constants/nikasi-accent';
+import { openNikasiGatePassPrint } from '@/features/dispatch-pre-storage/utils/nikasi-gate-pass-print';
 
 interface InfoBlockProps {
   label: string;
@@ -360,9 +361,25 @@ export function DispatchPreStorageGatePassCard({
           >
             <Pencil className="h-3.5 w-3.5" />
           </Button>
-          <Button variant="secondary" size="sm" className="h-8">
-            <Printer className="mr-2 h-3.5 w-3.5" />
-            Print
+          <Button
+            variant="secondary"
+            size="icon-sm"
+            className="h-8 w-8"
+            title="Print invoice"
+            aria-label={`Print invoice for nikasi gate pass ${gatePass.gatePassNo}`}
+            onClick={() => void openNikasiGatePassPrint('invoice', gatePass)}
+          >
+            <Printer className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            variant="secondary"
+            size="icon-sm"
+            className="h-8 w-8"
+            title="Print bilti"
+            aria-label={`Print bilti for nikasi gate pass ${gatePass.gatePassNo}`}
+            onClick={() => void openNikasiGatePassPrint('bilti', gatePass)}
+          >
+            <FileText className="h-3.5 w-3.5" />
           </Button>
         </div>
       </CardFooter>
@@ -399,7 +416,11 @@ export function DispatchPreStorageGatePassCardSkeleton() {
       </CardContent>
       <CardFooter className="flex items-center justify-between border-t border-border/40 bg-muted/10 px-4 py-3">
         <Skeleton className="h-8 w-32" />
-        <Skeleton className="h-8 w-16 rounded-md" />
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-8 w-8 rounded-md" />
+          <Skeleton className="h-8 w-8 rounded-md" />
+          <Skeleton className="h-8 w-8 rounded-md" />
+        </div>
       </CardFooter>
     </Card>
   );

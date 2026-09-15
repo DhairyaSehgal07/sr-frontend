@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
 import { Route as AuthenticatedDaybookRouteImport } from './routes/_authenticated/daybook'
+import { Route as AuthenticatedPdfReportRouteImport } from './routes/_authenticated/pdf-report'
 import { Route as AuthenticatedAdditionalIndexRouteImport } from './routes/_authenticated/additional.index'
 import { Route as AuthenticatedAdditionalTemperatureRouteImport } from './routes/_authenticated/additional.temperature'
 import { Route as AuthenticatedBookingIndexRouteImport } from './routes/_authenticated/booking.index'
@@ -64,6 +65,11 @@ const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
 const AuthenticatedDaybookRoute = AuthenticatedDaybookRouteImport.update({
   id: '/daybook',
   path: '/daybook',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedPdfReportRoute = AuthenticatedPdfReportRouteImport.update({
+  id: '/pdf-report',
+  path: '/pdf-report',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedAdditionalIndexRoute =
@@ -263,6 +269,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/daybook': typeof AuthenticatedDaybookRoute
+  '/pdf-report': typeof AuthenticatedPdfReportRoute
   '/additional/temperature': typeof AuthenticatedAdditionalTemperatureRoute
   '/booking/$id': typeof AuthenticatedBookingIdRoute
   '/booking/edit-history': typeof AuthenticatedBookingEditHistoryRoute
@@ -301,6 +308,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/daybook': typeof AuthenticatedDaybookRoute
+  '/pdf-report': typeof AuthenticatedPdfReportRoute
   '/additional/temperature': typeof AuthenticatedAdditionalTemperatureRoute
   '/booking/$id': typeof AuthenticatedBookingIdRoute
   '/booking/edit-history': typeof AuthenticatedBookingEditHistoryRoute
@@ -341,6 +349,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/daybook': typeof AuthenticatedDaybookRoute
+  '/_authenticated/pdf-report': typeof AuthenticatedPdfReportRoute
   '/_authenticated/additional/temperature': typeof AuthenticatedAdditionalTemperatureRoute
   '/_authenticated/booking/$id': typeof AuthenticatedBookingIdRoute
   '/_authenticated/booking/edit-history': typeof AuthenticatedBookingEditHistoryRoute
@@ -381,6 +390,7 @@ export interface FileRouteTypes {
     | '/'
     | '/analytics'
     | '/daybook'
+    | '/pdf-report'
     | '/additional/temperature'
     | '/booking/$id'
     | '/booking/edit-history'
@@ -419,6 +429,7 @@ export interface FileRouteTypes {
     | '/'
     | '/analytics'
     | '/daybook'
+    | '/pdf-report'
     | '/additional/temperature'
     | '/booking/$id'
     | '/booking/edit-history'
@@ -458,6 +469,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/_authenticated/analytics'
     | '/_authenticated/daybook'
+    | '/_authenticated/pdf-report'
     | '/_authenticated/additional/temperature'
     | '/_authenticated/booking/$id'
     | '/_authenticated/booking/edit-history'
@@ -526,6 +538,13 @@ declare module '@tanstack/react-router' {
       path: '/daybook'
       fullPath: '/daybook'
       preLoaderRoute: typeof AuthenticatedDaybookRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/pdf-report': {
+      id: '/_authenticated/pdf-report'
+      path: '/pdf-report'
+      fullPath: '/pdf-report'
+      preLoaderRoute: typeof AuthenticatedPdfReportRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/additional/': {
@@ -765,6 +784,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteChildren {
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
   AuthenticatedDaybookRoute: typeof AuthenticatedDaybookRoute
+  AuthenticatedPdfReportRoute: typeof AuthenticatedPdfReportRoute
   AuthenticatedAdditionalTemperatureRoute: typeof AuthenticatedAdditionalTemperatureRoute
   AuthenticatedBookingIdRoute: typeof AuthenticatedBookingIdRoute
   AuthenticatedBookingEditHistoryRoute: typeof AuthenticatedBookingEditHistoryRoute
@@ -803,6 +823,7 @@ interface AuthenticatedRouteChildren {
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
   AuthenticatedDaybookRoute: AuthenticatedDaybookRoute,
+  AuthenticatedPdfReportRoute: AuthenticatedPdfReportRoute,
   AuthenticatedAdditionalTemperatureRoute:
     AuthenticatedAdditionalTemperatureRoute,
   AuthenticatedBookingIdRoute: AuthenticatedBookingIdRoute,
