@@ -238,6 +238,21 @@ function DispatchPreStorageReviewSummary({
           {values.billNumber.trim() ? (
             <DetailRow label="Bill no." value={values.billNumber} />
           ) : null}
+          {values.transportCompany.trim() ? (
+            <DetailRow label="Transport company" value={values.transportCompany} />
+          ) : null}
+          {values.LSNumber.trim() ? <DetailRow label="L.S. No." value={values.LSNumber} /> : null}
+          {values.driverName.trim() ? (
+            <DetailRow label="Driver name" value={values.driverName} />
+          ) : null}
+          {values.driverMobile.trim() ? (
+            <DetailRow
+              label="Driver mobile"
+              value={values.driverMobile}
+              valueClassName="tabular-nums"
+            />
+          ) : null}
+          {values.owner.trim() ? <DetailRow label="Owner" value={values.owner} /> : null}
           {values.biltiNo.trim() ? <DetailRow label="Bilti no." value={values.biltiNo} /> : null}
           {values.billBook.trim() ? <DetailRow label="Bill book" value={values.billBook} /> : null}
           {values.biltiBook.trim() ? (

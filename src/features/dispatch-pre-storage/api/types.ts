@@ -32,6 +32,11 @@ export type CreateNikasiGatePassBody = {
   biltiBook?: string;
   manualGatePassNumber?: number;
   remarks?: string;
+  transportCompany?: string;
+  LSNumber?: string;
+  driverName?: string;
+  driverMobile?: string;
+  owner?: string;
   idempotencyKey?: string;
 };
 
@@ -76,6 +81,11 @@ export type NikasiGatePass = {
   from: string;
   to: string;
   truckNumber: string;
+  transportCompany?: string;
+  LSNumber?: string;
+  driverName?: string;
+  driverMobile?: string;
+  owner?: string;
   billNumber?: number;
   bitliNumber?: number;
   billBookId?: string;
@@ -147,6 +157,11 @@ export type UpdateNikasiGatePassBody = {
   biltiBook?: string;
   manualGatePassNumber?: number | null;
   remarks?: string;
+  transportCompany?: string;
+  LSNumber?: string;
+  driverName?: string;
+  driverMobile?: string;
+  owner?: string;
 };
 
 export type UpdateNikasiGatePassResponse = {
@@ -173,6 +188,11 @@ export type DispatchPreStorageFormValues = {
   from: string;
   to: string;
   truckNumber: string;
+  transportCompany: string;
+  LSNumber: string;
+  driverName: string;
+  driverMobile: string;
+  owner: string;
   bagSize: Array<{
     size: string;
     isExtra: boolean;

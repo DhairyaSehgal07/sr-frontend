@@ -24,6 +24,90 @@ export function formatPdfAmount(value: number | undefined | null): string {
   }).format(value);
 }
 
+const ONES = [
+  '',
+  'One',
+  'Two',
+  'Three',
+  'Four',
+  'Five',
+  'Six',
+  'Seven',
+  'Eight',
+  'Nine',
+  'Ten',
+  'Eleven',
+  'Twelve',
+  'Thirteen',
+  'Fourteen',
+  'Fifteen',
+  'Sixteen',
+  'Seventeen',
+  'Eighteen',
+  'Nineteen',
+] as const;
+
+const TENS = [
+  '',
+  '',
+  'Twenty',
+  'Thirty',
+  'Forty',
+  'Fifty',
+  'Sixty',
+  'Seventy',
+  'Eighty',
+  'Ninety',
+] as const;
+
+function belowHundred(value: number): string {
+  if (value < 20) return ONES[value] ?? '';
+  const ten = Math.floor(value / 10);
+  const one = value % 10;
+  return one ? `${TENS[ten]} ${ONES[one]}` : (TENS[ten] ?? '');
+}
+
+function belowThousand(value: number): string {
+  if (value < 100) return belowHundred(value);
+  const hundred = Math.floor(value / 100);
+  const rest = value % 100;
+  const head = `${ONES[hundred]} Hundred`;
+  return rest ? `${head} ${belowHundred(rest)}` : head;
+}
+
+/** Indian grouping: crore, lakh, thousand. */
+function integerToWords(value: number): string {
+  if (value === 0) return 'Zero';
+
+  const crore = Math.floor(value / 1_00_00_000);
+  const lakh = Math.floor((value % 1_00_00_000) / 1_00_000);
+  const thousand = Math.floor((value % 1_00_000) / 1_000);
+  const rest = value % 1_000;
+  const parts: string[] = [];
+
+  if (crore) parts.push(`${belowThousand(crore)} Crore`);
+  if (lakh) parts.push(`${belowHundred(lakh)} Lakh`);
+  if (thousand) parts.push(`${belowHundred(thousand)} Thousand`);
+  if (rest) parts.push(belowThousand(rest));
+
+  return parts.join(' ');
+}
+
+/** "One Lakh Only" / "One Thousand and Fifty Paise Only" for bilti totals. */
+export function rupeesInWords(value: number | undefined | null): string {
+  if (value == null || !Number.isFinite(value)) return '';
+
+  const [rupeePart, paisePart = '00'] = Math.abs(value).toFixed(2).split('.');
+  const rupees = Number(rupeePart);
+  const paise = Number(paisePart);
+  if (!Number.isSafeInteger(rupees) || rupees > 999_99_99_999) return '';
+
+  const rupeeWords = integerToWords(rupees);
+  if (paise === 0) return `${rupeeWords} Only`;
+  if (rupees === 0) return `${integerToWords(paise)} Paise Only`;
+  return `${rupeeWords} and ${integerToWords(paise)} Paise Only`;
+}
+
 export function totalBags(bagSize: readonly NikasiGatePassBagSizeItem[]): number {
   return bagSize.reduce((sum, row) => sum + row.quantityIssued, 0);
 }

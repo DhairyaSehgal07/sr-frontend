@@ -237,6 +237,15 @@ export function DispatchPreStorageGatePassCard({
                   <div className="grid grid-cols-2 gap-4 rounded-xl border border-border/50 bg-muted/20 p-4">
                     <InfoBlock label="From" value={gatePass.from || '—'} />
                     <InfoBlock label="To" value={gatePass.to || '—'} />
+                    <InfoBlock label="Transport company" value={gatePass.transportCompany || '—'} />
+                    <InfoBlock label="L.S. No." value={gatePass.LSNumber || '—'} />
+                    <InfoBlock label="Driver name" value={gatePass.driverName || '—'} />
+                    <InfoBlock
+                      label="Driver mobile"
+                      value={gatePass.driverMobile || '—'}
+                      valueClassName="tabular-nums"
+                    />
+                    <InfoBlock label="Owner" value={gatePass.owner || '—'} />
                     <InfoBlock
                       label="Bill no."
                       value={formatOptionalInt(gatePass.billNumber)}

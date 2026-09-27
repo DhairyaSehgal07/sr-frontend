@@ -316,11 +316,17 @@ type InvoiceDocumentPdfProps = {
   data?: NikasiGatePass;
 };
 
-function FillField({ value }: { value?: string }) {
+function FillField({
+  value,
+  style,
+}: {
+  value?: string;
+  style?: { marginRight?: number };
+}) {
   if (value) {
-    return <Text style={styles.fillValue}>{value}</Text>;
+    return <Text style={style ? [styles.fillValue, style] : styles.fillValue}>{value}</Text>;
   }
-  return <View style={styles.fillLineTight} />;
+  return <View style={style ? [styles.fillLineTight, style] : styles.fillLineTight} />;
 }
 
 const InvoiceDocumentPdf = ({ data }: InvoiceDocumentPdfProps) => {
@@ -328,6 +334,11 @@ const InvoiceDocumentPdf = ({ data }: InvoiceDocumentPdfProps) => {
   const dated = data ? formatPdfDate(data.date) : '';
   const partyLines = data ? partyAddressLines(data) : [];
   const truckNo = data?.truckNumber?.trim() || '';
+  const transportCompany = data?.transportCompany?.trim() || '';
+  const lsNumber = data?.LSNumber?.trim() || '';
+  const driverName = data?.driverName?.trim() || '';
+  const driverMobile = data?.driverMobile?.trim() || '';
+  const owner = data?.owner?.trim() || '';
   const from = data?.from?.trim() || '';
   const to = data?.to?.trim() || '';
   const pkgs = data ? formatPdfNumber(totalBags(data.bagSize)) : '';
@@ -396,23 +407,23 @@ const InvoiceDocumentPdf = ({ data }: InvoiceDocumentPdfProps) => {
             </View>
             <View style={styles.formRow}>
               <Text style={styles.textStatic}>Transport Co.</Text>
-              <View style={styles.fillLine} />
+              <FillField value={transportCompany} style={{ marginRight: 14 }} />
               <Text style={styles.textStatic}>Bill No.</Text>
               <FillField value={billNo} />
             </View>
             <View style={styles.formRow}>
               <Text style={styles.textStatic}>L.S. No.</Text>
-              <View style={styles.fillLineTight} />
+              <FillField value={lsNumber} />
             </View>
             <View style={styles.formRow}>
               <Text style={styles.textStatic}>Name of Driver</Text>
-              <View style={styles.fillLine} />
+              <FillField value={driverName} style={{ marginRight: 14 }} />
               <Text style={styles.textStatic}>Mob.</Text>
-              <View style={styles.fillLineTight} />
+              <FillField value={driverMobile} />
             </View>
             <View style={[styles.formRow, { marginBottom: 0 }]}>
               <Text style={styles.textStatic}>Owner</Text>
-              <View style={styles.fillLineTight} />
+              <FillField value={owner} />
             </View>
           </View>
         </View>

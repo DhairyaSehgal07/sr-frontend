@@ -40,6 +40,11 @@ export type DispatchPreStorageSummaryValues = {
   from: string;
   to: string;
   truckNumber: string;
+  transportCompany: string;
+  LSNumber: string;
+  driverName: string;
+  driverMobile: string;
+  owner: string;
   bagSize: DispatchPreStorageBagSizeSummary[];
   netWeight: number;
   averageWeightPerBag: number;
@@ -229,6 +234,11 @@ export function buildSummaryValues(input: {
   from: string;
   to: string;
   truckNumber: string;
+  transportCompany: string;
+  LSNumber: string;
+  driverName: string;
+  driverMobile: string;
+  owner: string;
   bagSize: DispatchPreStorageBagSizeRow[];
   netWeight: string;
   remarks: string;
@@ -255,6 +265,11 @@ export function buildSummaryValues(input: {
     from: input.from,
     to: input.to,
     truckNumber: input.truckNumber,
+    transportCompany: input.transportCompany.trim(),
+    LSNumber: input.LSNumber.trim(),
+    driverName: input.driverName.trim(),
+    driverMobile: input.driverMobile.trim(),
+    owner: input.owner.trim(),
     bagSize: input.bagSize.map((row) => ({
       size: row.size.trim(),
       variety: normalizeVariety(row.variety),
@@ -318,6 +333,14 @@ function buildCreateBagSizePayload(
   }));
 }
 
+const TRANSPORT_FIELD_KEYS = [
+  'transportCompany',
+  'LSNumber',
+  'driverName',
+  'driverMobile',
+  'owner',
+] as const;
+
 function applyOptionalFieldsToBody<
   T extends {
     billNumber?: number;
@@ -326,8 +349,17 @@ function applyOptionalFieldsToBody<
     remarks?: string;
     billBook?: string;
     biltiBook?: string;
+    transportCompany?: string;
+    LSNumber?: string;
+    driverName?: string;
+    driverMobile?: string;
+    owner?: string;
   },
->(body: T, values: DispatchPreStorageSummaryValues, options?: { includeBillBook?: boolean }): T {
+>(
+  body: T,
+  values: DispatchPreStorageSummaryValues,
+  options?: { includeBillBook?: boolean; clearEmptyTransportFields?: boolean },
+): T {
   const billNumber = parseOptionalPositiveInt(values.billNumber);
   if (billNumber != null) body.billNumber = billNumber;
 
@@ -351,6 +383,15 @@ function applyOptionalFieldsToBody<
 
   const remarks = values.remarks.trim();
   if (remarks) body.remarks = remarks;
+
+  for (const key of TRANSPORT_FIELD_KEYS) {
+    const value = values[key].trim();
+    if (value) {
+      body[key] = value;
+    } else if (options?.clearEmptyTransportFields) {
+      body[key] = '';
+    }
+  }
 
   return body;
 }
@@ -402,7 +443,7 @@ export function buildUpdateApiBody(
     averageWeightPerBag: values.averageWeightPerBag,
   };
 
-  applyOptionalFieldsToBody(body, values);
+  applyOptionalFieldsToBody(body, values, { clearEmptyTransportFields: true });
 
   const manualTrimmed = values.manualGatePassNumber?.trim() ?? '';
   if (manualTrimmed === '') {

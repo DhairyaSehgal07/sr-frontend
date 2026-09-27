@@ -10,6 +10,7 @@ import {
   formatPdfDate,
   formatPdfNumber,
   lineAmount,
+  rupeesInWords,
   totalBags,
 } from './nikasi-gate-pass-pdf-utils';
 
@@ -285,10 +286,12 @@ const BiltiDocumentPdf = ({ data }: BiltiDocumentPdfProps) => {
     : [];
   const delivery = data?.to?.trim() || '';
   const lorryNo = data?.truckNumber?.trim() || '';
+  const challanNo = data ? formatPdfNumber(data.bitliNumber) : '';
   const bags = data ? formatPdfNumber(totalBags(data.bagSize)) : '';
   const bagRows = data?.bagSize ?? [];
   const totalAmount = data ? bagLinesTotal(data.bagSize) : undefined;
   const totalAmountLabel = totalAmount != null ? formatPdfAmount(totalAmount) : '';
+  const amountInWords = rupeesInWords(totalAmount);
 
   return (
     <Document>
@@ -350,7 +353,9 @@ const BiltiDocumentPdf = ({ data }: BiltiDocumentPdfProps) => {
               <Text style={styles.cellLabelTextSmall}>
                 Lorry No.{lorryNo ? ` ${lorryNo}` : ''}
               </Text>
-              <Text style={styles.cellLabelTextSmall}>Challan No.</Text>
+              <Text style={styles.cellLabelTextSmall}>
+                Challan No.{challanNo ? ` ${challanNo}` : ''}
+              </Text>
               <Text style={styles.cellLabelTextSmall}>TRPT.</Text>
               <Text style={[styles.cellLabelTextSmall, { marginBottom: 0 }]}>
                 Bags{bags ? ` ${bags}` : ''}
@@ -509,8 +514,23 @@ const BiltiDocumentPdf = ({ data }: BiltiDocumentPdfProps) => {
 
           {/* Row 5: Amount in Words */}
           <View style={[styles.gridRow, { borderBottomWidth: 0, minHeight: 32 }]}>
-            <View style={[styles.gridCellNoBorderRight, { width: '100%' }]}>
+            <View
+              style={[
+                styles.gridCellNoBorderRight,
+                { width: '100%', flexDirection: 'row', alignItems: 'center' },
+              ]}
+            >
               <Text style={styles.cellLabelText}>Rupees in Words :</Text>
+              {amountInWords ? (
+                <Text
+                  style={[
+                    styles.cellValueText,
+                    { marginTop: 0, marginLeft: 6, flex: 1, fontFamily: 'Helvetica-Bold' },
+                  ]}
+                >
+                  {amountInWords}
+                </Text>
+              ) : null}
             </View>
           </View>
         </View>

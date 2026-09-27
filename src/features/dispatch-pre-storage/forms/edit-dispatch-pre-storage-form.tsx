@@ -142,6 +142,11 @@ function EditDispatchPreStorageFormFields({ gatePass }: EditDispatchPreStorageFo
   const [from, setFrom] = useState(initialValues.from);
   const [to, setTo] = useState(initialValues.to);
   const [truckNumber, setTruckNumber] = useState(initialValues.truckNumber);
+  const [transportCompany, setTransportCompany] = useState(initialValues.transportCompany);
+  const [lsNumber, setLsNumber] = useState(initialValues.LSNumber);
+  const [driverName, setDriverName] = useState(initialValues.driverName);
+  const [driverMobile, setDriverMobile] = useState(initialValues.driverMobile);
+  const [owner, setOwner] = useState(initialValues.owner);
   const [bagSize, setBagSize] = useState<DispatchPreStorageBagSizeRow[]>(
     () => initialValues.bagSize as DispatchPreStorageBagSizeRow[],
   );
@@ -203,6 +208,11 @@ function EditDispatchPreStorageFormFields({ gatePass }: EditDispatchPreStorageFo
         from,
         to,
         truckNumber,
+        transportCompany,
+        LSNumber: lsNumber,
+        driverName,
+        driverMobile,
+        owner,
         bagSize,
         netWeight,
         remarks,
@@ -220,6 +230,11 @@ function EditDispatchPreStorageFormFields({ gatePass }: EditDispatchPreStorageFo
       from,
       to,
       truckNumber,
+      transportCompany,
+      lsNumber,
+      driverName,
+      driverMobile,
+      owner,
       bagSize,
       netWeight,
       remarks,
@@ -284,6 +299,11 @@ function EditDispatchPreStorageFormFields({ gatePass }: EditDispatchPreStorageFo
     setFrom(initialValues.from);
     setTo(initialValues.to);
     setTruckNumber(initialValues.truckNumber);
+    setTransportCompany(initialValues.transportCompany);
+    setLsNumber(initialValues.LSNumber);
+    setDriverName(initialValues.driverName);
+    setDriverMobile(initialValues.driverMobile);
+    setOwner(initialValues.owner);
     setBagSize(initialValues.bagSize as DispatchPreStorageBagSizeRow[]);
     setNetWeight(initialValues.netWeight);
     setRemarks(initialValues.remarks);
@@ -463,6 +483,72 @@ function EditDispatchPreStorageFormFields({ gatePass }: EditDispatchPreStorageFo
                       placeholder="e.g. PB10AB1234"
                       autoComplete="off"
                       className="uppercase"
+                    />
+                  </Field>
+
+                  <Field>
+                    <FieldLabel htmlFor="dispatch-pre-storage-transport-company">
+                      Transport company
+                    </FieldLabel>
+                    <Input
+                      id="dispatch-pre-storage-transport-company"
+                      name="transportCompany"
+                      value={transportCompany}
+                      onChange={(e) => setTransportCompany(e.target.value)}
+                      placeholder="e.g. Punjab Roadways"
+                      autoComplete="organization"
+                    />
+                  </Field>
+
+                  <Field>
+                    <FieldLabel htmlFor="dispatch-pre-storage-ls-number">L.S. No.</FieldLabel>
+                    <Input
+                      id="dispatch-pre-storage-ls-number"
+                      name="LSNumber"
+                      value={lsNumber}
+                      onChange={(e) => setLsNumber(e.target.value)}
+                      placeholder="Optional"
+                      autoComplete="off"
+                    />
+                  </Field>
+
+                  <Field>
+                    <FieldLabel htmlFor="dispatch-pre-storage-driver-name">Driver name</FieldLabel>
+                    <Input
+                      id="dispatch-pre-storage-driver-name"
+                      name="driverName"
+                      value={driverName}
+                      onChange={(e) => setDriverName(e.target.value)}
+                      placeholder="Optional"
+                      autoComplete="name"
+                    />
+                  </Field>
+
+                  <Field>
+                    <FieldLabel htmlFor="dispatch-pre-storage-driver-mobile">
+                      Driver mobile
+                    </FieldLabel>
+                    <Input
+                      id="dispatch-pre-storage-driver-mobile"
+                      name="driverMobile"
+                      type="tel"
+                      inputMode="tel"
+                      value={driverMobile}
+                      onChange={(e) => setDriverMobile(e.target.value)}
+                      placeholder="e.g. 9876543210"
+                      autoComplete="tel"
+                    />
+                  </Field>
+
+                  <Field>
+                    <FieldLabel htmlFor="dispatch-pre-storage-owner">Owner</FieldLabel>
+                    <Input
+                      id="dispatch-pre-storage-owner"
+                      name="owner"
+                      value={owner}
+                      onChange={(e) => setOwner(e.target.value)}
+                      placeholder="Optional"
+                      autoComplete="name"
                     />
                   </Field>
 

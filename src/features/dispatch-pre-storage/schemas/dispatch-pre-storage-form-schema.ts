@@ -28,6 +28,11 @@ export const editDispatchPreStorageFormSchema = z.object({
   from: z.string().trim().min(1, 'From is required'),
   to: z.string().trim().min(1, 'To is required'),
   truckNumber: z.string().trim().min(1, 'Truck number is required'),
+  transportCompany: z.string(),
+  LSNumber: z.string(),
+  driverName: z.string(),
+  driverMobile: z.string(),
+  owner: z.string(),
   netWeight: z.string(),
   remarks: z.string().max(500),
 });

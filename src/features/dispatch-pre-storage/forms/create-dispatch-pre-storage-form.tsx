@@ -99,6 +99,15 @@ const CreateDispatchPreStorageForm = () => {
     [billBooksData],
   );
 
+  const biltiBookOptions = useMemo<ComboboxOption[]>(
+    () =>
+      (billBooksData ?? []).map((book) => ({
+        id: book.name,
+        label: book.name,
+      })),
+    [billBooksData],
+  );
+
   const [manualGatePassNumber, setManualGatePassNumber] = useState('');
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [dispatchLedgerId, setDispatchLedgerId] = useState('');
@@ -110,6 +119,11 @@ const CreateDispatchPreStorageForm = () => {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [truckNumber, setTruckNumber] = useState('');
+  const [transportCompany, setTransportCompany] = useState('');
+  const [lsNumber, setLsNumber] = useState('');
+  const [driverName, setDriverName] = useState('');
+  const [driverMobile, setDriverMobile] = useState('');
+  const [owner, setOwner] = useState('');
   const [bagSize, setBagSize] = useState(createDefaultBagSizeRows);
   const [netWeight, setNetWeight] = useState('');
   const [remarks, setRemarks] = useState('');
@@ -120,6 +134,8 @@ const CreateDispatchPreStorageForm = () => {
   const [categoryComboboxOpen, setCategoryComboboxOpen] = useState(false);
   const [billBookSearch, setBillBookSearch] = useState('');
   const [billBookComboboxOpen, setBillBookComboboxOpen] = useState(false);
+  const [biltiBookSearch, setBiltiBookSearch] = useState('');
+  const [biltiBookComboboxOpen, setBiltiBookComboboxOpen] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
 
   const sortedDispatchLedgers = useMemo(
@@ -133,6 +149,10 @@ const CreateDispatchPreStorageForm = () => {
   const sortedBillBooks = useMemo(
     () => filterAndSortOptions(billBookSearch, billBookOptions),
     [billBookSearch, billBookOptions],
+  );
+  const sortedBiltiBooks = useMemo(
+    () => filterAndSortOptions(biltiBookSearch, biltiBookOptions),
+    [biltiBookSearch, biltiBookOptions],
   );
 
   const billBookLabel = useMemo(
@@ -178,6 +198,11 @@ const CreateDispatchPreStorageForm = () => {
         from,
         to,
         truckNumber,
+        transportCompany,
+        LSNumber: lsNumber,
+        driverName,
+        driverMobile,
+        owner,
         bagSize,
         netWeight,
         remarks,
@@ -196,6 +221,11 @@ const CreateDispatchPreStorageForm = () => {
       from,
       to,
       truckNumber,
+      transportCompany,
+      lsNumber,
+      driverName,
+      driverMobile,
+      owner,
       bagSize,
       netWeight,
       remarks,
@@ -301,6 +331,8 @@ const CreateDispatchPreStorageForm = () => {
     setCategoryComboboxOpen(false);
     setBillBookSearch('');
     setBillBookComboboxOpen(false);
+    setBiltiBookSearch('');
+    setBiltiBookComboboxOpen(false);
   };
 
   const resetForm = () => {
@@ -315,6 +347,11 @@ const CreateDispatchPreStorageForm = () => {
     setFrom('');
     setTo('');
     setTruckNumber('');
+    setTransportCompany('');
+    setLsNumber('');
+    setDriverName('');
+    setDriverMobile('');
+    setOwner('');
     setBagSize(createDefaultBagSizeRows());
     setNetWeight('');
     setRemarks('');
@@ -494,6 +531,72 @@ const CreateDispatchPreStorageForm = () => {
                   </Field>
 
                   <Field>
+                    <FieldLabel htmlFor="dispatch-pre-storage-transport-company">
+                      Transport company
+                    </FieldLabel>
+                    <Input
+                      id="dispatch-pre-storage-transport-company"
+                      name="transportCompany"
+                      value={transportCompany}
+                      onChange={(e) => setTransportCompany(e.target.value)}
+                      placeholder="e.g. Punjab Roadways"
+                      autoComplete="organization"
+                    />
+                  </Field>
+
+                  <Field>
+                    <FieldLabel htmlFor="dispatch-pre-storage-ls-number">L.S. No.</FieldLabel>
+                    <Input
+                      id="dispatch-pre-storage-ls-number"
+                      name="LSNumber"
+                      value={lsNumber}
+                      onChange={(e) => setLsNumber(e.target.value)}
+                      placeholder="Optional"
+                      autoComplete="off"
+                    />
+                  </Field>
+
+                  <Field>
+                    <FieldLabel htmlFor="dispatch-pre-storage-driver-name">Driver name</FieldLabel>
+                    <Input
+                      id="dispatch-pre-storage-driver-name"
+                      name="driverName"
+                      value={driverName}
+                      onChange={(e) => setDriverName(e.target.value)}
+                      placeholder="Optional"
+                      autoComplete="name"
+                    />
+                  </Field>
+
+                  <Field>
+                    <FieldLabel htmlFor="dispatch-pre-storage-driver-mobile">
+                      Driver mobile
+                    </FieldLabel>
+                    <Input
+                      id="dispatch-pre-storage-driver-mobile"
+                      name="driverMobile"
+                      type="tel"
+                      inputMode="tel"
+                      value={driverMobile}
+                      onChange={(e) => setDriverMobile(e.target.value)}
+                      placeholder="e.g. 9876543210"
+                      autoComplete="tel"
+                    />
+                  </Field>
+
+                  <Field>
+                    <FieldLabel htmlFor="dispatch-pre-storage-owner">Owner</FieldLabel>
+                    <Input
+                      id="dispatch-pre-storage-owner"
+                      name="owner"
+                      value={owner}
+                      onChange={(e) => setOwner(e.target.value)}
+                      placeholder="Optional"
+                      autoComplete="name"
+                    />
+                  </Field>
+
+                  <Field>
                     <FieldLabel htmlFor="dispatch-pre-storage-bill-number">Bill Number</FieldLabel>
                     <Input
                       {...numericInputProps}
@@ -543,13 +646,21 @@ const CreateDispatchPreStorageForm = () => {
 
                   <Field>
                     <FieldLabel htmlFor="dispatch-pre-storage-bilti-book">Bilti book</FieldLabel>
-                    <Input
+                    <SearchableOptionCombobox
                       id="dispatch-pre-storage-bilti-book"
                       name="biltiBook"
                       value={biltiBook}
-                      onChange={(e) => setBiltiBook(e.target.value)}
-                      placeholder="e.g. Book B"
-                      autoComplete="off"
+                      onValueChange={setBiltiBook}
+                      onBlur={() => {}}
+                      isInvalid={false}
+                      placeholder="Search bill books..."
+                      emptyMessage="No active bill books."
+                      options={biltiBookOptions}
+                      sortedOptions={sortedBiltiBooks}
+                      search={biltiBookSearch}
+                      setSearch={setBiltiBookSearch}
+                      open={biltiBookComboboxOpen}
+                      setOpen={setBiltiBookComboboxOpen}
                     />
                   </Field>
                 </FieldGroup>
