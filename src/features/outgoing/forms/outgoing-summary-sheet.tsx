@@ -23,6 +23,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
+import { isDirectSaleOutgoing } from '@/lib/constants';
 import type { OutgoingSummaryValues } from '@/features/outgoing/schemas/outgoing-form-schema';
 import { AllocationReviewByVariety } from '@/features/transfer-stock/forms/allocation-review-by-variety';
 import type { TransferStockItem } from '@/features/transfer-stock/types/storage-gate-pass';
@@ -147,9 +148,12 @@ function OutgoingReviewSummary({
               valueClassName="font-mono tabular-nums"
             />
           ) : null}
+          <DetailRow label="Category" value={values.category} />
         </SummaryCard>
       </div>
 
+      {isDirectSaleOutgoing(values.category) ? (
+      <>
       <div className="space-y-2">
         <SectionLabel icon={Truck}>Route &amp; vehicle</SectionLabel>
         <SummaryCard>
@@ -163,13 +167,23 @@ function OutgoingReviewSummary({
               valueClassName="font-mono uppercase"
             />
           ) : null}
+          {values.transportCompany.trim() ? (
+            <DetailRow label="Transport company" value={values.transportCompany} />
+          ) : null}
+          {values.LSNumber.trim() ? <DetailRow label="L.S. No." value={values.LSNumber} /> : null}
+          {values.driverName.trim() ? (
+            <DetailRow label="Driver name" value={values.driverName} />
+          ) : null}
+          {values.driverMobile.trim() ? (
+            <DetailRow label="Driver mobile" value={values.driverMobile} />
+          ) : null}
+          {values.owner.trim() ? <DetailRow label="Owner" value={values.owner} /> : null}
         </SummaryCard>
       </div>
 
       <div className="space-y-2">
-        <SectionLabel icon={Receipt}>Billing &amp; bilti</SectionLabel>
+        <SectionLabel icon={Receipt}>Bill &amp; bilti</SectionLabel>
         <SummaryCard>
-          <DetailRow label="Category" value={values.category} />
           <DetailRow
             label="Bill no."
             value={Number(values.billNumber).toLocaleString('en-IN')}
@@ -184,6 +198,8 @@ function OutgoingReviewSummary({
           <DetailRow label="Bilti book" value={values.biltiBook} />
         </SummaryCard>
       </div>
+      </>
+      ) : null}
 
       <div className="space-y-2">
         <SectionLabel icon={Scale}>Allocations</SectionLabel>

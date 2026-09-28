@@ -45,14 +45,14 @@ const DaybookPage = () => {
             <span className="hidden sm:block">Seed</span>
           </TabsTrigger>
 
+          <TabsTrigger value="farm-management" aria-label="Farm management">
+            <Tractor className="h-5 w-5 sm:hidden" />
+            <span className="hidden sm:block">Farm mgmt</span>
+          </TabsTrigger>
+
           <TabsTrigger value="incoming" aria-label="Incoming">
             <Truck className="h-5 w-5 sm:hidden" />
             <span className="hidden sm:block">Incoming</span>
-          </TabsTrigger>
-
-          <TabsTrigger value="farm-management" aria-label="Farm management">
-            <Tractor className="h-5 w-5 sm:hidden" />
-            <span className="hidden sm:block">Farm management</span>
           </TabsTrigger>
 
           <TabsTrigger value="grading" aria-label="Grading">
@@ -81,12 +81,12 @@ const DaybookPage = () => {
           <DaybookSeedTab />
         </TabsContent>
 
-        <TabsContent value="incoming" className="min-w-0">
-          <DaybookIncomingTab />
-        </TabsContent>
-
         <TabsContent value="farm-management" className="min-w-0">
           <DaybookFarmManagementTab />
+        </TabsContent>
+
+        <TabsContent value="incoming" className="min-w-0">
+          <DaybookIncomingTab />
         </TabsContent>
 
         <TabsContent value="grading" className="min-w-0">

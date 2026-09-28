@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useFarmerLinkOptions } from '@/features/people/api/use-farmer-link-options';
 import { farmerLinkOptionsToComboboxOptions } from '@/features/people/utils/farmer-link-combobox';
+import { useBillBooks } from '@/features/settings/api/use-bill-books';
 import { OutgoingQuantitiesSection } from '@/features/outgoing/forms/outgoing-quantities-section';
 import { OutgoingSummarySheet } from '@/features/outgoing/forms/outgoing-summary-sheet';
 import { useCreateOutgoingForm } from '@/features/outgoing/forms/use-create-outgoing-form';
@@ -40,7 +41,7 @@ import {
   filterAndSortOptions,
   type ComboboxOption,
 } from '@/components/searchable-option-combobox';
-import { OUTGOING_CATEGORIES } from '@/lib/constants';
+import { isDirectSaleOutgoing, OUTGOING_CATEGORIES } from '@/lib/constants';
 
 const CATEGORY_ITEMS = OUTGOING_CATEGORIES.map((value) => ({
   id: value,
@@ -108,14 +109,37 @@ function OutgoingReviewSheet({
 
 const CreateOutgoingForm = () => {
   const { data: farmerLinkOptions = [], isLoading: isLoadingFarmers } = useFarmerLinkOptions();
+  const { data: billBooksData, isLoading: isLoadingBillBooks } = useBillBooks({
+    isActive: 'true',
+  });
   const farmerOptions = useMemo<ComboboxOption[]>(
     () => farmerLinkOptionsToComboboxOptions(farmerLinkOptions),
     [farmerLinkOptions],
+  );
+  const billBookOptions = useMemo<ComboboxOption[]>(
+    () =>
+      (billBooksData ?? []).map((book) => ({
+        id: book._id,
+        label: book.name,
+      })),
+    [billBooksData],
+  );
+  const biltiBookOptions = useMemo<ComboboxOption[]>(
+    () =>
+      (billBooksData ?? []).map((book) => ({
+        id: book.name,
+        label: book.name,
+      })),
+    [billBooksData],
   );
   const [farmerSearch, setFarmerSearch] = useState('');
   const [farmerComboboxOpen, setFarmerComboboxOpen] = useState(false);
   const [categorySearch, setCategorySearch] = useState('');
   const [categoryComboboxOpen, setCategoryComboboxOpen] = useState(false);
+  const [billBookSearch, setBillBookSearch] = useState('');
+  const [billBookComboboxOpen, setBillBookComboboxOpen] = useState(false);
+  const [biltiBookSearch, setBiltiBookSearch] = useState('');
+  const [biltiBookComboboxOpen, setBiltiBookComboboxOpen] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [step, setStep] = useState(0);
   const submitStep1Ref = useRef<(() => void) | null>(null);
@@ -129,12 +153,24 @@ const CreateOutgoingForm = () => {
     () => filterAndSortOptions(categorySearch, CATEGORY_ITEMS),
     [categorySearch],
   );
+  const sortedBillBooks = useMemo(
+    () => filterAndSortOptions(billBookSearch, billBookOptions),
+    [billBookSearch, billBookOptions],
+  );
+  const sortedBiltiBooks = useMemo(
+    () => filterAndSortOptions(biltiBookSearch, biltiBookOptions),
+    [biltiBookSearch, biltiBookOptions],
+  );
 
   function resetComboboxState() {
     setFarmerSearch('');
     setFarmerComboboxOpen(false);
     setCategorySearch('');
     setCategoryComboboxOpen(false);
+    setBillBookSearch('');
+    setBillBookComboboxOpen(false);
+    setBiltiBookSearch('');
+    setBiltiBookComboboxOpen(false);
   }
 
   const {
@@ -212,7 +248,7 @@ const CreateOutgoingForm = () => {
                       Outgoing details
                     </FieldLegend>
                     <FieldDescription>
-                      Select the farmer account and outgoing date.
+                      Select the farmer account, outgoing date, and category.
                     </FieldDescription>
                     <FieldGroup className="mt-5 grid grid-cols-1 gap-6">
                       <form.Field name="step1.farmerStorageLinkId">
@@ -305,104 +341,12 @@ const CreateOutgoingForm = () => {
                           );
                         }}
                       </form.Field>
-                    </FieldGroup>
-                  </FieldSet>
 
-                  <FieldSet>
-                    <FieldLegend className="font-heading text-base font-semibold">
-                      Route &amp; vehicle
-                    </FieldLegend>
-                    <FieldDescription>
-                      Source, destination, and truck for this outgoing dispatch.
-                    </FieldDescription>
-                    <FieldGroup className="mt-5 grid grid-cols-1 gap-6 @md/field-group:grid-cols-3">
-                      <form.Field name="step1.from">
-                        {(field) => {
-                          const isInvalid = isFieldInvalid(field.state.meta);
-                          return (
-                            <Field data-invalid={isInvalid}>
-                              <FieldLabel htmlFor={field.name}>From</FieldLabel>
-                              <Input
-                                id={field.name}
-                                name={field.name}
-                                value={field.state.value}
-                                onBlur={field.handleBlur}
-                                onChange={(e) => field.handleChange(e.target.value)}
-                                placeholder="e.g. Kapur Cold Storage"
-                                autoComplete="off"
-                                aria-invalid={isInvalid}
-                                className="h-11 text-base"
-                              />
-                              {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                            </Field>
-                          );
-                        }}
-                      </form.Field>
-
-                      <form.Field name="step1.to">
-                        {(field) => {
-                          const isInvalid = isFieldInvalid(field.state.meta);
-                          return (
-                            <Field data-invalid={isInvalid}>
-                              <FieldLabel htmlFor={field.name}>To</FieldLabel>
-                              <Input
-                                id={field.name}
-                                name={field.name}
-                                value={field.state.value}
-                                onBlur={field.handleBlur}
-                                onChange={(e) => field.handleChange(e.target.value)}
-                                placeholder="e.g. Azadpur Mandi"
-                                autoComplete="off"
-                                aria-invalid={isInvalid}
-                                className="h-11 text-base"
-                              />
-                              {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                            </Field>
-                          );
-                        }}
-                      </form.Field>
-
-                      <form.Field name="step1.truckNumber">
-                        {(field) => {
-                          const isInvalid = isFieldInvalid(field.state.meta);
-                          return (
-                            <Field data-invalid={isInvalid}>
-                              <FieldLabel htmlFor={field.name}>Truck number</FieldLabel>
-                              <Input
-                                id={field.name}
-                                name={field.name}
-                                value={field.state.value}
-                                onBlur={field.handleBlur}
-                                onChange={(e) => field.handleChange(e.target.value.toUpperCase())}
-                                placeholder="Optional"
-                                autoComplete="off"
-                                aria-invalid={isInvalid}
-                                className="h-11 text-base uppercase"
-                              />
-                              <FieldDescription>
-                                Optional vehicle registration for this dispatch.
-                              </FieldDescription>
-                              {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                            </Field>
-                          );
-                        }}
-                      </form.Field>
-                    </FieldGroup>
-                  </FieldSet>
-
-                  <FieldSet>
-                    <FieldLegend className="font-heading text-base font-semibold">
-                      Billing &amp; bilti
-                    </FieldLegend>
-                    <FieldDescription>
-                      Category and bill/bilti reference numbers for this dispatch.
-                    </FieldDescription>
-                    <FieldGroup className="mt-5 grid grid-cols-1 gap-6 @md/field-group:grid-cols-2 @lg/field-group:grid-cols-3">
                       <form.Field name="step1.category">
                         {(field) => {
                           const isInvalid = isFieldInvalid(field.state.meta);
                           return (
-                            <Field data-invalid={isInvalid}>
+                            <Field data-invalid={isInvalid} className="@md/field-group:max-w-sm">
                               <FieldLabel htmlFor="outgoing-category">Category</FieldLabel>
                               <SearchableOptionCombobox
                                 id="outgoing-category"
@@ -425,13 +369,224 @@ const CreateOutgoingForm = () => {
                           );
                         }}
                       </form.Field>
+                    </FieldGroup>
+                  </FieldSet>
 
+                  <form.Subscribe
+                    selector={(state) => state.values.step1.category}
+                    children={(category) =>
+                      isDirectSaleOutgoing(category) ? (
+                  <>
+                  <FieldSet>
+                    <FieldLegend className="font-heading text-base font-semibold">
+                      Route &amp; vehicle
+                    </FieldLegend>
+                    <FieldDescription>
+                      Source, destination, and vehicle for this outgoing dispatch.
+                    </FieldDescription>
+                    <FieldGroup className="mt-5 grid grid-cols-1 gap-6 @md/field-group:grid-cols-3">
+                      <form.Field name="step1.from">
+                        {(field) => {
+                          const isInvalid = isFieldInvalid(field.state.meta);
+                          return (
+                            <Field data-invalid={isInvalid}>
+                              <FieldLabel htmlFor={field.name}>From</FieldLabel>
+                              <Input
+                                id={field.name}
+                                name={field.name}
+                                value={field.state.value}
+                                onBlur={field.handleBlur}
+                                onChange={(e) => field.handleChange(e.target.value)}
+                                placeholder="e.g. Cold Storage A"
+                                autoComplete="off"
+                                aria-invalid={isInvalid}
+                                className="h-11 text-base"
+                              />
+                              {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                            </Field>
+                          );
+                        }}
+                      </form.Field>
+
+                      <form.Field name="step1.to">
+                        {(field) => {
+                          const isInvalid = isFieldInvalid(field.state.meta);
+                          return (
+                            <Field data-invalid={isInvalid}>
+                              <FieldLabel htmlFor={field.name}>To</FieldLabel>
+                              <Input
+                                id={field.name}
+                                name={field.name}
+                                value={field.state.value}
+                                onBlur={field.handleBlur}
+                                onChange={(e) => field.handleChange(e.target.value)}
+                                placeholder="e.g. Market Yard"
+                                autoComplete="off"
+                                aria-invalid={isInvalid}
+                                className="h-11 text-base"
+                              />
+                              {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                            </Field>
+                          );
+                        }}
+                      </form.Field>
+
+                      <form.Field name="step1.truckNumber">
+                        {(field) => {
+                          const isInvalid = isFieldInvalid(field.state.meta);
+                          return (
+                            <Field data-invalid={isInvalid}>
+                              <FieldLabel htmlFor={field.name}>Truck Number</FieldLabel>
+                              <Input
+                                id={field.name}
+                                name={field.name}
+                                value={field.state.value}
+                                onBlur={field.handleBlur}
+                                onChange={(e) => field.handleChange(e.target.value.toUpperCase())}
+                                placeholder="e.g. PB10AB1234"
+                                autoComplete="off"
+                                aria-invalid={isInvalid}
+                                className="h-11 text-base uppercase"
+                              />
+                              {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                            </Field>
+                          );
+                        }}
+                      </form.Field>
+
+                      <form.Field name="step1.transportCompany">
+                        {(field) => {
+                          const isInvalid = isFieldInvalid(field.state.meta);
+                          return (
+                            <Field data-invalid={isInvalid}>
+                              <FieldLabel htmlFor={field.name}>Transport company</FieldLabel>
+                              <Input
+                                id={field.name}
+                                name={field.name}
+                                value={field.state.value}
+                                onBlur={field.handleBlur}
+                                onChange={(e) => field.handleChange(e.target.value)}
+                                placeholder="e.g. Punjab Roadways"
+                                autoComplete="organization"
+                                aria-invalid={isInvalid}
+                                className="h-11 text-base"
+                              />
+                              {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                            </Field>
+                          );
+                        }}
+                      </form.Field>
+
+                      <form.Field name="step1.LSNumber">
+                        {(field) => {
+                          const isInvalid = isFieldInvalid(field.state.meta);
+                          return (
+                            <Field data-invalid={isInvalid}>
+                              <FieldLabel htmlFor={field.name}>L.S. No.</FieldLabel>
+                              <Input
+                                id={field.name}
+                                name={field.name}
+                                value={field.state.value}
+                                onBlur={field.handleBlur}
+                                onChange={(e) => field.handleChange(e.target.value)}
+                                placeholder="Optional"
+                                autoComplete="off"
+                                aria-invalid={isInvalid}
+                                className="h-11 text-base"
+                              />
+                              {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                            </Field>
+                          );
+                        }}
+                      </form.Field>
+
+                      <form.Field name="step1.driverName">
+                        {(field) => {
+                          const isInvalid = isFieldInvalid(field.state.meta);
+                          return (
+                            <Field data-invalid={isInvalid}>
+                              <FieldLabel htmlFor={field.name}>Driver name</FieldLabel>
+                              <Input
+                                id={field.name}
+                                name={field.name}
+                                value={field.state.value}
+                                onBlur={field.handleBlur}
+                                onChange={(e) => field.handleChange(e.target.value)}
+                                placeholder="Optional"
+                                autoComplete="name"
+                                aria-invalid={isInvalid}
+                                className="h-11 text-base"
+                              />
+                              {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                            </Field>
+                          );
+                        }}
+                      </form.Field>
+
+                      <form.Field name="step1.driverMobile">
+                        {(field) => {
+                          const isInvalid = isFieldInvalid(field.state.meta);
+                          return (
+                            <Field data-invalid={isInvalid}>
+                              <FieldLabel htmlFor={field.name}>Driver mobile</FieldLabel>
+                              <Input
+                                id={field.name}
+                                name={field.name}
+                                type="tel"
+                                inputMode="tel"
+                                value={field.state.value}
+                                onBlur={field.handleBlur}
+                                onChange={(e) => field.handleChange(e.target.value)}
+                                placeholder="e.g. 9876543210"
+                                autoComplete="tel"
+                                aria-invalid={isInvalid}
+                                className="h-11 text-base"
+                              />
+                              {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                            </Field>
+                          );
+                        }}
+                      </form.Field>
+
+                      <form.Field name="step1.owner">
+                        {(field) => {
+                          const isInvalid = isFieldInvalid(field.state.meta);
+                          return (
+                            <Field data-invalid={isInvalid}>
+                              <FieldLabel htmlFor={field.name}>Owner</FieldLabel>
+                              <Input
+                                id={field.name}
+                                name={field.name}
+                                value={field.state.value}
+                                onBlur={field.handleBlur}
+                                onChange={(e) => field.handleChange(e.target.value)}
+                                placeholder="Optional"
+                                autoComplete="name"
+                                aria-invalid={isInvalid}
+                                className="h-11 text-base"
+                              />
+                              {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                            </Field>
+                          );
+                        }}
+                      </form.Field>
+                    </FieldGroup>
+                  </FieldSet>
+
+                  <FieldSet>
+                    <FieldLegend className="font-heading text-base font-semibold">
+                      Bill &amp; bilti
+                    </FieldLegend>
+                    <FieldDescription>
+                      Bill number, bilti number, and book references for this dispatch.
+                    </FieldDescription>
+                    <FieldGroup className="mt-5 grid grid-cols-1 gap-6 @md/field-group:grid-cols-3">
                       <form.Field name="step1.billNumber">
                         {(field) => {
                           const isInvalid = isFieldInvalid(field.state.meta);
                           return (
                             <Field data-invalid={isInvalid}>
-                              <FieldLabel htmlFor={field.name}>Bill number</FieldLabel>
+                              <FieldLabel htmlFor={field.name}>Bill Number</FieldLabel>
                               <Input
                                 {...numericInputProps}
                                 id={field.name}
@@ -440,7 +595,7 @@ const CreateOutgoingForm = () => {
                                 onBlur={field.handleBlur}
                                 onChange={(e) => field.handleChange(e.target.value)}
                                 inputMode="numeric"
-                                placeholder="e.g. 1234"
+                                placeholder="e.g. 1001"
                                 aria-invalid={isInvalid}
                                 className="h-11 text-base tabular-nums"
                               />
@@ -455,7 +610,7 @@ const CreateOutgoingForm = () => {
                           const isInvalid = isFieldInvalid(field.state.meta);
                           return (
                             <Field data-invalid={isInvalid}>
-                              <FieldLabel htmlFor={field.name}>Bilti number</FieldLabel>
+                              <FieldLabel htmlFor={field.name}>Bilti No.</FieldLabel>
                               <Input
                                 {...numericInputProps}
                                 id={field.name}
@@ -464,7 +619,7 @@ const CreateOutgoingForm = () => {
                                 onBlur={field.handleBlur}
                                 onChange={(e) => field.handleChange(e.target.value)}
                                 inputMode="numeric"
-                                placeholder="e.g. 5678"
+                                placeholder="e.g. 42"
                                 aria-invalid={isInvalid}
                                 className="h-11 text-base tabular-nums"
                               />
@@ -477,18 +632,36 @@ const CreateOutgoingForm = () => {
                       <form.Field name="step1.billBook">
                         {(field) => {
                           const isInvalid = isFieldInvalid(field.state.meta);
+                          const selectedId =
+                            billBookOptions.find((book) => book.label === field.state.value)?.id ??
+                            '';
                           return (
                             <Field data-invalid={isInvalid}>
-                              <FieldLabel htmlFor={field.name}>Bill book</FieldLabel>
-                              <Input
-                                id={field.name}
+                              <FieldLabel htmlFor="outgoing-bill-book">Bill book</FieldLabel>
+                              <SearchableOptionCombobox
+                                id="outgoing-bill-book"
                                 name={field.name}
-                                value={field.state.value}
+                                value={selectedId}
+                                onValueChange={(bookId) => {
+                                  const label =
+                                    billBookOptions.find((book) => book.id === bookId)?.label ?? '';
+                                  field.handleChange(label);
+                                }}
                                 onBlur={field.handleBlur}
-                                onChange={(e) => field.handleChange(e.target.value)}
-                                placeholder="e.g. Book A"
-                                aria-invalid={isInvalid}
-                                className="h-11 text-base"
+                                isInvalid={isInvalid}
+                                placeholder={
+                                  isLoadingBillBooks ? 'Loading bill books…' : 'Search bill books...'
+                                }
+                                emptyMessage={
+                                  isLoadingBillBooks ? 'Loading bill books…' : 'No active bill books.'
+                                }
+                                options={billBookOptions}
+                                sortedOptions={sortedBillBooks}
+                                search={billBookSearch}
+                                setSearch={setBillBookSearch}
+                                open={billBookComboboxOpen}
+                                setOpen={setBillBookComboboxOpen}
+                                disabled={isLoadingBillBooks}
                               />
                               {isInvalid && <FieldError errors={field.state.meta.errors} />}
                             </Field>
@@ -501,16 +674,27 @@ const CreateOutgoingForm = () => {
                           const isInvalid = isFieldInvalid(field.state.meta);
                           return (
                             <Field data-invalid={isInvalid}>
-                              <FieldLabel htmlFor={field.name}>Bilti book</FieldLabel>
-                              <Input
-                                id={field.name}
+                              <FieldLabel htmlFor="outgoing-bilti-book">Bilti book</FieldLabel>
+                              <SearchableOptionCombobox
+                                id="outgoing-bilti-book"
                                 name={field.name}
                                 value={field.state.value}
+                                onValueChange={field.handleChange}
                                 onBlur={field.handleBlur}
-                                onChange={(e) => field.handleChange(e.target.value)}
-                                placeholder="e.g. Book B"
-                                aria-invalid={isInvalid}
-                                className="h-11 text-base"
+                                isInvalid={isInvalid}
+                                placeholder={
+                                  isLoadingBillBooks ? 'Loading bill books…' : 'Search bill books...'
+                                }
+                                emptyMessage={
+                                  isLoadingBillBooks ? 'Loading bill books…' : 'No active bill books.'
+                                }
+                                options={biltiBookOptions}
+                                sortedOptions={sortedBiltiBooks}
+                                search={biltiBookSearch}
+                                setSearch={setBiltiBookSearch}
+                                open={biltiBookComboboxOpen}
+                                setOpen={setBiltiBookComboboxOpen}
+                                disabled={isLoadingBillBooks}
                               />
                               {isInvalid && <FieldError errors={field.state.meta.errors} />}
                             </Field>
@@ -519,6 +703,10 @@ const CreateOutgoingForm = () => {
                       </form.Field>
                     </FieldGroup>
                   </FieldSet>
+                  </>
+                      ) : null
+                    }
+                  />
 
                   <form.Subscribe
                     selector={(state) => state.values.step1.farmerStorageLinkId}

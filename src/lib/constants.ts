@@ -3,7 +3,9 @@ export const BAG_SIZES = [
   'Seed',
   'Goli',
   'Number-8',
+  'Number-9',
   'Number-10',
+  'Number-11',
   'Number-12',
   'Number-6/4',
   'Cut',
@@ -41,33 +43,41 @@ export const DEFAULT_CHAMBER = CHAMBERS[0];
 export const DEFAULT_FLOOR = FLOORS[0];
 export const DEFAULT_STORAGE_ROW = STORAGE_ROWS[0];
 
-export const STORAGE_CATEGORIES = [
-  'OWNED',
-  'PURCHASED',
-  'CONTRACT FARMING',
-  'RENTAL',
-  'FAZALPUR',
-] as const;
+export const STORAGE_CATEGORIES = ['OWNED', 'PURCHASED', 'CONTRACT FARMING', 'RENTAL'] as const;
 
 export const INCOMING_CATEGORIES = [
   'Own Stock',
   'Contract Farming',
-  'Fazalpur',
   'Purchases-Apr',
   'Conversion',
   'Transfer From Stores',
 ] as const;
 
-export const OUTGOING_CATEGORIES = ['Outgoing to Shed', 'Outgoing To Farmer'] as const;
+export const OUTGOING_CATEGORIES = [
+  'Outgoing to Shed',
+  'Outgoing To Farmer',
+  'Direct Sale',
+] as const;
 
 export type OutgoingCategory = (typeof OUTGOING_CATEGORIES)[number];
+
+export const DIRECT_SALE_OUTGOING_CATEGORY = 'Direct Sale' satisfies OutgoingCategory;
+
+export function isDirectSaleOutgoing(category: string): boolean {
+  return category.trim() === DIRECT_SALE_OUTGOING_CATEGORY;
+}
 
 export const INCOMING_STAGES = [
   'G0',
   'G1',
   'G2',
   'G3',
-  'Government',
+  'G4',
+  'G5',
+  'G6',
+  'G7',
+  'TC',
+  'SRF Production',
   'Ration',
   'Unspecial',
   'BR',
@@ -81,11 +91,10 @@ export const LENO_BAG_WEIGHT = 0.06;
 export const DISPATCH_PRE_STORAGE_CATEGORIES = [
   'Consumption/Donation',
   'Contract Farming',
-  'Fazalpur',
   'Local Sale',
+  'Direct Sale',
   'Sowing',
-  'Transfer to other store',
-  'Truck Loading',
+  'Other State',
 ] as const;
 
 export const POTATO_VARIETIES = [

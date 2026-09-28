@@ -101,14 +101,19 @@ export type DaybookStorageEntry = DaybookEntryBase & {
 
 export type DaybookOutgoingEntry = DaybookEntryBase & {
   passKind: 'outgoing';
-  from: string;
-  to: string;
-  truckNumber: string;
+  from?: string;
+  to?: string;
+  truckNumber?: string;
+  transportCompany?: string;
+  LSNumber?: string;
+  driverName?: string;
+  driverMobile?: string;
+  owner?: string;
   category?: string;
   billNumber?: number;
   biltiNumber?: number;
-  billBook?: number;
-  biltiBook?: number;
+  billBook?: string | number;
+  biltiBook?: string | number;
   orderDetails: DaybookOrderDetail[];
   storageGatePassSnapshots: DaybookStorageGatePassSnapshot[];
   status: 'ACTIVE';

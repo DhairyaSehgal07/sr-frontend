@@ -1,4 +1,5 @@
 import apiClient, { getApiErrorMessage } from '@/lib/api-client';
+import { isDirectSaleOutgoing } from '@/lib/constants';
 
 import type {
   UpdateOutgoingGatePassBody,
@@ -12,15 +13,36 @@ export function toUpdateOutgoingGatePassBody(
   const body: UpdateOutgoingGatePassBody = {
     date: form.date,
     manualGatePassNumber: form.manualGatePassNumber ?? null,
-    from: form.from.trim(),
-    to: form.to.trim(),
-    truckNumber: form.truckNumber.trim(),
     category: form.category.trim(),
-    billNumber: Number(form.billNumber),
-    biltiNumber: Number(form.biltiNumber),
-    billBook: Number(form.billBook),
-    biltiBook: Number(form.biltiBook),
   };
+
+  if (isDirectSaleOutgoing(form.category)) {
+    body.from = form.from.trim();
+    body.to = form.to.trim();
+    body.truckNumber = form.truckNumber.trim();
+    body.transportCompany = form.transportCompany.trim();
+    body.LSNumber = form.LSNumber.trim();
+    body.driverName = form.driverName.trim();
+    body.driverMobile = form.driverMobile.trim();
+    body.owner = form.owner.trim();
+    body.billNumber = Number(form.billNumber);
+    body.biltiNumber = Number(form.biltiNumber);
+    body.billBook = form.billBook.trim();
+    body.biltiBook = form.biltiBook.trim();
+  } else {
+    body.from = null;
+    body.to = null;
+    body.truckNumber = null;
+    body.transportCompany = null;
+    body.LSNumber = null;
+    body.driverName = null;
+    body.driverMobile = null;
+    body.owner = null;
+    body.billNumber = null;
+    body.biltiNumber = null;
+    body.billBook = null;
+    body.biltiBook = null;
+  }
 
   const remarks = form.remarks.trim();
   if (remarks) {

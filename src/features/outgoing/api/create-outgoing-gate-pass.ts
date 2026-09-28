@@ -1,4 +1,5 @@
 import apiClient, { getApiErrorMessage } from '@/lib/api-client';
+import { isDirectSaleOutgoing } from '@/lib/constants';
 
 import type { TransferStockItem } from '@/features/transfer-stock/types/storage-gate-pass';
 import { lookupOutgoingWeight } from '@/features/outgoing/utils/group-outgoing-items';
@@ -75,20 +76,24 @@ export function toCreateOutgoingGatePassBody({
     gatePassNo,
     date: step1.date,
     variety: deriveVarietyFromItems(items),
-    from: step1.from.trim(),
-    to: step1.to.trim(),
     category: step1.category.trim(),
-    billNumber: Number(step1.billNumber),
-    biltiNumber: Number(step1.biltiNumber),
-    billBook: step1.billBook.trim(),
-    biltiBook: step1.biltiBook.trim(),
     storageGatePasses: buildStorageGatePassesPayload(items, step2.weightsBySize),
     idempotencyKey: crypto.randomUUID(),
   };
 
-  const truckNumber = step1.truckNumber.trim();
-  if (truckNumber) {
-    body.truckNumber = truckNumber;
+  if (isDirectSaleOutgoing(step1.category)) {
+    body.from = step1.from.trim();
+    body.to = step1.to.trim();
+    body.truckNumber = step1.truckNumber.trim();
+    body.transportCompany = step1.transportCompany.trim();
+    body.LSNumber = step1.LSNumber.trim();
+    body.driverName = step1.driverName.trim();
+    body.driverMobile = step1.driverMobile.trim();
+    body.owner = step1.owner.trim();
+    body.billNumber = Number(step1.billNumber);
+    body.biltiNumber = Number(step1.biltiNumber);
+    body.billBook = step1.billBook.trim();
+    body.biltiBook = step1.biltiBook.trim();
   }
 
   if (step1.manualGatePassNumber != null) {

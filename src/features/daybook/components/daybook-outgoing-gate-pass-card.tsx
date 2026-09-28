@@ -63,6 +63,12 @@ function formatOptionalInt(value: number | undefined): string {
   return value != null ? value.toLocaleString('en-IN') : '—';
 }
 
+function formatOptionalBook(value: string | number | undefined): string {
+  if (value == null || value === '') return '—';
+  if (typeof value === 'number') return value.toLocaleString('en-IN');
+  return value;
+}
+
 const InfoBlock = ({ label, value, icon: Icon, valueClassName }: InfoBlockProps) => (
   <div className="space-y-1.5">
     <span className="flex items-center gap-1.5 text-xs font-medium tracking-wider text-muted-foreground uppercase">
@@ -307,12 +313,12 @@ export function DaybookOutgoingGatePassCard({ data: gatePass }: DaybookOutgoingG
           />
           <InfoBlock
             label="Bill book"
-            value={formatOptionalInt(gatePass.billBook)}
+            value={formatOptionalBook(gatePass.billBook)}
             valueClassName="tabular-nums"
           />
           <InfoBlock
             label="Bilti book"
-            value={formatOptionalInt(gatePass.biltiBook)}
+            value={formatOptionalBook(gatePass.biltiBook)}
             valueClassName="tabular-nums"
           />
         </div>
@@ -351,6 +357,18 @@ export function DaybookOutgoingGatePassCard({ data: gatePass }: DaybookOutgoingG
                       value={gatePass.truckNumber || '—'}
                       valueClassName="font-mono uppercase"
                     />
+                    <InfoBlock
+                      label="Transport company"
+                      value={gatePass.transportCompany?.trim() || '—'}
+                    />
+                    <InfoBlock label="L.S. No." value={gatePass.LSNumber?.trim() || '—'} />
+                    <InfoBlock label="Driver name" value={gatePass.driverName?.trim() || '—'} />
+                    <InfoBlock
+                      label="Driver mobile"
+                      value={gatePass.driverMobile?.trim() || '—'}
+                      valueClassName="tabular-nums"
+                    />
+                    <InfoBlock label="Owner" value={gatePass.owner?.trim() || '—'} />
                     <InfoBlock label="Variety" value={gatePass.variety} icon={Sprout} />
                     <InfoBlock
                       label="Avg. weight"
@@ -387,12 +405,12 @@ export function DaybookOutgoingGatePassCard({ data: gatePass }: DaybookOutgoingG
                   />
                   <InfoBlock
                     label="Bill book"
-                    value={formatOptionalInt(gatePass.billBook)}
+                    value={formatOptionalBook(gatePass.billBook)}
                     valueClassName="tabular-nums"
                   />
                   <InfoBlock
                     label="Bilti book"
-                    value={formatOptionalInt(gatePass.biltiBook)}
+                    value={formatOptionalBook(gatePass.biltiBook)}
                     valueClassName="tabular-nums"
                   />
                 </div>

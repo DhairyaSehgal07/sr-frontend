@@ -28,7 +28,12 @@ const form: OutgoingFormSubmitValues = {
     from: 'Chamber A',
     to: 'Delhi',
     truckNumber: 'PB10AB1234',
-    category: 'Sale',
+    transportCompany: 'Punjab Roadways',
+    LSNumber: 'LS-12',
+    driverName: 'Ravi',
+    driverMobile: '9876543210',
+    owner: 'Kapur',
+    category: 'Direct Sale',
     billNumber: '45',
     biltiNumber: '67',
     billBook: 'A',
@@ -56,6 +61,13 @@ describe('toCreateOutgoingGatePassBody', () => {
       ],
     });
 
+    expect(body).toMatchObject({
+      transportCompany: 'Punjab Roadways',
+      LSNumber: 'LS-12',
+      driverName: 'Ravi',
+      driverMobile: '9876543210',
+      owner: 'Kapur',
+    });
     expect(body.storageGatePasses).toHaveLength(2);
     expect(body.storageGatePasses[0]?.allocations[0]).toMatchObject({
       size: 'Ration',
@@ -70,6 +82,35 @@ describe('toCreateOutgoingGatePassBody', () => {
       quantityToAllocate: 15,
       weightInKg: 50.25,
     });
+
+    vi.unstubAllGlobals();
+  });
+
+  it('omits route and bill fields unless the category is Direct Sale', () => {
+    vi.stubGlobal('crypto', { randomUUID: () => 'outgoing-create-102' });
+
+    const body = toCreateOutgoingGatePassBody({
+      form: {
+        ...form,
+        step1: { ...form.step1, category: 'Outgoing to Shed' },
+      },
+      gatePassNo: 101,
+      items: [item({ storageGatePassId: '64f1a2b3c4d5e6f7a8b9c0d2', gatePassNo: 11, quantity: 20 })],
+    });
+
+    expect(body.category).toBe('Outgoing to Shed');
+    expect(body).not.toHaveProperty('from');
+    expect(body).not.toHaveProperty('to');
+    expect(body).not.toHaveProperty('truckNumber');
+    expect(body).not.toHaveProperty('transportCompany');
+    expect(body).not.toHaveProperty('LSNumber');
+    expect(body).not.toHaveProperty('driverName');
+    expect(body).not.toHaveProperty('driverMobile');
+    expect(body).not.toHaveProperty('owner');
+    expect(body).not.toHaveProperty('billNumber');
+    expect(body).not.toHaveProperty('biltiNumber');
+    expect(body).not.toHaveProperty('billBook');
+    expect(body).not.toHaveProperty('biltiBook');
 
     vi.unstubAllGlobals();
   });

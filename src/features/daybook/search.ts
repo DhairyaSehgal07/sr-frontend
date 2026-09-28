@@ -2,8 +2,8 @@ import { z } from 'zod';
 
 export const DAYBOOK_TAB_VALUES = [
   'seed',
-  'incoming',
   'farm-management',
+  'incoming',
   'grading',
   'storage',
   'dispatch',
