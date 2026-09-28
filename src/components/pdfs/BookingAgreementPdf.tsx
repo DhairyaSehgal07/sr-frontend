@@ -1,5 +1,14 @@
 import { Document, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 
+import { SrfLogo } from '@/components/pdfs/srf-logo';
+
+import type { Booking } from '@/features/booking/api/types';
+import {
+  formatPdfAmount,
+  formatPdfDate,
+  formatPdfNumber,
+} from '@/components/pdfs/nikasi-gate-pass-pdf-utils';
+
 // --- Colors & Theme ---
 const colors = {
   primary: '#B91C1C',
@@ -44,22 +53,6 @@ const styles = StyleSheet.create({
   },
   rightSpacer: {
     width: 96,
-  },
-  logoCircle: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    borderWidth: 1.25,
-    borderColor: colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  logoText: {
-    color: colors.primary,
-    fontSize: 9,
-    fontFamily: 'Helvetica-Bold',
-    letterSpacing: 0.6,
   },
   logoBadge: {
     borderWidth: 0.5,
@@ -155,6 +148,25 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.75,
     borderBottomColor: colors.borderLight,
     marginBottom: 1,
+    minHeight: 12,
+    justifyContent: 'flex-end',
+  },
+  fillValue: {
+    fontSize: 9,
+    fontFamily: 'Helvetica-Bold',
+    color: colors.textDark,
+    paddingHorizontal: 4,
+  },
+  paymentCell: {
+    width: '12%',
+    alignItems: 'center',
+  },
+  paymentValue: {
+    fontSize: 6.5,
+    textAlign: 'center',
+    marginBottom: 2,
+    fontFamily: 'Helvetica',
+    color: colors.textDark,
   },
 
   // --- Table ---
@@ -225,9 +237,10 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   paymentLine: {
-    width: '12%',
+    width: '100%',
     borderBottomWidth: 0.75,
     borderColor: colors.borderLight,
+    minHeight: 8,
   },
 
   // --- Signatures ---
@@ -257,38 +270,149 @@ const styles = StyleSheet.create({
   },
 });
 
-const BookingAgreementPdf = () => {
+const TABLE_ROW_COUNT = 6;
+const PAYMENT_ROW_COUNT = 4;
+
+type AgreementLine = {
+  variety: string;
+  size: string;
+  quantity: string;
+  ratePerBag: string;
+  weightPerBag: string;
+  remarks: string;
+};
+
+type AgreementPayment = {
+  reference: string;
+  date: string;
+  bank: string;
+  amount: string;
+};
+
+type BookingAgreementPdfProps = {
+  booking?: Booking | null;
+};
+
+function agreementLines(booking: Booking | null | undefined): AgreementLine[] {
+  if (!booking) return [];
+
+  return booking.bagSizes.map((row, index) => ({
+    variety: row.variety,
+    size: row.size,
+    quantity: formatPdfNumber(row.currentQuantity),
+    ratePerBag: formatPdfAmount(row.costPerBag),
+    weightPerBag: '',
+    remarks: index === 0 ? (booking.remarks ?? '') : '',
+  }));
+}
+
+function agreementAmount(booking: Booking): number | undefined {
+  if (booking.amount != null && Number.isFinite(booking.amount)) return booking.amount;
+
+  let hasPricedLine = false;
+  let total = 0;
+
+  for (const row of booking.bagSizes) {
+    if (row.costPerBag == null || !Number.isFinite(row.costPerBag) || row.currentQuantity <= 0) {
+      continue;
+    }
+    hasPricedLine = true;
+    total += row.currentQuantity * row.costPerBag;
+  }
+
+  if (!hasPricedLine) return undefined;
+  return Math.round(total * 100) / 100;
+}
+
+function secondPartyLabel(booking: Booking): string {
+  const ledger = booking.dispatchLedgerId;
+  const address = ledger.address?.trim();
+  return address ? `${ledger.name}, ${address}` : ledger.name;
+}
+
+function FillLine({ value }: { value?: string }) {
+  return (
+    <View style={styles.fillLine}>
+      <Text style={styles.fillValue}>{value?.trim() ? value : ' '}</Text>
+    </View>
+  );
+}
+
+function TableCell({ width, value }: { width: string; value?: string }) {
+  return (
+    <View style={[styles.tableCol, { width }]}>
+      {value ? (
+        <Text style={[styles.cellText, { textAlign: 'center', fontFamily: 'Helvetica' }]}>
+          {value}
+        </Text>
+      ) : null}
+    </View>
+  );
+}
+
+function PaymentCell({ value }: { value?: string }) {
+  return (
+    <View style={styles.paymentCell}>
+      <Text style={styles.paymentValue}>{value?.trim() ? value : ' '}</Text>
+      <View style={styles.paymentLine} />
+    </View>
+  );
+}
+
+const BookingAgreementPdf = ({ booking }: BookingAgreementPdfProps) => {
+  const lines = agreementLines(booking);
+  const rowCount = Math.max(TABLE_ROW_COUNT, lines.length);
+  const amount = booking ? agreementAmount(booking) : undefined;
+  const payment: AgreementPayment | null = booking
+    ? {
+        reference: '',
+        date: formatPdfDate(booking.date),
+        bank: booking.bank ?? '',
+        amount: formatPdfAmount(amount),
+      }
+    : null;
+  const agreementDate = booking ? formatPdfDate(booking.date) : '';
+
   const renderTableRows = () => {
-    return [1, 2, 3, 4, 5, 6].map((num) => (
-      <View style={styles.tableRow} key={num}>
-        <View style={[styles.tableCol, { width: '8%' }]}>
-          <Text style={[styles.cellText, { textAlign: 'center', fontFamily: 'Helvetica' }]}>
-            {num}.
-          </Text>
+    return Array.from({ length: rowCount }, (_, index) => {
+      const line = lines[index];
+      const num = index + 1;
+
+      return (
+        <View style={styles.tableRow} key={num}>
+          <View style={[styles.tableCol, { width: '8%' }]}>
+            <Text style={[styles.cellText, { textAlign: 'center', fontFamily: 'Helvetica' }]}>
+              {num}.
+            </Text>
+          </View>
+          <TableCell width="20%" value={line?.variety} />
+          <TableCell width="12%" value={line?.size} />
+          <TableCell width="15%" value={line?.quantity} />
+          <TableCell width="15%" value={line?.ratePerBag} />
+          <TableCell width="15%" value={line?.weightPerBag} />
+          <TableCell width="15%" value={line?.remarks} />
         </View>
-        <View style={[styles.tableCol, { width: '20%' }]} />
-        <View style={[styles.tableCol, { width: '12%' }]} />
-        <View style={[styles.tableCol, { width: '15%' }]} />
-        <View style={[styles.tableCol, { width: '15%' }]} />
-        <View style={[styles.tableCol, { width: '15%' }]} />
-        <View style={[styles.tableCol, { width: '15%' }]} />
-      </View>
-    ));
+      );
+    });
   };
 
   const renderPaymentRows = () => {
-    return [1, 2, 3, 4].map((num) => (
-      <View style={styles.paymentRow} key={`pay-${num}`}>
-        <View style={styles.paymentLine} />
-        <View style={styles.paymentLine} />
-        <View style={styles.paymentLine} />
-        <View style={styles.paymentLine} />
-        <View style={styles.paymentLine} />
-        <View style={styles.paymentLine} />
-        <View style={styles.paymentLine} />
-        <View style={styles.paymentLine} />
-      </View>
-    ));
+    return Array.from({ length: PAYMENT_ROW_COUNT }, (_, index) => {
+      const row = index === 0 ? payment : null;
+
+      return (
+        <View style={styles.paymentRow} key={`pay-${index + 1}`}>
+          <PaymentCell value={row?.reference} />
+          <PaymentCell value={row?.date} />
+          <PaymentCell value={row?.bank} />
+          <PaymentCell value={row?.amount} />
+          <PaymentCell />
+          <PaymentCell />
+          <PaymentCell />
+          <PaymentCell />
+        </View>
+      );
+    });
   };
 
   return (
@@ -298,9 +422,7 @@ const BookingAgreementPdf = () => {
         <View style={styles.headerContainer}>
           {/* Left Column: Logo */}
           <View style={styles.logoSection}>
-            <View style={styles.logoCircle}>
-              <Text style={styles.logoText}>SRF</Text>
-            </View>
+            <SrfLogo size={72} />
             <Text style={styles.logoBadge}>POSCON JALANDHAR (PUNJAB) 0135</Text>
             <Text style={styles.logoBadge}>PGFA NO. KAPURTHALA (PUNJAB) 005</Text>
           </View>
@@ -326,7 +448,7 @@ const BookingAgreementPdf = () => {
 
         {/* Title Section */}
         <View style={styles.agreementHeaderRow}>
-          <Text style={styles.serialNumber}>406</Text>
+          <Text style={styles.serialNumber}>{booking ? String(booking.gatePassNo) : '406'}</Text>
           <Text style={styles.agreementTitle}>AGREEMENT</Text>
         </View>
 
@@ -337,11 +459,11 @@ const BookingAgreementPdf = () => {
             Ashok Kumar Pahuja
           </Text>
           <Text style={styles.textStatic}>, Kapurthala through</Text>
-          <View style={styles.fillLine} />
+          <FillLine value="Shri Ram Farms" />
         </View>
         <View style={styles.formRow}>
           <Text style={styles.textStatic}>as first Party and</Text>
-          <View style={styles.fillLine} />
+          <FillLine value={booking ? secondPartyLabel(booking) : ''} />
         </View>
         <View style={styles.formRow}>
           <Text style={styles.textStatic}>
@@ -390,11 +512,11 @@ const BookingAgreementPdf = () => {
         <View style={styles.footerSection}>
           <View style={[styles.formRow, { width: '50%' }]}>
             <Text style={styles.textStatic}>Date of Delivery</Text>
-            <View style={styles.fillLine} />
+            <FillLine value={booking ? formatPdfDate(booking.expectedDateOfDelivery) : ''} />
           </View>
           <View style={[styles.formRow, { width: '60%' }]}>
             <Text style={styles.textStatic}>Insurance & Chattai charges extra, if any</Text>
-            <View style={styles.fillLine} />
+            <FillLine />
           </View>
           <View style={styles.formRow}>
             <Text style={styles.textStatic}>Mode of Payment :-</Text>
@@ -417,10 +539,11 @@ const BookingAgreementPdf = () => {
 
           <View style={[styles.formRow, { marginTop: 8 }]}>
             <Text style={styles.textStatic}>TOTAL :</Text>
+            <FillLine value={formatPdfAmount(amount)} />
           </View>
           <View style={styles.formRow}>
             <Text style={styles.textStatic}>Mode of Balance Payment</Text>
-            <View style={styles.fillLine} />
+            <FillLine value={booking?.modeOfPayment} />
           </View>
         </View>
 
@@ -436,7 +559,7 @@ const BookingAgreementPdf = () => {
 
             <View style={[styles.formRow, { marginTop: 12, marginBottom: 0 }]}>
               <Text style={styles.textStatic}>Date</Text>
-              <View style={styles.fillLine} />
+              <FillLine value={agreementDate} />
             </View>
           </View>
 
@@ -447,7 +570,7 @@ const BookingAgreementPdf = () => {
 
             <View style={[styles.formRow, { marginTop: 12, marginBottom: 0 }]}>
               <Text style={styles.textStatic}>Date</Text>
-              <View style={styles.fillLine} />
+              <FillLine value={agreementDate} />
             </View>
           </View>
         </View>

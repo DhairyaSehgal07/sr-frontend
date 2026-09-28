@@ -6,6 +6,14 @@ import {
 
 export const objectId = z.string().length(24, 'Select a valid record from the list.');
 
+export const BOOKING_PAYMENT_MODES = ['Cash', 'UPI', 'NEFT', 'RTGS', 'Cheque', 'Card'] as const;
+
+export type BookingPaymentMode = (typeof BOOKING_PAYMENT_MODES)[number];
+
+export function isBookingPaymentMode(value: string): value is BookingPaymentMode {
+  return (BOOKING_PAYMENT_MODES as readonly string[]).includes(value);
+}
+
 const bookingBaseSchema = z.object({
   manualGatePassNumber: z.union([
     z.undefined(),
@@ -13,6 +21,13 @@ const bookingBaseSchema = z.object({
   ]),
   dispatchLedgerId: objectId,
   date: z.string().datetime('Select a valid date.'),
+  expectedDateOfDelivery: z.union([
+    z.undefined(),
+    z.literal(''),
+    z.string().datetime('Select a valid expected delivery date.'),
+  ]),
+  bank: z.union([z.undefined(), z.literal(''), z.string()]),
+  modeOfPayment: z.union([z.undefined(), z.literal(''), z.enum(BOOKING_PAYMENT_MODES)]),
   remarks: z.string(),
 });
 

@@ -7,6 +7,7 @@ const bookingQuantityRowSchema = z.object({
   isExtra: z.boolean(),
   variety: z.string(),
   qty: z.number().nonnegative('Quantity cannot be negative.').optional(),
+  costPerBag: z.number().nonnegative('Cost per bag cannot be negative.').optional(),
 });
 
 export type AvailabilityValidationContext = {
@@ -77,6 +78,7 @@ export function createDefaultBookingQuantities(): BookingQuantityRow[] {
     isExtra: false,
     variety: '',
     qty: undefined,
+    costPerBag: undefined,
   }));
 }
 
@@ -86,5 +88,6 @@ export function createEmptyBookingQuantityRow(): BookingQuantityRow {
     isExtra: true,
     variety: '',
     qty: undefined,
+    costPerBag: undefined,
   };
 }

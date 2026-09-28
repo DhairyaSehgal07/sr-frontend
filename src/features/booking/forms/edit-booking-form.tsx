@@ -33,6 +33,7 @@ import {
 import type { Booking } from '@/features/booking/api/types';
 import { useBookingById } from '@/features/booking/api/use-booking-by-id';
 import { useUpdateBooking } from '@/features/booking/api/use-update-booking';
+import { BookingPaymentFields } from '@/features/booking/forms/booking-payment-fields';
 import { BookingQuantitiesSection } from '@/features/booking/forms/booking-quantities-section';
 import { BookingSummarySheet } from '@/features/booking/forms/booking-summary-sheet';
 import { bookingToFormValues } from '@/features/booking/forms/booking-to-form-values';
@@ -249,7 +250,7 @@ function EditBookingFormFields({ booking }: EditBookingFormFieldsProps) {
               <FieldLegend className="font-heading text-base font-semibold">
                 Booking Details
               </FieldLegend>
-              <FieldDescription>Gate pass reference, date, and dispatch ledger.</FieldDescription>
+              <FieldDescription>Gate pass reference, dates, and dispatch ledger.</FieldDescription>
               <FieldGroup className="mt-5 grid grid-cols-1 gap-6 @md/field-group:grid-cols-2">
                 <form.Field name="manualGatePassNumber">
                   {(field) => {
@@ -292,6 +293,29 @@ function EditBookingFormFields({ booking }: EditBookingFormFieldsProps) {
                           aria-invalid={isInvalid}
                           placeholder="Pick a date"
                         />
+                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                      </Field>
+                    );
+                  }}
+                </form.Field>
+
+                <form.Field name="expectedDateOfDelivery">
+                  {(field) => {
+                    const isInvalid = isFieldInvalid(field.state.meta);
+                    return (
+                      <Field data-invalid={isInvalid} className="@md/field-group:col-span-2">
+                        <DatePickerInput
+                          id={field.name}
+                          label="Expected date of delivery"
+                          value={field.state.value ? new Date(field.state.value) : undefined}
+                          onChange={(date) => field.handleChange(date ? date.toISOString() : '')}
+                          onBlur={field.handleBlur}
+                          aria-invalid={isInvalid}
+                          placeholder="Pick a date (optional)"
+                        />
+                        <FieldDescription>
+                          Leave blank if the delivery date is not known yet.
+                        </FieldDescription>
                         {isInvalid && <FieldError errors={field.state.meta.errors} />}
                       </Field>
                     );
@@ -345,6 +369,10 @@ function EditBookingFormFields({ booking }: EditBookingFormFieldsProps) {
                 </form.Field>
               </FieldGroup>
             </FieldSet>
+
+            <FieldSeparator />
+
+            <BookingPaymentFields form={form} />
 
             <FieldSeparator />
 

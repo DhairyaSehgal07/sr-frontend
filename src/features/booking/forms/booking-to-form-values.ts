@@ -2,6 +2,7 @@ import type { Booking, BookingGatePassBagSize } from '@/features/booking/api/typ
 import {
   createDefaultBookingQuantities,
   createEmptyBookingQuantityRow,
+  isBookingPaymentMode,
   type BookingFormValues,
   type BookingQuantityRow,
 } from '@/features/booking/schemas/booking-form-schema';
@@ -23,6 +24,7 @@ function toQuantityRow(bagSize: BookingGatePassBagSize, isExtra: boolean): Booki
     isExtra,
     variety: bagSize.variety,
     qty: bagSize.currentQuantity,
+    costPerBag: bagSize.costPerBag,
   };
 }
 
@@ -57,6 +59,14 @@ export function bookingToFormValues(booking: Booking): BookingFormValues {
     manualGatePassNumber: booking.manualGatePassNumber,
     dispatchLedgerId: booking.dispatchLedgerId._id,
     date: toIsoDateTime(booking.date),
+    expectedDateOfDelivery: booking.expectedDateOfDelivery
+      ? toIsoDateTime(booking.expectedDateOfDelivery)
+      : undefined,
+    bank: booking.bank ?? '',
+    modeOfPayment:
+      booking.modeOfPayment && isBookingPaymentMode(booking.modeOfPayment)
+        ? booking.modeOfPayment
+        : undefined,
     quantities: bookingBagSizesToFormQuantities(booking.bagSizes),
     remarks: booking.remarks ?? '',
   };

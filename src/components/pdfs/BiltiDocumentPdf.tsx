@@ -1,5 +1,7 @@
 import { Document, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 
+import { SrfLogo } from '@/components/pdfs/srf-logo';
+
 import type { NikasiGatePass } from '@/features/dispatch-pre-storage/api/types';
 
 import {
@@ -50,23 +52,6 @@ const styles = StyleSheet.create({
   logoSection: {
     width: 140,
     alignItems: 'center',
-  },
-  logoCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    borderWidth: 2,
-    borderColor: colors.brandGreen,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-  logoText: {
-    color: colors.brandGreen,
-    fontSize: 14,
-    lineHeight: 1,
-    fontFamily: 'Helvetica-Bold',
-    letterSpacing: 0.5,
   },
   membershipText: {
     fontSize: 7,
@@ -280,8 +265,8 @@ const BiltiDocumentPdf = ({ data }: BiltiDocumentPdfProps) => {
   const dated = data ? formatPdfDate(data.date) : '';
   const party = data?.dispatchLedgerId;
   const billingLines = party
-    ? [party.name, party.address, party.mobileNumber].filter(
-        (line): line is string => Boolean(line && line.trim()),
+    ? [party.name, party.address, party.mobileNumber].filter((line): line is string =>
+        Boolean(line && line.trim()),
       )
     : [];
   const delivery = data?.to?.trim() || '';
@@ -300,9 +285,7 @@ const BiltiDocumentPdf = ({ data }: BiltiDocumentPdfProps) => {
         <View style={styles.headerContainer}>
           {/* Logo & Membership */}
           <View style={styles.logoSection}>
-            <View style={styles.logoCircle}>
-              <Text style={styles.logoText}>SRF</Text>
-            </View>
+            <SrfLogo size={72} />
             <Text style={styles.membershipText}>POSCON®</Text>
             <Text style={styles.membershipText}>Membership No. 0135</Text>
           </View>
@@ -350,9 +333,7 @@ const BiltiDocumentPdf = ({ data }: BiltiDocumentPdfProps) => {
               {delivery ? <Text style={styles.cellValueText}>{delivery}</Text> : null}
             </View>
             <View style={[styles.gridCell, { width: '15%', justifyContent: 'center' }]}>
-              <Text style={styles.cellLabelTextSmall}>
-                Lorry No.{lorryNo ? ` ${lorryNo}` : ''}
-              </Text>
+              <Text style={styles.cellLabelTextSmall}>Lorry No.{lorryNo ? ` ${lorryNo}` : ''}</Text>
               <Text style={styles.cellLabelTextSmall}>
                 Challan No.{challanNo ? ` ${challanNo}` : ''}
               </Text>

@@ -17,17 +17,44 @@ export function activeBookingQuantityRows(
   return quantities.filter((row) => (row.qty ?? 0) > 0);
 }
 
+export function costPerBagFromQuantity(costPerBag: number | undefined): number | undefined {
+  if (costPerBag == null || !Number.isFinite(costPerBag)) return undefined;
+  return costPerBag;
+}
+
+export function bookingAmountFromQuantities(
+  quantities: readonly { qty?: number; costPerBag?: number }[],
+): number | undefined {
+  let hasPricedLine = false;
+  let total = 0;
+
+  for (const row of quantities) {
+    const quantity = row.qty ?? 0;
+    const costPerBag = costPerBagFromQuantity(row.costPerBag);
+    if (quantity <= 0 || costPerBag == null) continue;
+
+    hasPricedLine = true;
+    total += quantity * costPerBag;
+  }
+
+  if (!hasPricedLine) return undefined;
+
+  return Math.round(total * 100) / 100;
+}
+
 export function formQuantitiesToBagSizes(
   quantities: BookingFormValues['quantities'],
 ): BookingGatePassBagSize[] {
   return activeBookingQuantityRows(quantities).map((row) => {
     const quantity = row.qty ?? 0;
+    const costPerBag = costPerBagFromQuantity(row.costPerBag);
 
     return {
       size: row.size,
       variety: row.variety,
       currentQuantity: quantity,
       initialQuantity: quantity,
+      ...(costPerBag != null ? { costPerBag } : {}),
     };
   });
 }
@@ -49,6 +76,24 @@ export function toCreateBookingBody({ form, gatePassNo }: CreateBookingInput): C
 
   if (form.manualGatePassNumber != null) {
     body.manualGatePassNumber = form.manualGatePassNumber;
+  }
+
+  if (form.expectedDateOfDelivery) {
+    body.expectedDateOfDelivery = form.expectedDateOfDelivery;
+  }
+
+  const bank = form.bank?.trim();
+  if (bank) {
+    body.bank = bank;
+  }
+
+  const amount = bookingAmountFromQuantities(form.quantities);
+  if (amount != null) {
+    body.amount = amount;
+  }
+
+  if (form.modeOfPayment) {
+    body.modeOfPayment = form.modeOfPayment;
   }
 
   const remarks = form.remarks.trim();

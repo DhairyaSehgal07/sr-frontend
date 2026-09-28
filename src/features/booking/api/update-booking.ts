@@ -1,7 +1,11 @@
 import type { BookingFormValues } from '@/features/booking/schemas/booking-form-schema';
 import apiClient, { getApiErrorMessage } from '@/lib/api-client';
 
-import { activeBookingQuantityRows } from './create-booking';
+import {
+  activeBookingQuantityRows,
+  bookingAmountFromQuantities,
+  costPerBagFromQuantity,
+} from './create-booking';
 import type {
   BookingGatePassBagSize,
   UpdateBookingBody,
@@ -23,12 +27,14 @@ export function formQuantitiesToUpdateBagSizes(
   return activeBookingQuantityRows(quantities).map((row) => {
     const currentQuantity = row.qty ?? 0;
     const lineKey = `${row.size}\0${row.variety}`;
+    const costPerBag = costPerBagFromQuantity(row.costPerBag);
 
     return {
       size: row.size,
       variety: row.variety,
       currentQuantity,
       initialQuantity: initialByLine.get(lineKey) ?? currentQuantity,
+      ...(costPerBag != null ? { costPerBag } : {}),
     };
   });
 }
@@ -46,8 +52,12 @@ export function toUpdateBookingBody({
   const body: UpdateBookingBody = {
     manualGatePassNumber: form.manualGatePassNumber ?? null,
     date: form.date,
+    expectedDateOfDelivery: form.expectedDateOfDelivery ? form.expectedDateOfDelivery : null,
     dispatchLedgerId: form.dispatchLedgerId,
     bagSizes,
+    bank: form.bank?.trim() ? form.bank.trim() : null,
+    amount: bookingAmountFromQuantities(form.quantities) ?? null,
+    modeOfPayment: form.modeOfPayment ? form.modeOfPayment : null,
   };
 
   body.remarks = form.remarks.trim();

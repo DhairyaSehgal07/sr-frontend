@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import {
   ArrowLeft,
+  Banknote,
   Calendar,
   CheckCircle2,
   ClipboardCheck,
@@ -20,6 +21,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
+import { bookingAmountFromQuantities } from '@/features/booking/api/create-booking';
 import type { BookingFormValues } from '@/features/booking/schemas/booking-form-schema';
 import { cn } from '@/lib/utils';
 
@@ -36,6 +38,17 @@ type BookingSummarySheetProps = {
   canSubmit: boolean;
   isSubmitting: boolean;
 };
+
+function formatInr(amount: number) {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+  }).format(amount);
+}
+
+function hasCostPerBag(costPerBag: number | undefined): costPerBag is number {
+  return costPerBag != null && Number.isFinite(costPerBag);
+}
 
 function formatReviewDate(iso: string) {
   if (!iso) return '—';
@@ -114,6 +127,8 @@ function BookingReviewSummary({
 }) {
   const rows = activeQuantityRows(values.quantities);
   const totalBags = rows.reduce((sum, row) => sum + (row.qty ?? 0), 0);
+  const showCostColumn = rows.some((row) => hasCostPerBag(row.costPerBag));
+  const amount = bookingAmountFromQuantities(values.quantities);
 
   return (
     <div className="space-y-7">
@@ -157,6 +172,13 @@ function BookingReviewSummary({
         <SectionLabel icon={Package2}>Booking details</SectionLabel>
         <SummaryCard>
           <DetailRow label="Date" value={formatReviewDate(values.date)} icon={Calendar} />
+          {values.expectedDateOfDelivery ? (
+            <DetailRow
+              label="Expected delivery"
+              value={formatReviewDate(values.expectedDateOfDelivery)}
+              icon={Calendar}
+            />
+          ) : null}
           {gatePassNo != null ? (
             <DetailRow
               label="Gate pass no."
@@ -174,6 +196,18 @@ function BookingReviewSummary({
         </SummaryCard>
       </div>
 
+      {values.bank?.trim() || values.modeOfPayment ? (
+        <div className="space-y-2">
+          <SectionLabel icon={Banknote}>Payment</SectionLabel>
+          <SummaryCard>
+            {values.bank?.trim() ? <DetailRow label="Bank" value={values.bank.trim()} /> : null}
+            {values.modeOfPayment ? (
+              <DetailRow label="Mode of payment" value={values.modeOfPayment} />
+            ) : null}
+          </SummaryCard>
+        </div>
+      ) : null}
+
       <div className="space-y-2">
         <SectionLabel icon={Scale}>Bag quantities</SectionLabel>
         {rows.length > 0 ? (
@@ -184,6 +218,11 @@ function BookingReviewSummary({
                   <th className="h-10 px-3 font-medium text-muted-foreground">Size</th>
                   <th className="h-10 px-3 font-medium text-muted-foreground">Variety</th>
                   <th className="h-10 px-3 text-right font-medium text-muted-foreground">Qty</th>
+                  {showCostColumn ? (
+                    <th className="h-10 px-3 text-right font-medium text-muted-foreground">
+                      Cost / bag
+                    </th>
+                  ) : null}
                 </tr>
               </thead>
               <tbody>
@@ -197,6 +236,11 @@ function BookingReviewSummary({
                     <td className="px-3 py-2.5 text-right tabular-nums">
                       {(row.qty ?? 0).toLocaleString('en-IN')}
                     </td>
+                    {showCostColumn ? (
+                      <td className="px-3 py-2.5 text-right tabular-nums">
+                        {hasCostPerBag(row.costPerBag) ? formatInr(row.costPerBag) : '—'}
+                      </td>
+                    ) : null}
                   </tr>
                 ))}
               </tbody>
@@ -213,6 +257,11 @@ function BookingReviewSummary({
             label="Total bags"
             value={totalBags.toLocaleString('en-IN')}
             icon={Scale}
+            valueClassName="font-semibold tabular-nums"
+          />
+          <DetailRow
+            label="Amount"
+            value={amount != null ? formatInr(amount) : '—'}
             valueClassName="font-semibold tabular-nums"
           />
         </SummaryCard>

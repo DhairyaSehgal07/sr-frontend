@@ -7,8 +7,12 @@ import type {
 export const BOOKING_AUDIT_FIELD_LABELS: Record<keyof BookingAuditState, string> = {
   manualGatePassNumber: 'Manual #',
   date: 'Date',
+  expectedDateOfDelivery: 'Expected delivery',
   dispatchLedgerId: 'Dispatch ledger',
   bagSizes: 'Bag sizes',
+  bank: 'Bank',
+  amount: 'Amount',
+  modeOfPayment: 'Mode of payment',
   remarks: 'Remarks',
 };
 
@@ -31,6 +35,13 @@ function formatQuantity(value: number) {
   return `${formatNumber(value)} bags`;
 }
 
+function formatInr(amount: number) {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+  }).format(amount);
+}
+
 function formatDispatchLedger(value: BookingDispatchLedger | string) {
   if (typeof value === 'string') return value;
 
@@ -40,7 +51,12 @@ function formatDispatchLedger(value: BookingDispatchLedger | string) {
 }
 
 function formatBagSize(row: BookingGatePassBagSize) {
-  return `${row.size} · ${row.variety} · current ${formatQuantity(row.currentQuantity)} / initial ${formatQuantity(row.initialQuantity)}`;
+  const cost =
+    row.costPerBag != null && Number.isFinite(row.costPerBag)
+      ? ` · ${formatInr(row.costPerBag)} / bag`
+      : '';
+
+  return `${row.size} · ${row.variety} · current ${formatQuantity(row.currentQuantity)} / initial ${formatQuantity(row.initialQuantity)}${cost}`;
 }
 
 function formatBagSizes(value: BookingGatePassBagSize[]) {
@@ -56,6 +72,7 @@ export function formatAuditFieldValue(field: keyof BookingAuditState, value: unk
     case 'manualGatePassNumber':
       return typeof value === 'number' ? formatNumber(value) : String(value);
     case 'date':
+    case 'expectedDateOfDelivery':
       return typeof value === 'string' ? formatAuditDate(value) : String(value);
     case 'dispatchLedgerId':
       return typeof value === 'object' && value != null
@@ -65,6 +82,8 @@ export function formatAuditFieldValue(field: keyof BookingAuditState, value: unk
       return Array.isArray(value)
         ? formatBagSizes(value as BookingGatePassBagSize[])
         : String(value);
+    case 'amount':
+      return typeof value === 'number' && Number.isFinite(value) ? formatInr(value) : String(value);
     default:
       return String(value);
   }

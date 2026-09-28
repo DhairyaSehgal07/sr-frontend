@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import type { ComboboxOption } from '@/components/searchable-option-combobox';
+import { bookingAmountFromQuantities } from '@/features/booking/api/create-booking';
 import { getRowRemainingQty } from '@/features/booking/lib/booking-availability';
 import { formatBookingBagCount } from '@/features/booking/lib/booking-summary-utils';
 import type { CreateBookingFormApi } from '@/features/booking/forms/use-create-booking-form';
@@ -27,6 +28,13 @@ import {
   createEmptyBookingQuantityRow,
 } from '@/features/booking/schemas/booking-form-schema';
 import { POTATO_VARIETY_OPTIONS } from '@/lib/constants';
+
+function formatInr(amount: number) {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+  }).format(amount);
+}
 
 function isFieldInvalid(meta: { isTouched: boolean; isValid: boolean }) {
   return meta.isTouched && !meta.isValid;
@@ -75,8 +83,8 @@ export function BookingQuantitiesSection({
     <FieldSet>
       <FieldLegend className="font-heading text-base font-semibold">Enter Quantities</FieldLegend>
       <FieldDescription>
-        Enter variety and quantity for each bag size. Use Add more for an extra size line. Rows with
-        zero or empty quantity are ignored on submit.
+        Enter variety, quantity, and an optional cost per bag for each size. Use Add more for an
+        extra size line. Rows with zero or empty quantity are ignored on submit.
       </FieldDescription>
 
       {isAvailabilityLoading ? (
@@ -85,10 +93,13 @@ export function BookingQuantitiesSection({
 
       <div className="mt-5 rounded-lg border border-border">
         <div className="hidden border-b border-border bg-muted/50 px-3 py-2.5 md:grid md:grid-cols-12 md:gap-2">
-          <div className="col-span-3 text-sm font-medium text-muted-foreground">Size</div>
-          <div className="col-span-4 text-sm font-medium text-muted-foreground">Variety</div>
+          <div className="col-span-2 text-sm font-medium text-muted-foreground">Size</div>
+          <div className="col-span-3 text-sm font-medium text-muted-foreground">Variety</div>
           <div className="col-span-3 text-right text-sm font-medium text-muted-foreground">
             Quantity
+          </div>
+          <div className="col-span-2 text-right text-sm font-medium text-muted-foreground">
+            Cost / bag
           </div>
           <div className="col-span-2" aria-hidden />
         </div>
@@ -120,7 +131,7 @@ export function BookingQuantitiesSection({
                         key={index}
                         className="grid grid-cols-1 gap-3 px-3 py-3 md:grid-cols-12 md:items-start md:gap-2 md:py-2.5"
                       >
-                        <div className="md:col-span-3">
+                        <div className="md:col-span-2">
                           {row.isExtra ? (
                             <form.Field name={`quantities[${index}].size`}>
                               {(subField) => (
@@ -142,7 +153,7 @@ export function BookingQuantitiesSection({
                           )}
                         </div>
 
-                        <div className="md:col-span-4">
+                        <div className="md:col-span-3">
                           <form.Field name={`quantities[${index}].variety`}>
                             {(subField) => {
                               const isInvalid = isFieldInvalid(subField.state.meta);
@@ -225,6 +236,41 @@ export function BookingQuantitiesSection({
                           </form.Field>
                         </div>
 
+                        <div className="md:col-span-2">
+                          <form.Field name={`quantities[${index}].costPerBag`}>
+                            {(subField) => {
+                              const isInvalid = isFieldInvalid(subField.state.meta);
+                              const sizeLabel = row.size || `row ${index + 1}`;
+
+                              return (
+                                <Field data-invalid={isInvalid}>
+                                  <FieldLabel htmlFor={subField.name} className="md:sr-only">
+                                    Cost per bag ({sizeLabel})
+                                  </FieldLabel>
+                                  <Input
+                                    {...numericInputProps}
+                                    id={subField.name}
+                                    name={subField.name}
+                                    inputMode="decimal"
+                                    step="0.01"
+                                    placeholder="Cost / bag"
+                                    value={subField.state.value ?? ''}
+                                    onBlur={subField.handleBlur}
+                                    onChange={(e) =>
+                                      subField.handleChange(
+                                        parseOptionalNonNegativeNumber(e.target.value),
+                                      )
+                                    }
+                                    aria-invalid={isInvalid}
+                                    className="text-right tabular-nums"
+                                  />
+                                  {isInvalid && <FieldError errors={subField.state.meta.errors} />}
+                                </Field>
+                              );
+                            }}
+                          </form.Field>
+                        </div>
+
                         <div className="flex justify-end md:col-span-2">
                           {row.isExtra ? (
                             <Button
@@ -279,13 +325,22 @@ export function BookingQuantitiesSection({
         selector={(state) => state.values.quantities}
         children={(quantities) => {
           const totalBags = quantities.reduce((sum, row) => sum + (row.qty ?? 0), 0);
+          const amount = bookingAmountFromQuantities(quantities);
 
           return (
-            <div className="mt-4 flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3 sm:px-6 sm:py-4">
-              <span className="text-sm font-semibold text-foreground">Total bags</span>
-              <span className="font-heading text-xl font-semibold tabular-nums text-foreground">
-                {totalBags.toLocaleString('en-IN')}
-              </span>
+            <div className="mt-4 divide-y divide-border overflow-hidden rounded-lg border border-border bg-muted/30">
+              <div className="flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
+                <span className="text-sm font-semibold text-foreground">Total bags</span>
+                <span className="font-heading text-xl font-semibold tabular-nums text-foreground">
+                  {totalBags.toLocaleString('en-IN')}
+                </span>
+              </div>
+              <div className="flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
+                <span className="text-sm font-semibold text-foreground">Amount</span>
+                <span className="font-heading text-xl font-semibold tabular-nums text-foreground">
+                  {amount != null ? formatInr(amount) : '—'}
+                </span>
+              </div>
             </div>
           );
         }}

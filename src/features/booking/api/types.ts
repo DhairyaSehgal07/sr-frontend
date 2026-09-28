@@ -1,10 +1,14 @@
-import type { BookingFormValues } from '@/features/booking/schemas/booking-form-schema';
+import type {
+  BookingFormValues,
+  BookingPaymentMode,
+} from '@/features/booking/schemas/booking-form-schema';
 
 export type BookingGatePassBagSize = {
   size: string;
   variety: string;
   currentQuantity: number;
   initialQuantity: number;
+  costPerBag?: number;
 };
 
 export type CreateBookingBody = {
@@ -13,6 +17,10 @@ export type CreateBookingBody = {
   date: string;
   bagSizes: BookingGatePassBagSize[];
   manualGatePassNumber?: number;
+  expectedDateOfDelivery?: string | null;
+  bank?: string;
+  amount?: number;
+  modeOfPayment?: BookingPaymentMode;
   remarks?: string;
   idempotencyKey?: string;
 };
@@ -50,6 +58,10 @@ export type Booking = {
   gatePassNo: number;
   manualGatePassNumber?: number;
   date: string;
+  expectedDateOfDelivery?: string;
+  bank?: string;
+  amount?: number;
+  modeOfPayment?: BookingPaymentMode;
   bagSizes: BookingGatePassBagSize[];
   editHistory: BookingEditHistoryEntry[];
   remarks?: string;
@@ -100,8 +112,12 @@ export type SearchBookingsResponse = {
 export type UpdateBookingBody = {
   manualGatePassNumber?: number | null;
   date: string;
+  expectedDateOfDelivery?: string | null;
   dispatchLedgerId: string;
   bagSizes: BookingGatePassBagSize[];
+  bank?: string | null;
+  amount?: number | null;
+  modeOfPayment?: BookingPaymentMode | null;
   remarks?: string;
 };
 
@@ -133,8 +149,12 @@ export type BookingAuditRef = {
 export type BookingAuditState = Partial<{
   manualGatePassNumber: number | null;
   date: string;
+  expectedDateOfDelivery: string | null;
   dispatchLedgerId: BookingDispatchLedger | string;
   bagSizes: BookingGatePassBagSize[];
+  bank: string | null;
+  amount: number | null;
+  modeOfPayment: BookingPaymentMode | string | null;
   remarks: string;
 }>;
 

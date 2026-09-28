@@ -25,6 +25,7 @@ import {
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Booking, BookingGatePassBagSize } from '@/features/booking/api/types';
+import { openBookingAgreementPrint } from '@/features/booking/utils/booking-agreement-print';
 
 interface InfoBlockProps {
   label: string;
@@ -60,6 +61,28 @@ function bookingTotalBags(bagSizes: readonly BookingGatePassBagSize[]): number {
   return bagSizes.reduce((sum, row) => sum + row.currentQuantity, 0);
 }
 
+function formatDate(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '—';
+
+  return new Intl.DateTimeFormat('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }).format(date);
+}
+
+function formatInr(amount: number) {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+  }).format(amount);
+}
+
+function hasCostPerBag(costPerBag: number | undefined): costPerBag is number {
+  return costPerBag != null && Number.isFinite(costPerBag);
+}
+
 interface BookingGatePassCardProps {
   data: Booking;
   canUpdate?: boolean;
@@ -72,6 +95,7 @@ export function BookingGatePassCard({ data: booking, canUpdate = true }: Booking
   const ledger = booking.dispatchLedgerId;
   const totalBags = bookingTotalBags(booking.bagSizes);
   const createdBy = booking.createdBy?.name ?? '—';
+  const showCostColumn = booking.bagSizes.some((slot) => hasCostPerBag(slot.costPerBag));
 
   const handleEditClick = () => {
     if (!canUpdate) return;
@@ -129,6 +153,23 @@ export function BookingGatePassCard({ data: booking, canUpdate = true }: Booking
             value={totalBags.toLocaleString('en-IN')}
             valueClassName="tabular-nums"
           />
+          {booking.expectedDateOfDelivery ? (
+            <InfoBlock
+              label="Expected delivery"
+              value={formatDate(booking.expectedDateOfDelivery)}
+            />
+          ) : null}
+          {booking.bank ? <InfoBlock label="Bank" value={booking.bank} /> : null}
+          {booking.amount != null ? (
+            <InfoBlock
+              label="Amount"
+              value={formatInr(booking.amount)}
+              valueClassName="tabular-nums"
+            />
+          ) : null}
+          {booking.modeOfPayment ? (
+            <InfoBlock label="Mode of payment" value={booking.modeOfPayment} />
+          ) : null}
         </div>
 
         {isExpanded && (
@@ -189,6 +230,11 @@ export function BookingGatePassCard({ data: booking, canUpdate = true }: Booking
                           <th className="h-10 px-3 text-right text-xs font-medium text-muted-foreground">
                             Initial
                           </th>
+                          {showCostColumn ? (
+                            <th className="h-10 px-3 text-right text-xs font-medium text-muted-foreground">
+                              Cost / bag
+                            </th>
+                          ) : null}
                         </tr>
                       </thead>
                       <tbody>
@@ -205,6 +251,11 @@ export function BookingGatePassCard({ data: booking, canUpdate = true }: Booking
                             <td className="px-3 py-2.5 text-right tabular-nums text-muted-foreground">
                               {slot.initialQuantity.toLocaleString('en-IN')}
                             </td>
+                            {showCostColumn ? (
+                              <td className="px-3 py-2.5 text-right tabular-nums font-medium text-foreground">
+                                {hasCostPerBag(slot.costPerBag) ? formatInr(slot.costPerBag) : '—'}
+                              </td>
+                            ) : null}
                           </tr>
                         ))}
                       </tbody>
@@ -263,7 +314,14 @@ export function BookingGatePassCard({ data: booking, canUpdate = true }: Booking
               Edit
             </Button>
           )}
-          <Button variant="secondary" size="sm" className="h-8">
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            className="h-8"
+            aria-label={`Print booking agreement for gate pass ${booking.gatePassNo}`}
+            onClick={() => void openBookingAgreementPrint(booking)}
+          >
             <Printer className="mr-2 h-3.5 w-3.5" />
             Print
           </Button>

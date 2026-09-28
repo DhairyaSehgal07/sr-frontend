@@ -1,5 +1,7 @@
 import { Document, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 
+import { SrfLogo } from '@/components/pdfs/srf-logo';
+
 import type { NikasiGatePass } from '@/features/dispatch-pre-storage/api/types';
 
 import {
@@ -48,22 +50,6 @@ const styles = StyleSheet.create({
   logoSection: {
     width: 130,
     alignItems: 'center',
-  },
-  logoCircle: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
-    borderWidth: 1.5,
-    borderColor: colors.brandRed,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  logoText: {
-    color: colors.brandRed,
-    fontSize: 13,
-    fontFamily: 'Helvetica-Bold',
-    letterSpacing: 0.5,
   },
   logoBadge: {
     borderWidth: 0.75,
@@ -316,13 +302,7 @@ type InvoiceDocumentPdfProps = {
   data?: NikasiGatePass;
 };
 
-function FillField({
-  value,
-  style,
-}: {
-  value?: string;
-  style?: { marginRight?: number };
-}) {
+function FillField({ value, style }: { value?: string; style?: { marginRight?: number } }) {
   if (value) {
     return <Text style={style ? [styles.fillValue, style] : styles.fillValue}>{value}</Text>;
   }
@@ -358,9 +338,7 @@ const InvoiceDocumentPdf = ({ data }: InvoiceDocumentPdfProps) => {
         {/* --- Header Section --- */}
         <View style={styles.headerContainer}>
           <View style={styles.logoSection}>
-            <View style={styles.logoCircle}>
-              <Text style={styles.logoText}>SRF</Text>
-            </View>
+            <SrfLogo size={72} />
             <Text style={styles.logoBadge}>POSCON JALANDHAR (PUNJAB) 0135</Text>
             <Text style={styles.logoBadge}>PGFA NO. KAPURTHALA (PUNJAB) 005</Text>
           </View>

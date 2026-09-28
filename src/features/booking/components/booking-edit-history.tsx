@@ -79,6 +79,17 @@ function formatNumber(value: number) {
   return new Intl.NumberFormat('en-IN').format(value);
 }
 
+function formatInr(amount: number) {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+  }).format(amount);
+}
+
+function hasCostPerBag(costPerBag: number | undefined): costPerBag is number {
+  return costPerBag != null && Number.isFinite(costPerBag);
+}
+
 function getBookingId(audit: BookingAudit) {
   return typeof audit.bookingId === 'string' ? audit.bookingId : audit.bookingId._id;
 }
@@ -99,6 +110,8 @@ function AuditBagSizesTable({ bagSizes }: { bagSizes: readonly BookingGatePassBa
     return <span>-</span>;
   }
 
+  const showCostColumn = bagSizes.some((slot) => hasCostPerBag(slot.costPerBag));
+
   return (
     <div className="overflow-x-auto rounded-lg border border-border/50 bg-background">
       <table className="w-full min-w-[360px] caption-bottom text-sm">
@@ -114,6 +127,11 @@ function AuditBagSizesTable({ bagSizes }: { bagSizes: readonly BookingGatePassBa
             <th className="h-10 px-3 text-right text-xs font-medium text-muted-foreground">
               Initial
             </th>
+            {showCostColumn ? (
+              <th className="h-10 px-3 text-right text-xs font-medium text-muted-foreground">
+                Cost / bag
+              </th>
+            ) : null}
           </tr>
         </thead>
         <tbody>
@@ -130,6 +148,11 @@ function AuditBagSizesTable({ bagSizes }: { bagSizes: readonly BookingGatePassBa
               <td className="px-3 py-2.5 text-right tabular-nums text-muted-foreground">
                 {formatNumber(slot.initialQuantity)}
               </td>
+              {showCostColumn ? (
+                <td className="px-3 py-2.5 text-right tabular-nums text-foreground">
+                  {hasCostPerBag(slot.costPerBag) ? formatInr(slot.costPerBag) : '—'}
+                </td>
+              ) : null}
             </tr>
           ))}
         </tbody>
