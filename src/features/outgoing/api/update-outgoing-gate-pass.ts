@@ -7,6 +7,18 @@ import type {
   UpdateOutgoingGatePassResponse,
 } from './types';
 
+function nullableTrimmed(value: string): string | null {
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function nullablePositiveInt(value: string): number | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  const parsed = Number(trimmed);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+}
+
 export function toUpdateOutgoingGatePassBody(
   form: UpdateOutgoingGatePassInput['form'],
 ): UpdateOutgoingGatePassBody {
@@ -17,18 +29,18 @@ export function toUpdateOutgoingGatePassBody(
   };
 
   if (isDirectSaleOutgoing(form.category)) {
-    body.from = form.from.trim();
-    body.to = form.to.trim();
-    body.truckNumber = form.truckNumber.trim();
-    body.transportCompany = form.transportCompany.trim();
-    body.LSNumber = form.LSNumber.trim();
-    body.driverName = form.driverName.trim();
-    body.driverMobile = form.driverMobile.trim();
-    body.owner = form.owner.trim();
-    body.billNumber = Number(form.billNumber);
-    body.biltiNumber = Number(form.biltiNumber);
-    body.billBook = form.billBook.trim();
-    body.biltiBook = form.biltiBook.trim();
+    body.from = nullableTrimmed(form.from);
+    body.to = nullableTrimmed(form.to);
+    body.truckNumber = nullableTrimmed(form.truckNumber);
+    body.transportCompany = nullableTrimmed(form.transportCompany);
+    body.LSNumber = nullableTrimmed(form.LSNumber);
+    body.driverName = nullableTrimmed(form.driverName);
+    body.driverMobile = nullableTrimmed(form.driverMobile);
+    body.owner = nullableTrimmed(form.owner);
+    body.billNumber = nullablePositiveInt(form.billNumber);
+    body.biltiNumber = nullablePositiveInt(form.biltiNumber);
+    body.billBook = nullableTrimmed(form.billBook);
+    body.biltiBook = nullableTrimmed(form.biltiBook);
   } else {
     body.from = null;
     body.to = null;

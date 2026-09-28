@@ -1,7 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { toCreateOutgoingGatePassBody } from '@/features/outgoing/api/create-outgoing-gate-pass';
-import type { OutgoingFormSubmitValues } from '@/features/outgoing/schemas/outgoing-form-schema';
+import { editOutgoingFormSchema } from '@/features/outgoing/schemas/edit-outgoing-form-schema';
+import {
+  outgoingStep1Schema,
+  type OutgoingFormSubmitValues,
+} from '@/features/outgoing/schemas/outgoing-form-schema';
 import { outgoingWeightKey } from '@/features/outgoing/utils/group-outgoing-items';
 import type { TransferStockItem } from '@/features/transfer-stock/types/storage-gate-pass';
 
@@ -47,6 +51,55 @@ const form: OutgoingFormSubmitValues = {
     },
   },
 };
+
+describe('direct sale fields', () => {
+  it('accepts a Direct Sale with every route and bill field left blank', () => {
+    const step1 = outgoingStep1Schema.safeParse({
+      ...form.step1,
+      from: '',
+      to: '',
+      truckNumber: '',
+      transportCompany: '',
+      LSNumber: '',
+      driverName: '',
+      driverMobile: '',
+      owner: '',
+      billNumber: '',
+      biltiNumber: '',
+      billBook: '',
+      biltiBook: '',
+    });
+    expect(step1.success).toBe(true);
+
+    const edit = editOutgoingFormSchema.safeParse({
+      date: form.step1.date,
+      manualGatePassNumber: undefined,
+      from: '',
+      to: '',
+      truckNumber: '',
+      transportCompany: '',
+      LSNumber: '',
+      driverName: '',
+      driverMobile: '',
+      owner: '',
+      category: 'Direct Sale',
+      billNumber: '',
+      biltiNumber: '',
+      billBook: '',
+      biltiBook: '',
+      remarks: '',
+    });
+    expect(edit.success).toBe(true);
+  });
+
+  it('rejects a non-numeric bill number when one is entered', () => {
+    const result = outgoingStep1Schema.safeParse({
+      ...form.step1,
+      billNumber: 'abc',
+    });
+    expect(result.success).toBe(false);
+  });
+});
 
 describe('toCreateOutgoingGatePassBody', () => {
   it('copies the grouped average weight onto every matching gate pass allocation', () => {
@@ -111,6 +164,43 @@ describe('toCreateOutgoingGatePassBody', () => {
     expect(body).not.toHaveProperty('biltiNumber');
     expect(body).not.toHaveProperty('billBook');
     expect(body).not.toHaveProperty('biltiBook');
+
+    vi.unstubAllGlobals();
+  });
+
+  it('omits blank Direct Sale details from the request', () => {
+    vi.stubGlobal('crypto', { randomUUID: () => 'outgoing-create-103' });
+
+    const body = toCreateOutgoingGatePassBody({
+      form: {
+        ...form,
+        step1: {
+          ...form.step1,
+          from: '  ',
+          to: '',
+          truckNumber: '',
+          transportCompany: '',
+          LSNumber: '',
+          driverName: '',
+          driverMobile: '',
+          owner: '',
+          billNumber: '',
+          biltiNumber: '',
+          billBook: '',
+          biltiBook: '',
+        },
+      },
+      gatePassNo: 101,
+      items: [item({ storageGatePassId: '64f1a2b3c4d5e6f7a8b9c0d2', gatePassNo: 11, quantity: 20 })],
+    });
+
+    expect(body.category).toBe('Direct Sale');
+    expect(body).not.toHaveProperty('from');
+    expect(body).not.toHaveProperty('to');
+    expect(body).not.toHaveProperty('truckNumber');
+    expect(body).not.toHaveProperty('billNumber');
+    expect(body).not.toHaveProperty('biltiNumber');
+    expect(body).not.toHaveProperty('billBook');
 
     vi.unstubAllGlobals();
   });

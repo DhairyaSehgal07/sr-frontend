@@ -113,6 +113,22 @@ function OutgoingReviewSummary({
   outgoingItems: TransferStockItem[];
 }) {
   const totalBags = outgoingItems.reduce((sum, item) => sum + item.quantity, 0);
+  const hasRouteDetails = [
+    values.from,
+    values.to,
+    values.truckNumber,
+    values.transportCompany,
+    values.LSNumber,
+    values.driverName,
+    values.driverMobile,
+    values.owner,
+  ].some((value) => value.trim().length > 0);
+  const hasBillDetails = [
+    values.billNumber,
+    values.biltiNumber,
+    values.billBook,
+    values.biltiBook,
+  ].some((value) => value.trim().length > 0);
   return (
     <div className="space-y-7">
       <div className="flex items-center justify-between gap-3 rounded-xl border border-border/40 bg-muted/30 px-4 py-3.5">
@@ -154,11 +170,14 @@ function OutgoingReviewSummary({
 
       {isDirectSaleOutgoing(values.category) ? (
       <>
+      {hasRouteDetails ? (
       <div className="space-y-2">
         <SectionLabel icon={Truck}>Route &amp; vehicle</SectionLabel>
         <SummaryCard>
-          <DetailRow label="From" value={values.from} icon={MapPin} />
-          <DetailRow label="To" value={values.to} icon={MapPin} />
+          {values.from.trim() ? (
+            <DetailRow label="From" value={values.from} icon={MapPin} />
+          ) : null}
+          {values.to.trim() ? <DetailRow label="To" value={values.to} icon={MapPin} /> : null}
           {values.truckNumber.trim() ? (
             <DetailRow
               label="Truck"
@@ -180,24 +199,33 @@ function OutgoingReviewSummary({
           {values.owner.trim() ? <DetailRow label="Owner" value={values.owner} /> : null}
         </SummaryCard>
       </div>
+      ) : null}
 
+      {hasBillDetails ? (
       <div className="space-y-2">
         <SectionLabel icon={Receipt}>Bill &amp; bilti</SectionLabel>
         <SummaryCard>
-          <DetailRow
-            label="Bill no."
-            value={Number(values.billNumber).toLocaleString('en-IN')}
-            valueClassName="tabular-nums"
-          />
-          <DetailRow
-            label="Bilti no."
-            value={Number(values.biltiNumber).toLocaleString('en-IN')}
-            valueClassName="tabular-nums"
-          />
-          <DetailRow label="Bill book" value={values.billBook} />
-          <DetailRow label="Bilti book" value={values.biltiBook} />
+          {values.billNumber.trim() ? (
+            <DetailRow
+              label="Bill no."
+              value={Number(values.billNumber).toLocaleString('en-IN')}
+              valueClassName="tabular-nums"
+            />
+          ) : null}
+          {values.biltiNumber.trim() ? (
+            <DetailRow
+              label="Bilti no."
+              value={Number(values.biltiNumber).toLocaleString('en-IN')}
+              valueClassName="tabular-nums"
+            />
+          ) : null}
+          {values.billBook.trim() ? <DetailRow label="Bill book" value={values.billBook} /> : null}
+          {values.biltiBook.trim() ? (
+            <DetailRow label="Bilti book" value={values.biltiBook} />
+          ) : null}
         </SummaryCard>
       </div>
+      ) : null}
       </>
       ) : null}
 

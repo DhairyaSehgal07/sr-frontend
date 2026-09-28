@@ -42,6 +42,7 @@ import type { DaybookOutgoingEntry } from '@/features/daybook/api/types';
 import { EditOutgoingGatePassSheet } from '@/features/outgoing/forms/edit-outgoing-form';
 import { useCancelOutgoingGatePass } from '@/features/outgoing/api/use-cancel-outgoing-gate-pass';
 import { nikasiAccent } from '@/features/dispatch-pre-storage/constants/nikasi-accent';
+import { openNikasiGatePassPrint } from '@/features/dispatch-pre-storage/utils/nikasi-gate-pass-print';
 import {
   buildOutgoingBreakdownRows,
   formatDaybookDateTime,
@@ -50,6 +51,8 @@ import {
   totalIssuedBags,
   uniqueOutgoingWeightsKg,
 } from '@/features/daybook/utils/daybook-display';
+import { outgoingEntryToNikasiPrintModel } from '@/features/daybook/utils/outgoing-to-nikasi-print';
+import { isDirectSaleOutgoing } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
 interface InfoBlockProps {
@@ -478,10 +481,42 @@ export function DaybookOutgoingGatePassCard({ data: gatePass }: DaybookOutgoingG
             <Ban className="mr-2 h-3.5 w-3.5" />
             Mark as null
           </Button>
-          <Button variant="secondary" size="sm" className="h-8">
-            <Printer className="mr-2 h-3.5 w-3.5" />
-            Print
-          </Button>
+          {isDirectSaleOutgoing(gatePass.category ?? '') ? (
+            <>
+              <Button
+                variant="secondary"
+                size="icon-sm"
+                className="h-8 w-8"
+                title="Print invoice"
+                aria-label={`Print invoice for outgoing gate pass ${gatePass.gatePassNo}`}
+                onClick={() =>
+                  void openNikasiGatePassPrint(
+                    'invoice',
+                    outgoingEntryToNikasiPrintModel(gatePass),
+                  )
+                }
+              >
+                <Printer className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                variant="secondary"
+                size="icon-sm"
+                className="h-8 w-8"
+                title="Print bilti"
+                aria-label={`Print bilti for outgoing gate pass ${gatePass.gatePassNo}`}
+                onClick={() =>
+                  void openNikasiGatePassPrint('bilti', outgoingEntryToNikasiPrintModel(gatePass))
+                }
+              >
+                <FileText className="h-3.5 w-3.5" />
+              </Button>
+            </>
+          ) : (
+            <Button variant="secondary" size="sm" className="h-8">
+              <Printer className="mr-2 h-3.5 w-3.5" />
+              Print
+            </Button>
+          )}
         </div>
       </CardFooter>
 

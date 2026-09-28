@@ -76,11 +76,10 @@ export const INCOMING_STAGES = [
   'G5',
   'G6',
   'G7',
-  'TC',
+  'TL',
   'SRF Production',
   'Ration',
   'Unspecial',
-  'BR',
 ] as const;
 
 export const INCOMING_GATE_PASS_STATUSES = ['Graded', 'Ungraded'] as const;

@@ -382,7 +382,7 @@ const CreateOutgoingForm = () => {
                       Route &amp; vehicle
                     </FieldLegend>
                     <FieldDescription>
-                      Source, destination, and vehicle for this outgoing dispatch.
+                      Optional source, destination, and vehicle details for this dispatch.
                     </FieldDescription>
                     <FieldGroup className="mt-5 grid grid-cols-1 gap-6 @md/field-group:grid-cols-3">
                       <form.Field name="step1.from">
@@ -397,7 +397,7 @@ const CreateOutgoingForm = () => {
                                 value={field.state.value}
                                 onBlur={field.handleBlur}
                                 onChange={(e) => field.handleChange(e.target.value)}
-                                placeholder="e.g. Cold Storage A"
+                                placeholder="Optional"
                                 autoComplete="off"
                                 aria-invalid={isInvalid}
                                 className="h-11 text-base"
@@ -420,7 +420,7 @@ const CreateOutgoingForm = () => {
                                 value={field.state.value}
                                 onBlur={field.handleBlur}
                                 onChange={(e) => field.handleChange(e.target.value)}
-                                placeholder="e.g. Market Yard"
+                                placeholder="Optional"
                                 autoComplete="off"
                                 aria-invalid={isInvalid}
                                 className="h-11 text-base"
@@ -443,7 +443,7 @@ const CreateOutgoingForm = () => {
                                 value={field.state.value}
                                 onBlur={field.handleBlur}
                                 onChange={(e) => field.handleChange(e.target.value.toUpperCase())}
-                                placeholder="e.g. PB10AB1234"
+                                placeholder="Optional"
                                 autoComplete="off"
                                 aria-invalid={isInvalid}
                                 className="h-11 text-base uppercase"
@@ -466,7 +466,7 @@ const CreateOutgoingForm = () => {
                                 value={field.state.value}
                                 onBlur={field.handleBlur}
                                 onChange={(e) => field.handleChange(e.target.value)}
-                                placeholder="e.g. Punjab Roadways"
+                                placeholder="Optional"
                                 autoComplete="organization"
                                 aria-invalid={isInvalid}
                                 className="h-11 text-base"
@@ -537,7 +537,7 @@ const CreateOutgoingForm = () => {
                                 value={field.state.value}
                                 onBlur={field.handleBlur}
                                 onChange={(e) => field.handleChange(e.target.value)}
-                                placeholder="e.g. 9876543210"
+                                placeholder="Optional"
                                 autoComplete="tel"
                                 aria-invalid={isInvalid}
                                 className="h-11 text-base"
@@ -578,7 +578,7 @@ const CreateOutgoingForm = () => {
                       Bill &amp; bilti
                     </FieldLegend>
                     <FieldDescription>
-                      Bill number, bilti number, and book references for this dispatch.
+                      Optional bill number, bilti number, and book references.
                     </FieldDescription>
                     <FieldGroup className="mt-5 grid grid-cols-1 gap-6 @md/field-group:grid-cols-3">
                       <form.Field name="step1.billNumber">
@@ -595,7 +595,7 @@ const CreateOutgoingForm = () => {
                                 onBlur={field.handleBlur}
                                 onChange={(e) => field.handleChange(e.target.value)}
                                 inputMode="numeric"
-                                placeholder="e.g. 1001"
+                                placeholder="Optional"
                                 aria-invalid={isInvalid}
                                 className="h-11 text-base tabular-nums"
                               />
@@ -619,7 +619,7 @@ const CreateOutgoingForm = () => {
                                 onBlur={field.handleBlur}
                                 onChange={(e) => field.handleChange(e.target.value)}
                                 inputMode="numeric"
-                                placeholder="e.g. 42"
+                                placeholder="Optional"
                                 aria-invalid={isInvalid}
                                 className="h-11 text-base tabular-nums"
                               />
@@ -650,7 +650,7 @@ const CreateOutgoingForm = () => {
                                 onBlur={field.handleBlur}
                                 isInvalid={isInvalid}
                                 placeholder={
-                                  isLoadingBillBooks ? 'Loading bill books…' : 'Search bill books...'
+                                  isLoadingBillBooks ? 'Loading bill books…' : 'Optional'
                                 }
                                 emptyMessage={
                                   isLoadingBillBooks ? 'Loading bill books…' : 'No active bill books.'
@@ -683,7 +683,7 @@ const CreateOutgoingForm = () => {
                                 onBlur={field.handleBlur}
                                 isInvalid={isInvalid}
                                 placeholder={
-                                  isLoadingBillBooks ? 'Loading bill books…' : 'Search bill books...'
+                                  isLoadingBillBooks ? 'Loading bill books…' : 'Optional'
                                 }
                                 emptyMessage={
                                   isLoadingBillBooks ? 'Loading bill books…' : 'No active bill books.'
