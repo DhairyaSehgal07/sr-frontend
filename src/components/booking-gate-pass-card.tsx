@@ -83,6 +83,11 @@ function hasCostPerBag(costPerBag: number | undefined): costPerBag is number {
   return costPerBag != null && Number.isFinite(costPerBag);
 }
 
+function formatBillBook(value: Booking['billBook']): string {
+  if (value == null || value === '') return '—';
+  return String(value);
+}
+
 interface BookingGatePassCardProps {
   data: Booking;
   canUpdate?: boolean;
@@ -137,6 +142,7 @@ export function BookingGatePassCard({ data: booking, canUpdate = true }: Booking
       <CardContent className="pt-5">
         <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
           <InfoBlock label="Dispatch ledger" value={ledger.name ?? '—'} icon={Landmark} />
+          <InfoBlock label="Bill book" value={formatBillBook(booking.billBook)} />
           <InfoBlock
             label="Mobile"
             value={ledger.mobileNumber ?? '—'}

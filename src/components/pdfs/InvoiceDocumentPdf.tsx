@@ -309,7 +309,13 @@ function FillField({ value, style }: { value?: string; style?: { marginRight?: n
   return <View style={style ? [styles.fillLineTight, style] : styles.fillLineTight} />;
 }
 
+function invoiceHeading(billBook: NikasiGatePass['billBook'] | undefined): string {
+  const name = billBook == null ? '' : String(billBook).trim();
+  return name || 'ASHOK KUMAR PAHUJA';
+}
+
 const InvoiceDocumentPdf = ({ data }: InvoiceDocumentPdfProps) => {
+  const heading = invoiceHeading(data?.billBook);
   const billNo = data ? invoiceBillNo(data) : '';
   const dated = data ? formatPdfDate(data.date) : '';
   const partyLines = data ? partyAddressLines(data) : [];
@@ -344,7 +350,7 @@ const InvoiceDocumentPdf = ({ data }: InvoiceDocumentPdfProps) => {
           </View>
 
           <View style={styles.companyInfoSection}>
-            <Text style={styles.companyName}>ASHOK KUMAR PAHUJA</Text>
+            <Text style={styles.companyName}>{heading}</Text>
             <Text style={styles.tagline}>Producers of Top Quality Potatoes of Punjab</Text>
             <Text style={styles.addressText}>
               Vill. Thigli, P.O. Sidhwan Dona, Distt. Kapurthala - 144 625 (Pb.)

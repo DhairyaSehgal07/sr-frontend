@@ -20,6 +20,7 @@ const bookingBaseSchema = z.object({
     z.number().positive('Enter a positive gate pass number.'),
   ]),
   dispatchLedgerId: objectId,
+  billBookId: objectId,
   date: z.string().datetime('Select a valid date.'),
   expectedDateOfDelivery: z.union([
     z.undefined(),

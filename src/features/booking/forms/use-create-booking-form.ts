@@ -47,6 +47,7 @@ export function useCreateBookingForm(options: UseCreateBookingFormOptions = {}) 
     defaultValues: options.defaultValues ?? {
       manualGatePassNumber: undefined as number | undefined,
       dispatchLedgerId: '',
+      billBookId: '',
       date: todayIso,
       expectedDateOfDelivery: undefined as string | undefined,
       bank: '',

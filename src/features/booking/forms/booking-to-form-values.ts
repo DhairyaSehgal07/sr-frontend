@@ -58,6 +58,7 @@ export function bookingToFormValues(booking: Booking): BookingFormValues {
   return {
     manualGatePassNumber: booking.manualGatePassNumber,
     dispatchLedgerId: booking.dispatchLedgerId._id,
+    billBookId: booking.billBookId ?? '',
     date: toIsoDateTime(booking.date),
     expectedDateOfDelivery: booking.expectedDateOfDelivery
       ? toIsoDateTime(booking.expectedDateOfDelivery)

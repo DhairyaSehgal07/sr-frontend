@@ -5,6 +5,25 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Coldop-Enterprise</title>
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem('theme') || 'system';
+          var resolved =
+            theme === 'system'
+              ? window.matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light'
+              : theme;
+          var root = document.documentElement;
+          root.classList.remove('light', 'dark');
+          if (resolved === 'light' || resolved === 'dark') {
+            root.classList.add(resolved);
+            root.style.colorScheme = resolved;
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

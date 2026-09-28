@@ -32,6 +32,7 @@ type BookingSummarySheetProps = {
   onOpenChange: (open: boolean) => void;
   values: BookingSummaryValues | null;
   dispatchLedgerLabel: string;
+  billBookLabel: string;
   gatePassNo: number | null;
   onBack: () => void;
   onSubmit: () => void;
@@ -119,10 +120,12 @@ function activeQuantityRows(quantities: BookingSummaryValues['quantities']) {
 function BookingReviewSummary({
   values,
   dispatchLedgerLabel,
+  billBookLabel,
   gatePassNo,
 }: {
   values: BookingSummaryValues;
   dispatchLedgerLabel: string;
+  billBookLabel: string;
   gatePassNo: number | null;
 }) {
   const rows = activeQuantityRows(values.quantities);
@@ -165,6 +168,7 @@ function BookingReviewSummary({
         <SectionLabel icon={Landmark}>Dispatch ledger</SectionLabel>
         <SummaryCard>
           <DetailRow label="Linked ledger" value={dispatchLedgerLabel} icon={Landmark} />
+          <DetailRow label="Bill book" value={billBookLabel || '—'} />
         </SummaryCard>
       </div>
 
@@ -286,6 +290,7 @@ export function BookingSummarySheet({
   onOpenChange,
   values,
   dispatchLedgerLabel,
+  billBookLabel,
   gatePassNo,
   onBack,
   onSubmit,
@@ -319,6 +324,7 @@ export function BookingSummarySheet({
             <BookingReviewSummary
               values={values}
               dispatchLedgerLabel={dispatchLedgerLabel}
+              billBookLabel={billBookLabel}
               gatePassNo={gatePassNo}
             />
           ) : (

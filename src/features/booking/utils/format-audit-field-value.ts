@@ -9,6 +9,8 @@ export const BOOKING_AUDIT_FIELD_LABELS: Record<keyof BookingAuditState, string>
   date: 'Date',
   expectedDateOfDelivery: 'Expected delivery',
   dispatchLedgerId: 'Dispatch ledger',
+  billBookId: 'Bill book',
+  billBook: 'Bill book',
   bagSizes: 'Bag sizes',
   bank: 'Bank',
   amount: 'Amount',

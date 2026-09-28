@@ -359,7 +359,13 @@ function PaymentCell({ value }: { value?: string }) {
   );
 }
 
+function agreementHeading(billBook: Booking['billBook'] | undefined): string {
+  const name = billBook == null ? '' : String(billBook).trim();
+  return name || 'ASHOK KUMAR PAHUJA';
+}
+
 const BookingAgreementPdf = ({ booking }: BookingAgreementPdfProps) => {
+  const heading = agreementHeading(booking?.billBook);
   const lines = agreementLines(booking);
   const rowCount = Math.max(TABLE_ROW_COUNT, lines.length);
   const amount = booking ? agreementAmount(booking) : undefined;
@@ -430,7 +436,7 @@ const BookingAgreementPdf = ({ booking }: BookingAgreementPdfProps) => {
           {/* Center Column: Company Info */}
           <View style={styles.companyInfoSection}>
             <Text style={styles.jurisdictionText}>Subject to Kapurthala Jurisdiction</Text>
-            <Text style={styles.companyName}>ASHOK KUMAR PAHUJA</Text>
+            <Text style={styles.companyName}>{heading}</Text>
             <Text style={styles.tagline}>Producers of Top Quality Potatoes of Punjab</Text>
             <Text style={styles.addressText}>
               Vill. Thigli, P.O. Sidhwan Dona, Distt. Kapurthala - 144 625 (Pb.)

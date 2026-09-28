@@ -54,6 +54,7 @@ export function toUpdateBookingBody({
     date: form.date,
     expectedDateOfDelivery: form.expectedDateOfDelivery ? form.expectedDateOfDelivery : null,
     dispatchLedgerId: form.dispatchLedgerId,
+    billBookId: form.billBookId,
     bagSizes,
     bank: form.bank?.trim() ? form.bank.trim() : null,
     amount: bookingAmountFromQuantities(form.quantities) ?? null,

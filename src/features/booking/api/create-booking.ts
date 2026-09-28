@@ -68,6 +68,7 @@ export function toCreateBookingBody({ form, gatePassNo }: CreateBookingInput): C
 
   const body: CreateBookingBody = {
     dispatchLedgerId: form.dispatchLedgerId,
+    billBookId: form.billBookId,
     gatePassNo,
     date: form.date,
     bagSizes,

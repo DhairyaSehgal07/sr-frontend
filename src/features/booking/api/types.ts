@@ -13,6 +13,7 @@ export type BookingGatePassBagSize = {
 
 export type CreateBookingBody = {
   dispatchLedgerId: string;
+  billBookId: string;
   gatePassNo: number;
   date: string;
   bagSizes: BookingGatePassBagSize[];
@@ -55,6 +56,9 @@ export type Booking = {
   _id: string;
   dispatchLedgerId: BookingDispatchLedger;
   createdBy?: BookingCreatedBy;
+  billBookId?: string;
+  /** Book name from the selected bill book. */
+  billBook?: string | number;
   gatePassNo: number;
   manualGatePassNumber?: number;
   date: string;
@@ -114,6 +118,7 @@ export type UpdateBookingBody = {
   date: string;
   expectedDateOfDelivery?: string | null;
   dispatchLedgerId: string;
+  billBookId: string;
   bagSizes: BookingGatePassBagSize[];
   bank?: string | null;
   amount?: number | null;
@@ -151,6 +156,8 @@ export type BookingAuditState = Partial<{
   date: string;
   expectedDateOfDelivery: string | null;
   dispatchLedgerId: BookingDispatchLedger | string;
+  billBookId: string;
+  billBook: string | number;
   bagSizes: BookingGatePassBagSize[];
   bank: string | null;
   amount: number | null;

@@ -42,6 +42,7 @@ import { useBookingAvailability } from '@/features/booking/hooks/use-booking-ava
 import { buildOriginalQtyMap } from '@/features/booking/lib/booking-availability';
 import { createBookingFormSchema } from '@/features/booking/schemas/booking-form-schema';
 import { useDispatchLedgers } from '@/features/people/api/use-dispatch-ledgers';
+import { useBillBooks } from '@/features/settings/api/use-bill-books';
 import { AddDispatchLedgerDialog } from '@/features/people/components/add-dispatch-ledger-dialog';
 import type { DispatchLedger } from '@/features/people/types';
 type EditBookingFormContentProps = {
@@ -124,6 +125,9 @@ type EditBookingFormFieldsProps = {
 
 function EditBookingFormFields({ booking }: EditBookingFormFieldsProps) {
   const { data: dispatchLedgers = [] } = useDispatchLedgers();
+  const { data: billBooksData, isLoading: isLoadingBillBooks } = useBillBooks({
+    isActive: 'true',
+  });
   const { mutateAsync: updateBooking } = useUpdateBooking(booking._id);
 
   const defaultValues = useMemo(() => bookingToFormValues(booking), [booking]);
@@ -163,8 +167,23 @@ function EditBookingFormFields({ booking }: EditBookingFormFieldsProps) {
     return [...base, { id: ledger._id, label: ledger.name }];
   }, [dispatchLedgers, booking]);
 
+  const billBookOptions = useMemo<ComboboxOption[]>(() => {
+    const options = (billBooksData ?? []).map((book) => ({
+      id: book._id,
+      label: book.name,
+    }));
+    const savedId = booking.billBookId?.trim() ?? '';
+    const savedName = booking.billBook == null ? '' : String(booking.billBook).trim();
+    if (savedId && !options.some((option) => option.id === savedId)) {
+      return [...options, { id: savedId, label: savedName || savedId }];
+    }
+    return options;
+  }, [billBooksData, booking.billBook, booking.billBookId]);
+
   const [ledgerSearch, setLedgerSearch] = useState(() => ledgerSearchLabelFromBooking(booking));
   const [ledgerComboboxOpen, setLedgerComboboxOpen] = useState(false);
+  const [billBookSearch, setBillBookSearch] = useState('');
+  const [billBookComboboxOpen, setBillBookComboboxOpen] = useState(false);
   const [addLedgerOpen, setAddLedgerOpen] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
 
@@ -172,9 +191,15 @@ function EditBookingFormFields({ booking }: EditBookingFormFieldsProps) {
     () => filterAndSortOptions(ledgerSearch, dispatchLedgerOptions),
     [ledgerSearch, dispatchLedgerOptions],
   );
+  const sortedBillBooks = useMemo(
+    () => filterAndSortOptions(billBookSearch, billBookOptions),
+    [billBookSearch, billBookOptions],
+  );
   const resetComboboxState = () => {
     setLedgerSearch(ledgerSearchLabelFromBooking(booking));
     setLedgerComboboxOpen(false);
+    setBillBookSearch('');
+    setBillBookComboboxOpen(false);
   };
 
   const { form } = useCreateBookingForm({
@@ -208,6 +233,15 @@ function EditBookingFormFields({ booking }: EditBookingFormFieldsProps) {
       return ledgerSearchLabelFromBooking(booking);
     }
     return dispatchLedgerId;
+  };
+
+  const getBillBookLabel = (billBookId: string) => {
+    const fromList = billBookOptions.find((book) => book.id === billBookId)?.label;
+    if (fromList) return fromList;
+    if (booking.billBookId === billBookId && booking.billBook != null) {
+      return String(booking.billBook);
+    }
+    return '';
   };
 
   const handleLedgerCreated = (ledger: DispatchLedger) => {
@@ -367,6 +401,41 @@ function EditBookingFormFields({ booking }: EditBookingFormFieldsProps) {
                     );
                   }}
                 </form.Field>
+
+                <form.Field name="billBookId">
+                  {(field) => {
+                    const isInvalid = isFieldInvalid(field.state.meta);
+                    return (
+                      <Field data-invalid={isInvalid} className="@md/field-group:col-span-2">
+                        <FieldLabel htmlFor="edit-booking-bill-book">Bill book</FieldLabel>
+                        <SearchableOptionCombobox
+                          id="edit-booking-bill-book"
+                          name={field.name}
+                          value={field.state.value}
+                          onValueChange={field.handleChange}
+                          onBlur={field.handleBlur}
+                          isInvalid={isInvalid}
+                          placeholder={
+                            isLoadingBillBooks ? 'Loading bill books…' : 'Search bill books...'
+                          }
+                          emptyMessage={
+                            isLoadingBillBooks ? 'Loading bill books…' : 'No active bill books.'
+                          }
+                          options={billBookOptions}
+                          sortedOptions={sortedBillBooks}
+                          search={billBookSearch}
+                          setSearch={setBillBookSearch}
+                          open={billBookComboboxOpen}
+                          setOpen={setBillBookComboboxOpen}
+                        />
+                        <FieldDescription>
+                          Select the bill book printed on this booking agreement.
+                        </FieldDescription>
+                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                      </Field>
+                    );
+                  }}
+                </form.Field>
               </FieldGroup>
             </FieldSet>
 
@@ -458,6 +527,7 @@ function EditBookingFormFields({ booking }: EditBookingFormFieldsProps) {
               dispatchLedgerLabel={
                 parsed.success ? getDispatchLedgerLabel(parsed.data.dispatchLedgerId) : ''
               }
+              billBookLabel={parsed.success ? getBillBookLabel(parsed.data.billBookId) : ''}
               gatePassNo={booking.gatePassNo}
               onBack={() => setReviewOpen(false)}
               onSubmit={handleConfirmSubmit}
