@@ -34,6 +34,8 @@ type OutgoingSummarySheetProps = {
   onOpenChange: (open: boolean) => void;
   values: OutgoingSummaryValues | null;
   farmerLabel: string;
+  dispatchLedgerLabel: string;
+  billBookLabel: string;
   outgoingItems: TransferStockItem[];
   onBack: () => void;
   onSubmit: () => void;
@@ -106,10 +108,14 @@ function SummaryCard({ children, className }: { children: ReactNode; className?:
 function OutgoingReviewSummary({
   values,
   farmerLabel,
+  dispatchLedgerLabel,
+  billBookLabel,
   outgoingItems,
 }: {
   values: OutgoingSummaryValues;
   farmerLabel: string;
+  dispatchLedgerLabel: string;
+  billBookLabel: string;
   outgoingItems: TransferStockItem[];
 }) {
   const totalBags = outgoingItems.reduce((sum, item) => sum + item.quantity, 0);
@@ -132,7 +138,7 @@ function OutgoingReviewSummary({
     values.costPerBag,
     values.billNumber,
     values.biltiNumber,
-    values.billBook,
+    billBookLabel,
     values.biltiBook,
   ].some((value) => value.trim().length > 0);
   return (
@@ -171,6 +177,9 @@ function OutgoingReviewSummary({
             />
           ) : null}
           <DetailRow label="Category" value={values.category} />
+          {isDirectSaleOutgoing(values.category) && dispatchLedgerLabel.trim() ? (
+            <DetailRow label="Dispatch ledger" value={dispatchLedgerLabel} icon={User2} />
+          ) : null}
         </SummaryCard>
       </div>
 
@@ -235,7 +244,7 @@ function OutgoingReviewSummary({
               valueClassName="tabular-nums"
             />
           ) : null}
-          {values.billBook.trim() ? <DetailRow label="Bill book" value={values.billBook} /> : null}
+          {billBookLabel.trim() ? <DetailRow label="Bill book" value={billBookLabel} /> : null}
           {values.biltiBook.trim() ? (
             <DetailRow label="Bilti book" value={values.biltiBook} />
           ) : null}
@@ -288,6 +297,8 @@ export function OutgoingSummarySheet({
   onOpenChange,
   values,
   farmerLabel,
+  dispatchLedgerLabel,
+  billBookLabel,
   outgoingItems,
   onBack,
   onSubmit,
@@ -321,6 +332,8 @@ export function OutgoingSummarySheet({
             <OutgoingReviewSummary
               values={values}
               farmerLabel={farmerLabel}
+              dispatchLedgerLabel={dispatchLedgerLabel}
+              billBookLabel={billBookLabel}
               outgoingItems={outgoingItems}
             />
           ) : (

@@ -24,9 +24,10 @@ export type CreateOutgoingGatePassBody = {
   to?: string;
   storageGatePasses: CreateOutgoingStorageGatePass[];
   category: string;
+  dispatchLedgerId?: string;
+  billBookId?: string;
   billNumber?: number;
   biltiNumber?: number;
-  billBook?: string;
   biltiBook?: string;
   truckNumber?: string;
   transportCompany?: string;

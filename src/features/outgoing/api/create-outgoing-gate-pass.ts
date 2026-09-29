@@ -24,7 +24,6 @@ function assignTrimmed(
     | 'driverName'
     | 'driverMobile'
     | 'owner'
-    | 'billBook'
     | 'biltiBook'
   >,
   value: string,
@@ -125,6 +124,8 @@ export function toCreateOutgoingGatePassBody({
   };
 
   if (isDirectSaleOutgoing(step1.category)) {
+    body.dispatchLedgerId = step1.dispatchLedgerId;
+    body.billBookId = step1.billBookId;
     assignTrimmed(body, 'from', step1.from);
     assignTrimmed(body, 'to', step1.to);
     assignTrimmed(body, 'truckNumber', step1.truckNumber);
@@ -135,7 +136,6 @@ export function toCreateOutgoingGatePassBody({
     assignTrimmed(body, 'owner', step1.owner);
     assignPositiveInt(body, 'billNumber', step1.billNumber);
     assignPositiveInt(body, 'biltiNumber', step1.biltiNumber);
-    assignTrimmed(body, 'billBook', step1.billBook);
     assignTrimmed(body, 'biltiBook', step1.biltiBook);
     assignPositiveAmount(body, 'costPerBag', step1.costPerBag);
   }

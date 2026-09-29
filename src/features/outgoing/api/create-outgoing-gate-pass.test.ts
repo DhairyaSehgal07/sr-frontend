@@ -38,9 +38,10 @@ const form: OutgoingFormSubmitValues = {
     driverMobile: '9876543210',
     owner: 'Kapur',
     category: 'Direct Sale',
+    dispatchLedgerId: '64f1a2b3c4d5e6f7a8b9c0d4',
+    billBookId: '64f1a2b3c4d5e6f7a8b9c0d5',
     billNumber: '45',
     biltiNumber: '67',
-    billBook: 'A',
     biltiBook: 'B',
     costPerBag: '450',
     allocations: { key: 20 },
@@ -67,7 +68,6 @@ describe('direct sale fields', () => {
       owner: '',
       billNumber: '',
       biltiNumber: '',
-      billBook: '',
       biltiBook: '',
       costPerBag: '450',
     });
@@ -93,6 +93,29 @@ describe('direct sale fields', () => {
       remarks: '',
     });
     expect(edit.success).toBe(true);
+  });
+
+  it('requires a dispatch ledger and bill book for Direct Sale', () => {
+    const missingLedger = outgoingStep1Schema.safeParse({
+      ...form.step1,
+      dispatchLedgerId: '',
+    });
+    expect(missingLedger.success).toBe(false);
+
+    const missingBillBook = outgoingStep1Schema.safeParse({
+      ...form.step1,
+      billBookId: '',
+    });
+    expect(missingBillBook.success).toBe(false);
+
+    const otherCategory = outgoingStep1Schema.safeParse({
+      ...form.step1,
+      category: 'Outgoing to Shed',
+      dispatchLedgerId: '',
+      billBookId: '',
+      costPerBag: '',
+    });
+    expect(otherCategory.success).toBe(true);
   });
 
   it('requires a cost per bag for Direct Sale', () => {
@@ -133,6 +156,8 @@ describe('toCreateOutgoingGatePassBody', () => {
     });
 
     expect(body).toMatchObject({
+      dispatchLedgerId: '64f1a2b3c4d5e6f7a8b9c0d4',
+      billBookId: '64f1a2b3c4d5e6f7a8b9c0d5',
       transportCompany: 'Punjab Roadways',
       LSNumber: 'LS-12',
       driverName: 'Ravi',
@@ -140,6 +165,7 @@ describe('toCreateOutgoingGatePassBody', () => {
       owner: 'Kapur',
       costPerBag: 450,
     });
+    expect(body).not.toHaveProperty('billBook');
     expect(body.storageGatePasses).toHaveLength(2);
     expect(body.storageGatePasses[0]?.allocations[0]).toMatchObject({
       size: 'Ration',
@@ -183,6 +209,8 @@ describe('toCreateOutgoingGatePassBody', () => {
     expect(body).not.toHaveProperty('biltiNumber');
     expect(body).not.toHaveProperty('billBook');
     expect(body).not.toHaveProperty('biltiBook');
+    expect(body).not.toHaveProperty('dispatchLedgerId');
+    expect(body).not.toHaveProperty('billBookId');
     expect(body).not.toHaveProperty('costPerBag');
 
     vi.unstubAllGlobals();
@@ -206,7 +234,6 @@ describe('toCreateOutgoingGatePassBody', () => {
           owner: '',
           billNumber: '',
           biltiNumber: '',
-          billBook: '',
           biltiBook: '',
         },
       },
@@ -215,6 +242,8 @@ describe('toCreateOutgoingGatePassBody', () => {
     });
 
     expect(body.category).toBe('Direct Sale');
+    expect(body.dispatchLedgerId).toBe('64f1a2b3c4d5e6f7a8b9c0d4');
+    expect(body.billBookId).toBe('64f1a2b3c4d5e6f7a8b9c0d5');
     expect(body).not.toHaveProperty('from');
     expect(body).not.toHaveProperty('to');
     expect(body).not.toHaveProperty('truckNumber');

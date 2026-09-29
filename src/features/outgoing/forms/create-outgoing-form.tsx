@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
+import { UserPlus } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -10,6 +11,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useFarmerLinkOptions } from '@/features/people/api/use-farmer-link-options';
+import { useDispatchLedgers } from '@/features/people/api/use-dispatch-ledgers';
+import { AddDispatchLedgerDialog } from '@/features/people/components/add-dispatch-ledger-dialog';
+import type { DispatchLedger } from '@/features/people/types';
 import { farmerLinkOptionsToComboboxOptions } from '@/features/people/utils/farmer-link-combobox';
 import { useBillBooks } from '@/features/settings/api/use-bill-books';
 import { OutgoingQuantitiesSection } from '@/features/outgoing/forms/outgoing-quantities-section';
@@ -70,6 +74,8 @@ type OutgoingReviewSheetProps = {
   farmerStorageLinkId: string;
   values: OutgoingFormValues | null;
   farmerLabel: string;
+  dispatchLedgerLabel: string;
+  billBookLabel: string;
   onBack: () => void;
   onSubmit: () => void;
   canSubmit: boolean;
@@ -82,6 +88,8 @@ function OutgoingReviewSheet({
   farmerStorageLinkId,
   values,
   farmerLabel,
+  dispatchLedgerLabel,
+  billBookLabel,
   onBack,
   onSubmit,
   canSubmit,
@@ -98,6 +106,8 @@ function OutgoingReviewSheet({
       onOpenChange={onOpenChange}
       values={summaryValues}
       farmerLabel={farmerLabel}
+      dispatchLedgerLabel={dispatchLedgerLabel}
+      billBookLabel={billBookLabel}
       outgoingItems={outgoingItems}
       onBack={onBack}
       onSubmit={onSubmit}
@@ -109,6 +119,7 @@ function OutgoingReviewSheet({
 
 const CreateOutgoingForm = () => {
   const { data: farmerLinkOptions = [], isLoading: isLoadingFarmers } = useFarmerLinkOptions();
+  const { data: dispatchLedgers = [] } = useDispatchLedgers();
   const { data: billBooksData, isLoading: isLoadingBillBooks } = useBillBooks({
     isActive: 'true',
   });
@@ -136,6 +147,9 @@ const CreateOutgoingForm = () => {
   const [farmerComboboxOpen, setFarmerComboboxOpen] = useState(false);
   const [categorySearch, setCategorySearch] = useState('');
   const [categoryComboboxOpen, setCategoryComboboxOpen] = useState(false);
+  const [ledgerSearch, setLedgerSearch] = useState('');
+  const [ledgerComboboxOpen, setLedgerComboboxOpen] = useState(false);
+  const [addLedgerOpen, setAddLedgerOpen] = useState(false);
   const [billBookSearch, setBillBookSearch] = useState('');
   const [billBookComboboxOpen, setBillBookComboboxOpen] = useState(false);
   const [biltiBookSearch, setBiltiBookSearch] = useState('');
@@ -153,6 +167,18 @@ const CreateOutgoingForm = () => {
     () => filterAndSortOptions(categorySearch, CATEGORY_ITEMS),
     [categorySearch],
   );
+  const dispatchLedgerOptions = useMemo<ComboboxOption[]>(
+    () =>
+      dispatchLedgers.map((ledger) => ({
+        id: ledger._id,
+        label: ledger.name,
+      })),
+    [dispatchLedgers],
+  );
+  const sortedLedgers = useMemo(
+    () => filterAndSortOptions(ledgerSearch, dispatchLedgerOptions),
+    [ledgerSearch, dispatchLedgerOptions],
+  );
   const sortedBillBooks = useMemo(
     () => filterAndSortOptions(billBookSearch, billBookOptions),
     [billBookSearch, billBookOptions],
@@ -167,6 +193,8 @@ const CreateOutgoingForm = () => {
     setFarmerComboboxOpen(false);
     setCategorySearch('');
     setCategoryComboboxOpen(false);
+    setLedgerSearch('');
+    setLedgerComboboxOpen(false);
     setBillBookSearch('');
     setBillBookComboboxOpen(false);
     setBiltiBookSearch('');
@@ -193,6 +221,16 @@ const CreateOutgoingForm = () => {
 
   const getFarmerLabel = (farmerStorageLinkId: string) =>
     farmerOptions.find((option) => option.id === farmerStorageLinkId)?.label ?? farmerStorageLinkId;
+  const getDispatchLedgerLabel = (dispatchLedgerId: string) =>
+    dispatchLedgers.find((ledger) => ledger._id === dispatchLedgerId)?.name ?? '';
+  const getBillBookLabel = (billBookId: string) =>
+    billBookOptions.find((book) => book.id === billBookId)?.label ?? '';
+
+  const handleLedgerCreated = (ledger: DispatchLedger) => {
+    form.setFieldValue('step1.dispatchLedgerId', ledger._id);
+    setLedgerSearch(ledger.name);
+    setLedgerComboboxOpen(false);
+  };
 
   const handleOpenReview = () => {
     void form.handleSubmit({ submitAction: 'review' });
@@ -377,6 +415,60 @@ const CreateOutgoingForm = () => {
                     children={(category) =>
                       isDirectSaleOutgoing(category) ? (
                   <>
+                  <FieldSet>
+                    <FieldLegend className="font-heading text-base font-semibold">
+                      Dispatch ledger
+                    </FieldLegend>
+                    <FieldDescription>
+                      Select the dispatch ledger this direct sale belongs to.
+                    </FieldDescription>
+                    <FieldGroup className="mt-5 grid grid-cols-1 gap-6 @md/field-group:grid-cols-2">
+                      <form.Field name="step1.dispatchLedgerId">
+                        {(field) => {
+                          const isInvalid = isFieldInvalid(field.state.meta);
+                          return (
+                            <Field data-invalid={isInvalid}>
+                              <FieldLabel htmlFor="outgoing-dispatch-ledger">
+                                Dispatch ledger
+                              </FieldLabel>
+                              <div className="flex gap-2">
+                                <div className="min-w-0 flex-1">
+                                  <SearchableOptionCombobox
+                                    id="outgoing-dispatch-ledger"
+                                    name={field.name}
+                                    value={field.state.value}
+                                    onValueChange={field.handleChange}
+                                    onBlur={field.handleBlur}
+                                    isInvalid={isInvalid}
+                                    placeholder="Search dispatch ledgers..."
+                                    emptyMessage="No dispatch ledgers found."
+                                    options={dispatchLedgerOptions}
+                                    sortedOptions={sortedLedgers}
+                                    search={ledgerSearch}
+                                    setSearch={setLedgerSearch}
+                                    open={ledgerComboboxOpen}
+                                    setOpen={setLedgerComboboxOpen}
+                                  />
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="secondary"
+                                  className="h-11 shrink-0 gap-1.5 px-3"
+                                  onClick={() => setAddLedgerOpen(true)}
+                                  aria-label="Add dispatch ledger"
+                                >
+                                  <UserPlus className="size-4 shrink-0" />
+                                  <span className="hidden sm:inline">Add</span>
+                                </Button>
+                              </div>
+                              {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                            </Field>
+                          );
+                        }}
+                      </form.Field>
+                    </FieldGroup>
+                  </FieldSet>
+
                   <FieldSet>
                     <FieldLegend className="font-heading text-base font-semibold">
                       Route &amp; vehicle
@@ -578,8 +670,8 @@ const CreateOutgoingForm = () => {
                       Bill &amp; bilti
                     </FieldLegend>
                     <FieldDescription>
-                      Cost per bag is required. Bill number, bilti number, and book references are
-                      optional.
+                      Cost per bag and bill book are required. Bill number, bilti number, and bilti
+                      book are optional.
                     </FieldDescription>
                     <FieldGroup className="mt-5 grid grid-cols-1 gap-6 @md/field-group:grid-cols-3">
                       <form.Field name="step1.costPerBag">
@@ -654,28 +746,21 @@ const CreateOutgoingForm = () => {
                         }}
                       </form.Field>
 
-                      <form.Field name="step1.billBook">
+                      <form.Field name="step1.billBookId">
                         {(field) => {
                           const isInvalid = isFieldInvalid(field.state.meta);
-                          const selectedId =
-                            billBookOptions.find((book) => book.label === field.state.value)?.id ??
-                            '';
                           return (
                             <Field data-invalid={isInvalid}>
                               <FieldLabel htmlFor="outgoing-bill-book">Bill book</FieldLabel>
                               <SearchableOptionCombobox
                                 id="outgoing-bill-book"
                                 name={field.name}
-                                value={selectedId}
-                                onValueChange={(bookId) => {
-                                  const label =
-                                    billBookOptions.find((book) => book.id === bookId)?.label ?? '';
-                                  field.handleChange(label);
-                                }}
+                                value={field.state.value}
+                                onValueChange={field.handleChange}
                                 onBlur={field.handleBlur}
                                 isInvalid={isInvalid}
                                 placeholder={
-                                  isLoadingBillBooks ? 'Loading bill books…' : 'Optional'
+                                  isLoadingBillBooks ? 'Loading bill books…' : 'Search bill books...'
                                 }
                                 emptyMessage={
                                   isLoadingBillBooks ? 'Loading bill books…' : 'No active bill books.'
@@ -879,6 +964,10 @@ const CreateOutgoingForm = () => {
               farmerLabel={
                 parsed.success ? getFarmerLabel(parsed.data.step1.farmerStorageLinkId) : ''
               }
+              dispatchLedgerLabel={
+                parsed.success ? getDispatchLedgerLabel(parsed.data.step1.dispatchLedgerId) : ''
+              }
+              billBookLabel={parsed.success ? getBillBookLabel(parsed.data.step1.billBookId) : ''}
               onBack={() => setReviewOpen(false)}
               onSubmit={handleConfirmSubmit}
               canSubmit={canSubmit}
@@ -886,6 +975,12 @@ const CreateOutgoingForm = () => {
             />
           );
         }}
+      />
+
+      <AddDispatchLedgerDialog
+        open={addLedgerOpen}
+        onOpenChange={setAddLedgerOpen}
+        onSuccess={handleLedgerCreated}
       />
     </Card>
   );

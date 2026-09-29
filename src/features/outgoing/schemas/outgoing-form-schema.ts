@@ -26,6 +26,16 @@ function requireCostPerBag(value: string, ctx: z.RefinementCtx) {
   }
 }
 
+function requireObjectId(value: string, ctx: z.RefinementCtx, path: string, message: string) {
+  if (!objectId.safeParse(value).success) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message,
+      path: [path],
+    });
+  }
+}
+
 export const outgoingAllocationSchema = z.object({
   storageGatePassId: objectId,
   bagSize: z.string().min(1, 'Bag size is required'),
@@ -57,9 +67,10 @@ export const outgoingStep1Schema = z.object({
     driverMobile: z.string().trim(),
     owner: z.string().trim(),
     category: z.string().trim().min(1, 'Category is required.').max(100),
+    dispatchLedgerId: z.string(),
+    billBookId: z.string(),
     billNumber: optionalPositiveIntField,
     biltiNumber: optionalPositiveIntField,
-    billBook: z.string().trim(),
     biltiBook: z.string().trim(),
     costPerBag: z.string(),
     allocations: z
@@ -70,6 +81,13 @@ export const outgoingStep1Schema = z.object({
   })
   .superRefine((value, ctx) => {
     if (!isDirectSaleOutgoing(value.category)) return;
+    requireObjectId(
+      value.dispatchLedgerId,
+      ctx,
+      'dispatchLedgerId',
+      'Select a dispatch ledger.',
+    );
+    requireObjectId(value.billBookId, ctx, 'billBookId', 'Select a bill book.');
     requireCostPerBag(value.costPerBag, ctx);
   });
 
