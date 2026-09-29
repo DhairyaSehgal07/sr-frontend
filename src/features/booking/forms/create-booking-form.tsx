@@ -295,6 +295,29 @@ const CreateBookingForm = () => {
                   }}
                 </form.Field>
 
+                <form.Field name="agent">
+                  {(field) => {
+                    const isInvalid = isFieldInvalid(field.state.meta);
+                    return (
+                      <Field data-invalid={isInvalid} className="@md/field-group:col-span-2">
+                        <FieldLabel htmlFor={field.name}>Agent</FieldLabel>
+                        <Input
+                          id={field.name}
+                          name={field.name}
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(event) => field.handleChange(event.target.value)}
+                          aria-invalid={isInvalid}
+                          required
+                          placeholder="e.g. Ramesh"
+                          className="text-base"
+                        />
+                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                      </Field>
+                    );
+                  }}
+                </form.Field>
+
                 <form.Field name="dispatchLedgerId">
                   {(field) => {
                     const isInvalid = isFieldInvalid(field.state.meta);

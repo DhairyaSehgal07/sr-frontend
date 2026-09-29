@@ -8,6 +8,7 @@ export const BOOKING_AUDIT_FIELD_LABELS: Record<keyof BookingAuditState, string>
   manualGatePassNumber: 'Manual #',
   date: 'Date',
   expectedDateOfDelivery: 'Expected delivery',
+  agent: 'Agent',
   dispatchLedgerId: 'Dispatch ledger',
   billBookId: 'Bill book',
   billBook: 'Bill book',

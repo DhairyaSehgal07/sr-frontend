@@ -50,6 +50,7 @@ export function useCreateBookingForm(options: UseCreateBookingFormOptions = {}) 
       billBookId: '',
       date: todayIso,
       expectedDateOfDelivery: undefined as string | undefined,
+      agent: '',
       bank: '',
       modeOfPayment: undefined as BookingFormValues['modeOfPayment'],
       quantities: createDefaultBookingQuantities(),

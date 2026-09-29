@@ -36,7 +36,7 @@ import { useUpdateBooking } from '@/features/booking/api/use-update-booking';
 import { BookingPaymentFields } from '@/features/booking/forms/booking-payment-fields';
 import { BookingQuantitiesSection } from '@/features/booking/forms/booking-quantities-section';
 import { BookingSummarySheet } from '@/features/booking/forms/booking-summary-sheet';
-import { bookingToFormValues } from '@/features/booking/forms/booking-to-form-values';
+import { bookingBillBookId, bookingToFormValues } from '@/features/booking/forms/booking-to-form-values';
 import { useCreateBookingForm } from '@/features/booking/forms/use-create-booking-form';
 import { useBookingAvailability } from '@/features/booking/hooks/use-booking-availability';
 import { buildOriginalQtyMap } from '@/features/booking/lib/booking-availability';
@@ -172,8 +172,17 @@ function EditBookingFormFields({ booking }: EditBookingFormFieldsProps) {
       id: book._id,
       label: book.name,
     }));
-    const savedId = booking.billBookId?.trim() ?? '';
-    const savedName = booking.billBook == null ? '' : String(booking.billBook).trim();
+    const savedId = bookingBillBookId(booking.billBookId);
+    const populatedName =
+      booking.billBookId && typeof booking.billBookId === 'object'
+        ? booking.billBookId.name
+        : undefined;
+    const savedName =
+      booking.billBook == null
+        ? populatedName == null
+          ? ''
+          : String(populatedName).trim()
+        : String(booking.billBook).trim();
     if (savedId && !options.some((option) => option.id === savedId)) {
       return [...options, { id: savedId, label: savedName || savedId }];
     }
@@ -238,7 +247,7 @@ function EditBookingFormFields({ booking }: EditBookingFormFieldsProps) {
   const getBillBookLabel = (billBookId: string) => {
     const fromList = billBookOptions.find((book) => book.id === billBookId)?.label;
     if (fromList) return fromList;
-    if (booking.billBookId === billBookId && booking.billBook != null) {
+    if (bookingBillBookId(booking.billBookId) === billBookId && booking.billBook != null) {
       return String(booking.billBook);
     }
     return '';
@@ -350,6 +359,29 @@ function EditBookingFormFields({ booking }: EditBookingFormFieldsProps) {
                         <FieldDescription>
                           Leave blank if the delivery date is not known yet.
                         </FieldDescription>
+                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                      </Field>
+                    );
+                  }}
+                </form.Field>
+
+                <form.Field name="agent">
+                  {(field) => {
+                    const isInvalid = isFieldInvalid(field.state.meta);
+                    return (
+                      <Field data-invalid={isInvalid} className="@md/field-group:col-span-2">
+                        <FieldLabel htmlFor={field.name}>Agent</FieldLabel>
+                        <Input
+                          id={field.name}
+                          name={field.name}
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(event) => field.handleChange(event.target.value)}
+                          aria-invalid={isInvalid}
+                          required
+                          placeholder="e.g. Ramesh"
+                          className="text-base"
+                        />
                         {isInvalid && <FieldError errors={field.state.meta.errors} />}
                       </Field>
                     );

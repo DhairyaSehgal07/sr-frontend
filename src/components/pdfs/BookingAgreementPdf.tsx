@@ -301,7 +301,7 @@ function agreementLines(booking: Booking | null | undefined): AgreementLine[] {
     size: row.size,
     quantity: formatPdfNumber(row.currentQuantity),
     ratePerBag: formatPdfAmount(row.costPerBag),
-    weightPerBag: '',
+    weightPerBag: '50',
     remarks: index === 0 ? (booking.remarks ?? '') : '',
   }));
 }
@@ -462,10 +462,10 @@ const BookingAgreementPdf = ({ booking }: BookingAgreementPdfProps) => {
         <View style={styles.formRow}>
           <Text style={styles.textStatic}>Between </Text>
           <Text style={[styles.textStatic, { fontFamily: 'Helvetica-Bold' }]}>
-            Ashok Kumar Pahuja
+            {heading}
           </Text>
           <Text style={styles.textStatic}>, Kapurthala through</Text>
-          <FillLine value="Shri Ram Farms" />
+          <FillLine value={booking?.agent ?? ''} />
         </View>
         <View style={styles.formRow}>
           <Text style={styles.textStatic}>as first Party and</Text>

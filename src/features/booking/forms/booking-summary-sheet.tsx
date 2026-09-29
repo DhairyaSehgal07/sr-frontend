@@ -9,6 +9,7 @@ import {
   Landmark,
   Package2,
   Scale,
+  User,
   type LucideIcon,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -183,6 +184,7 @@ function BookingReviewSummary({
               icon={Calendar}
             />
           ) : null}
+          <DetailRow label="Agent" value={values.agent.trim() || '—'} icon={User} />
           {gatePassNo != null ? (
             <DetailRow
               label="Gate pass no."

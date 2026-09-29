@@ -72,6 +72,7 @@ export function toCreateBookingBody({ form, gatePassNo }: CreateBookingInput): C
     gatePassNo,
     date: form.date,
     bagSizes,
+    agent: form.agent.trim(),
     idempotencyKey: crypto.randomUUID(),
   };
 

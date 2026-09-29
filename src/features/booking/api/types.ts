@@ -19,6 +19,7 @@ export type CreateBookingBody = {
   bagSizes: BookingGatePassBagSize[];
   manualGatePassNumber?: number;
   expectedDateOfDelivery?: string | null;
+  agent: string;
   bank?: string;
   amount?: number;
   modeOfPayment?: BookingPaymentMode;
@@ -52,17 +53,24 @@ export type BookingCreatedBy = {
 
 export type BookingEditHistoryEntry = Record<string, unknown>;
 
+export type BookingBillBookRef = {
+  _id: string;
+  name?: string;
+};
+
 export type Booking = {
   _id: string;
   dispatchLedgerId: BookingDispatchLedger;
   createdBy?: BookingCreatedBy;
-  billBookId?: string;
+  /** Object id string, a numeric id, or a populated bill-book document from the API. */
+  billBookId?: string | number | BookingBillBookRef;
   /** Book name from the selected bill book. */
   billBook?: string | number;
   gatePassNo: number;
   manualGatePassNumber?: number;
   date: string;
   expectedDateOfDelivery?: string;
+  agent?: string;
   bank?: string;
   amount?: number;
   modeOfPayment?: BookingPaymentMode;
@@ -117,6 +125,7 @@ export type UpdateBookingBody = {
   manualGatePassNumber?: number | null;
   date: string;
   expectedDateOfDelivery?: string | null;
+  agent: string;
   dispatchLedgerId: string;
   billBookId: string;
   bagSizes: BookingGatePassBagSize[];
@@ -155,6 +164,7 @@ export type BookingAuditState = Partial<{
   manualGatePassNumber: number | null;
   date: string;
   expectedDateOfDelivery: string | null;
+  agent: string | null;
   dispatchLedgerId: BookingDispatchLedger | string;
   billBookId: string;
   billBook: string | number;

@@ -53,6 +53,7 @@ export function toUpdateBookingBody({
     manualGatePassNumber: form.manualGatePassNumber ?? null,
     date: form.date,
     expectedDateOfDelivery: form.expectedDateOfDelivery ? form.expectedDateOfDelivery : null,
+    agent: form.agent.trim(),
     dispatchLedgerId: form.dispatchLedgerId,
     billBookId: form.billBookId,
     bagSizes,

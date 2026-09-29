@@ -8,6 +8,15 @@ import {
 } from '@/features/booking/schemas/booking-form-schema';
 import { BAG_SIZES } from '@/lib/constants';
 
+export function bookingBillBookId(value: unknown): string {
+  if (typeof value === 'string') return value.trim();
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+  if (value && typeof value === 'object' && '_id' in value) {
+    return bookingBillBookId(value._id);
+  }
+  return '';
+}
+
 function toIsoDateTime(value: string): string {
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return value;
@@ -58,11 +67,12 @@ export function bookingToFormValues(booking: Booking): BookingFormValues {
   return {
     manualGatePassNumber: booking.manualGatePassNumber,
     dispatchLedgerId: booking.dispatchLedgerId._id,
-    billBookId: booking.billBookId ?? '',
+    billBookId: bookingBillBookId(booking.billBookId),
     date: toIsoDateTime(booking.date),
     expectedDateOfDelivery: booking.expectedDateOfDelivery
       ? toIsoDateTime(booking.expectedDateOfDelivery)
       : undefined,
+    agent: booking.agent ?? '',
     bank: booking.bank ?? '',
     modeOfPayment:
       booking.modeOfPayment && isBookingPaymentMode(booking.modeOfPayment)

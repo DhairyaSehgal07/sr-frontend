@@ -27,6 +27,7 @@ const bookingBaseSchema = z.object({
     z.literal(''),
     z.string().datetime('Select a valid expected delivery date.'),
   ]),
+  agent: z.string().trim().min(1, 'Enter the agent.'),
   bank: z.union([z.undefined(), z.literal(''), z.string()]),
   modeOfPayment: z.union([z.undefined(), z.literal(''), z.enum(BOOKING_PAYMENT_MODES)]),
   remarks: z.string(),
