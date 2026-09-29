@@ -303,8 +303,11 @@ const styles = StyleSheet.create({
   },
 });
 
+export type InvoiceDocumentLayout = 'freight' | 'sale';
+
 type InvoiceDocumentPdfProps = {
   data?: NikasiGatePass;
+  layout?: InvoiceDocumentLayout;
 };
 
 function FillField({ value, style }: { value?: string; style?: { marginRight?: number } }) {
@@ -328,7 +331,7 @@ function invoiceHeading(billBook: NikasiGatePass['billBook'] | undefined): strin
   return name || 'ASHOK KUMAR PAHUJA';
 }
 
-const InvoiceDocumentPdf = ({ data }: InvoiceDocumentPdfProps) => {
+const InvoiceDocumentPdf = ({ data, layout = 'freight' }: InvoiceDocumentPdfProps) => {
   const heading = invoiceHeading(data?.billBook);
   const billNo = data ? invoiceBillNo(data) : '';
   const dated = data ? formatPdfDate(data.date) : '';
@@ -345,14 +348,22 @@ const InvoiceDocumentPdf = ({ data }: InvoiceDocumentPdfProps) => {
   const weight = data ? splitWeightQtlKg(data.netWeight) : { qtl: '', kg: '' };
   const billedTotal = data ? bagLinesTotal(data.bagSize) : undefined;
   const sharedRate = sharedCostPerBag(data?.bagSize ?? []);
+  const bagLines =
+    data?.bagSize.map((row) =>
+      layout === 'sale'
+        ? [row.size, row.variety].filter(Boolean).join(' ')
+        : `${row.size} ${row.variety} × ${formatPdfNumber(row.quantityIssued)}`,
+    ) ?? [];
   const contentLines = data
     ? [
-        data.category,
-        ...data.bagSize.map(
-          (row) => `${row.size} ${row.variety} × ${formatPdfNumber(row.quantityIssued)}`,
-        ),
-        sharedRate != null ? `Cost per bag ${formatPdfAmount(sharedRate)}` : '',
-        billedTotal != null ? `Total amount ${formatPdfAmount(billedTotal)}` : '',
+        ...(layout === 'sale' ? [] : [data.category]),
+        ...bagLines,
+        ...(layout === 'sale'
+          ? []
+          : [
+              sharedRate != null ? `Cost per bag ${formatPdfAmount(sharedRate)}` : '',
+              billedTotal != null ? `Total amount ${formatPdfAmount(billedTotal)}` : '',
+            ]),
       ].filter(Boolean)
     : [];
 
@@ -460,33 +471,65 @@ const InvoiceDocumentPdf = ({ data }: InvoiceDocumentPdfProps) => {
             <View style={[styles.tableHeaderCell, { width: '10%' }]}>
               <Text style={styles.headerText}>NO. OF{'\n'}PKGS.</Text>
             </View>
-            <View style={[styles.tableHeaderCell, { width: '35%' }]}>
-              <Text style={[styles.headerText, { letterSpacing: 2 }]}>C O N T E N T S</Text>
-            </View>
-
-            {/* Nested Weight Column */}
-            <View style={styles.weightHeaderContainer}>
-              <View style={styles.weightTop}>
-                <Text style={styles.headerText}>WEIGHT</Text>
-              </View>
-              <View style={styles.weightBottom}>
-                <View
-                  style={[
-                    styles.weightSubCell,
-                    { borderRightWidth: 1, borderColor: colors.brandGreen },
-                  ]}
-                >
-                  <Text style={styles.headerText}>QTL.</Text>
+            {layout === 'sale' ? (
+              <View style={[styles.weightHeaderContainer, { width: '35%' }]}>
+                <View style={styles.weightTop}>
+                  <Text style={[styles.headerText, { letterSpacing: 2 }]}>CONTENTS</Text>
                 </View>
-                <View style={styles.weightSubCell}>
-                  <Text style={styles.headerText}>KG.</Text>
+                <View style={styles.weightBottom}>
+                  <View
+                    style={[
+                      styles.weightSubCell,
+                      { borderRightWidth: 1, borderColor: colors.brandGreen },
+                    ]}
+                  >
+                    <Text style={styles.headerText}>VARIETY</Text>
+                  </View>
+                  <View style={styles.weightSubCell}>
+                    <Text style={styles.headerText}>SIZE</Text>
+                  </View>
                 </View>
               </View>
-            </View>
+            ) : (
+              <View style={[styles.tableHeaderCell, { width: '35%' }]}>
+                <Text style={[styles.headerText, { letterSpacing: 2 }]}>C O N T E N T S</Text>
+              </View>
+            )}
 
-            <View style={[styles.tableHeaderCell, { width: '10%' }]}>
-              <Text style={styles.headerText}>RATE{'\n'}PER QTL.</Text>
-            </View>
+            {layout === 'sale' ? (
+              <>
+                <View style={[styles.tableHeaderCell, { width: '12.5%' }]}>
+                  <Text style={styles.headerText}>RATE PER BAG{'\n'}(50 KG)</Text>
+                </View>
+                <View style={[styles.tableHeaderCell, { width: '12.5%' }]}>
+                  <Text style={styles.headerText}>TOTAL{'\n'}AMOUNT</Text>
+                </View>
+              </>
+            ) : (
+              <>
+                <View style={styles.weightHeaderContainer}>
+                  <View style={styles.weightTop}>
+                    <Text style={styles.headerText}>WEIGHT</Text>
+                  </View>
+                  <View style={styles.weightBottom}>
+                    <View
+                      style={[
+                        styles.weightSubCell,
+                        { borderRightWidth: 1, borderColor: colors.brandGreen },
+                      ]}
+                    >
+                      <Text style={styles.headerText}>QTL.</Text>
+                    </View>
+                    <View style={styles.weightSubCell}>
+                      <Text style={styles.headerText}>KG.</Text>
+                    </View>
+                  </View>
+                </View>
+                <View style={[styles.tableHeaderCell, { width: '10%' }]}>
+                  <Text style={styles.headerText}>RATE{'\n'}PER QTL.</Text>
+                </View>
+              </>
+            )}
             <View style={[styles.tableHeaderCell, { width: '10%' }]}>
               <Text style={styles.headerText}>TOTAL FREIGHT{'\n'}RUPEES</Text>
             </View>
@@ -503,23 +546,61 @@ const InvoiceDocumentPdf = ({ data }: InvoiceDocumentPdfProps) => {
             <View style={[styles.tableCol, { width: '10%' }]}>
               {pkgs ? <Text style={styles.cellValue}>{pkgs}</Text> : null}
             </View>
-            <View style={styles.contentsCol}>
-              <View>
-                {contentLines.map((line) => (
-                  <Text key={line} style={styles.cellValueLeft}>
-                    {line}
-                  </Text>
-                ))}
+            {layout === 'sale' ? (
+              <View style={styles.contentsCol}>
+                <View>
+                  {(data?.bagSize ?? []).map((row, index) => (
+                    <View
+                      key={`${row.variety}-${row.size}-${index}`}
+                      style={{ flexDirection: 'row' }}
+                    >
+                      <View style={{ width: '50%' }}>
+                        <Text style={styles.cellValueLeft}>{row.variety}</Text>
+                      </View>
+                      <View style={{ width: '50%' }}>
+                        <Text style={styles.cellValueLeft}>{row.size}</Text>
+                      </View>
+                    </View>
+                  ))}
+                </View>
+                <Text style={styles.bardanaText}>BARDANA TAX EXTRA</Text>
               </View>
-              <Text style={styles.bardanaText}>BARDANA TAX EXTRA</Text>
-            </View>
-            <View style={[styles.tableCol, { width: '7.5%' }]}>
-              {weight.qtl ? <Text style={styles.cellValue}>{weight.qtl}</Text> : null}
-            </View>
-            <View style={[styles.tableCol, { width: '7.5%' }]}>
-              {weight.kg ? <Text style={styles.cellValue}>{weight.kg}</Text> : null}
-            </View>
-            <View style={[styles.tableCol, { width: '10%' }]} />
+            ) : (
+              <View style={styles.contentsCol}>
+                <View>
+                  {contentLines.map((line) => (
+                    <Text key={line} style={styles.cellValueLeft}>
+                      {line}
+                    </Text>
+                  ))}
+                </View>
+                <Text style={styles.bardanaText}>BARDANA TAX EXTRA</Text>
+              </View>
+            )}
+            {layout === 'sale' ? (
+              <>
+                <View style={[styles.tableCol, { width: '12.5%' }]}>
+                  {sharedRate != null ? (
+                    <Text style={styles.cellValue}>{formatPdfAmount(sharedRate)}</Text>
+                  ) : null}
+                </View>
+                <View style={[styles.tableCol, { width: '12.5%' }]}>
+                  {billedTotal != null ? (
+                    <Text style={styles.cellValue}>{formatPdfAmount(billedTotal)}</Text>
+                  ) : null}
+                </View>
+              </>
+            ) : (
+              <>
+                <View style={[styles.tableCol, { width: '7.5%' }]}>
+                  {weight.qtl ? <Text style={styles.cellValue}>{weight.qtl}</Text> : null}
+                </View>
+                <View style={[styles.tableCol, { width: '7.5%' }]}>
+                  {weight.kg ? <Text style={styles.cellValue}>{weight.kg}</Text> : null}
+                </View>
+                <View style={[styles.tableCol, { width: '10%' }]} />
+              </>
+            )}
             <View style={[styles.tableCol, { width: '10%' }]} />
             <View style={[styles.tableCol, { width: '10%' }]} />
             <View style={[styles.tableColNoBorder, { width: '10%' }]} />

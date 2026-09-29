@@ -376,7 +376,9 @@ export function DispatchPreStorageGatePassCard({
             className="h-8 w-8"
             title="Print invoice"
             aria-label={`Print invoice for nikasi gate pass ${gatePass.gatePassNo}`}
-            onClick={() => void openNikasiGatePassPrint('invoice', gatePass)}
+            onClick={() =>
+              void openNikasiGatePassPrint('invoice', gatePass, { invoiceLayout: 'sale' })
+            }
           >
             <Printer className="h-3.5 w-3.5" />
           </Button>

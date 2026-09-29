@@ -3,7 +3,9 @@ import type { ReactElement } from 'react';
 import { toast } from 'sonner';
 
 import BiltiDocumentPdf from '@/components/pdfs/BiltiDocumentPdf';
-import InvoiceDocumentPdf from '@/components/pdfs/InvoiceDocumentPdf';
+import InvoiceDocumentPdf, {
+  type InvoiceDocumentLayout,
+} from '@/components/pdfs/InvoiceDocumentPdf';
 import type { NikasiGatePass } from '@/features/dispatch-pre-storage/api/types';
 
 async function openPdfDocument(document: ReactElement<DocumentProps>): Promise<void> {
@@ -32,10 +34,13 @@ async function openPdfDocument(document: ReactElement<DocumentProps>): Promise<v
 export async function openNikasiGatePassPrint(
   doc: 'invoice' | 'bilti',
   gatePass: NikasiGatePass,
+  options?: { invoiceLayout?: InvoiceDocumentLayout },
 ): Promise<void> {
   try {
     if (doc === 'invoice') {
-      await openPdfDocument(<InvoiceDocumentPdf data={gatePass} />);
+      await openPdfDocument(
+        <InvoiceDocumentPdf data={gatePass} layout={options?.invoiceLayout} />,
+      );
       return;
     }
 

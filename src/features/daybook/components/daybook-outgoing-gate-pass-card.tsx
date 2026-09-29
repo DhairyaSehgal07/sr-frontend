@@ -550,6 +550,7 @@ export function DaybookOutgoingGatePassCard({ data: gatePass }: DaybookOutgoingG
                   void openNikasiGatePassPrint(
                     'invoice',
                     outgoingEntryToNikasiPrintModel(gatePass),
+                    { invoiceLayout: 'sale' },
                   )
                 }
               >
