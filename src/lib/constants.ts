@@ -91,7 +91,6 @@ export const DISPATCH_PRE_STORAGE_CATEGORIES = [
   'Consumption/Donation',
   'Contract Farming',
   'Local Sale',
-  'Direct Sale',
   'Sowing',
   'Other State',
 ] as const;
