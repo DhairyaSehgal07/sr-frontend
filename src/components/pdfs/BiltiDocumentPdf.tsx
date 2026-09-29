@@ -260,7 +260,13 @@ type BiltiDocumentPdfProps = {
   data?: NikasiGatePass;
 };
 
+function biltiHeading(billBook: NikasiGatePass['billBook'] | undefined): string {
+  const name = billBook == null ? '' : String(billBook).trim();
+  return name || 'ASHOK KUMAR PAHUJA';
+}
+
 const BiltiDocumentPdf = ({ data }: BiltiDocumentPdfProps) => {
+  const heading = biltiHeading(data?.billBook);
   const billNo = data ? biltiBillNo(data) : '';
   const dated = data ? formatPdfDate(data.date) : '';
   const party = data?.dispatchLedgerId;
@@ -292,7 +298,7 @@ const BiltiDocumentPdf = ({ data }: BiltiDocumentPdfProps) => {
 
           {/* Company Identity */}
           <View style={styles.companyInfoSection}>
-            <Text style={styles.companyName}>ASHOK KUMAR PAHUJA</Text>
+            <Text style={styles.companyName}>{heading}</Text>
             <Text style={styles.tagline}>Producers of Top Quality Potatoes of Punjab</Text>
             <Text style={styles.addressText}>
               Vill. Thigli, P.O. Sidhwan Dona, Distt. Kapurthala - 144 625 (Pb.)
@@ -544,7 +550,7 @@ const BiltiDocumentPdf = ({ data }: BiltiDocumentPdfProps) => {
 
           {/* Signature Block */}
           <View style={styles.signatureSection}>
-            <Text style={styles.signatureText}>For ASHOK KUMAR PAHUJA</Text>
+            <Text style={styles.signatureText}>For {heading}</Text>
           </View>
         </View>
       </Page>
