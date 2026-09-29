@@ -34,6 +34,7 @@ export type CreateOutgoingGatePassBody = {
   driverName?: string;
   driverMobile?: string;
   owner?: string;
+  costPerBag?: number;
   manualGatePassNumber?: number;
   remarks?: string;
   idempotencyKey?: string;
@@ -82,6 +83,7 @@ export type UpdateOutgoingGatePassBody = {
   biltiNumber?: number | null;
   billBook?: string | null;
   biltiBook?: string | null;
+  costPerBag?: number | null;
   remarks?: string;
 };
 
@@ -126,6 +128,7 @@ export type UpdateOutgoingGatePassInput = {
     biltiNumber: string;
     billBook: string;
     biltiBook: string;
+    costPerBag: string;
     remarks: string;
   };
 };

@@ -1,5 +1,7 @@
 import * as z from 'zod';
 
+import { isDirectSaleOutgoing } from '@/lib/constants';
+
 export const objectId = z.string().length(24, 'Select a valid record from the list.');
 
 function isPositiveIntString(value: string): boolean {
@@ -11,6 +13,18 @@ const optionalPositiveIntField = z.string().refine((value) => {
   const trimmed = value.trim();
   return trimmed.length === 0 || isPositiveIntString(trimmed);
 }, 'Must be a whole number greater than zero');
+
+function requireCostPerBag(value: string, ctx: z.RefinementCtx) {
+  const trimmed = value.trim();
+  const parsed = Number(trimmed);
+  if (trimmed.length === 0 || !Number.isFinite(parsed) || parsed <= 0) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Cost per bag is required.',
+      path: ['costPerBag'],
+    });
+  }
+}
 
 export const outgoingAllocationSchema = z.object({
   storageGatePassId: objectId,
@@ -47,11 +61,16 @@ export const outgoingStep1Schema = z.object({
     biltiNumber: optionalPositiveIntField,
     billBook: z.string().trim(),
     biltiBook: z.string().trim(),
+    costPerBag: z.string(),
     allocations: z
       .record(z.string(), z.number().int().min(1))
       .refine((obj) => Object.keys(obj).length > 0, {
         message: 'Select at least one allocation in the gate passes table',
       }),
+  })
+  .superRefine((value, ctx) => {
+    if (!isDirectSaleOutgoing(value.category)) return;
+    requireCostPerBag(value.costPerBag, ctx);
   });
 
 export const outgoingStep2Schema = z.object({

@@ -489,9 +489,35 @@ function EditOutgoingFormFields({
                 Bill &amp; bilti
               </FieldLegend>
               <FieldDescription>
-                Optional bill number, bilti number, and book references.
+                Cost per bag is required. Bill number, bilti number, and book references are
+                optional.
               </FieldDescription>
               <FieldGroup className="mt-5 grid grid-cols-1 gap-6">
+                <form.Field name="costPerBag">
+                  {(field) => {
+                    const isInvalid = isFieldInvalid(field.state.meta);
+                    return (
+                      <Field data-invalid={isInvalid}>
+                        <FieldLabel htmlFor={field.name}>Cost per bag</FieldLabel>
+                        <Input
+                          {...numericInputProps}
+                          id={field.name}
+                          name={field.name}
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(event) => field.handleChange(event.target.value)}
+                          inputMode="decimal"
+                          placeholder="e.g. 450"
+                          aria-invalid={isInvalid}
+                          disabled={isPending}
+                          className="h-11 text-base tabular-nums"
+                        />
+                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                      </Field>
+                    );
+                  }}
+                </form.Field>
+
                 <form.Field name="billNumber">
                   {(field) => {
                     const isInvalid = isFieldInvalid(field.state.meta);

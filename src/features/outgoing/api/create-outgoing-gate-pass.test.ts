@@ -42,6 +42,7 @@ const form: OutgoingFormSubmitValues = {
     biltiNumber: '67',
     billBook: 'A',
     biltiBook: 'B',
+    costPerBag: '450',
     allocations: { key: 20 },
   },
   step2: {
@@ -68,6 +69,7 @@ describe('direct sale fields', () => {
       biltiNumber: '',
       billBook: '',
       biltiBook: '',
+      costPerBag: '450',
     });
     expect(step1.success).toBe(true);
 
@@ -87,9 +89,25 @@ describe('direct sale fields', () => {
       biltiNumber: '',
       billBook: '',
       biltiBook: '',
+      costPerBag: '450',
       remarks: '',
     });
     expect(edit.success).toBe(true);
+  });
+
+  it('requires a cost per bag for Direct Sale', () => {
+    const missing = outgoingStep1Schema.safeParse({
+      ...form.step1,
+      costPerBag: '',
+    });
+    expect(missing.success).toBe(false);
+
+    const otherCategory = outgoingStep1Schema.safeParse({
+      ...form.step1,
+      category: 'Outgoing to Shed',
+      costPerBag: '',
+    });
+    expect(otherCategory.success).toBe(true);
   });
 
   it('rejects a non-numeric bill number when one is entered', () => {
@@ -120,6 +138,7 @@ describe('toCreateOutgoingGatePassBody', () => {
       driverName: 'Ravi',
       driverMobile: '9876543210',
       owner: 'Kapur',
+      costPerBag: 450,
     });
     expect(body.storageGatePasses).toHaveLength(2);
     expect(body.storageGatePasses[0]?.allocations[0]).toMatchObject({
@@ -164,6 +183,7 @@ describe('toCreateOutgoingGatePassBody', () => {
     expect(body).not.toHaveProperty('biltiNumber');
     expect(body).not.toHaveProperty('billBook');
     expect(body).not.toHaveProperty('biltiBook');
+    expect(body).not.toHaveProperty('costPerBag');
 
     vi.unstubAllGlobals();
   });
@@ -201,6 +221,7 @@ describe('toCreateOutgoingGatePassBody', () => {
     expect(body).not.toHaveProperty('billNumber');
     expect(body).not.toHaveProperty('biltiNumber');
     expect(body).not.toHaveProperty('billBook');
+    expect(body.costPerBag).toBe(450);
 
     vi.unstubAllGlobals();
   });

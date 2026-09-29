@@ -33,6 +33,17 @@ function assignTrimmed(
   if (trimmed) body[key] = trimmed;
 }
 
+function assignPositiveAmount(
+  body: CreateOutgoingGatePassBody,
+  key: 'costPerBag',
+  value: string,
+) {
+  const trimmed = value.trim();
+  if (!trimmed) return;
+  const parsed = Number(trimmed);
+  if (Number.isFinite(parsed) && parsed > 0) body[key] = parsed;
+}
+
 function assignPositiveInt(
   body: CreateOutgoingGatePassBody,
   key: 'billNumber' | 'biltiNumber',
@@ -126,6 +137,7 @@ export function toCreateOutgoingGatePassBody({
     assignPositiveInt(body, 'biltiNumber', step1.biltiNumber);
     assignTrimmed(body, 'billBook', step1.billBook);
     assignTrimmed(body, 'biltiBook', step1.biltiBook);
+    assignPositiveAmount(body, 'costPerBag', step1.costPerBag);
   }
 
   if (step1.manualGatePassNumber != null) {

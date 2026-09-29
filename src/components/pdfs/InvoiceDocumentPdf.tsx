@@ -2,9 +2,14 @@ import { Document, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 
 import { SrfLogo } from '@/components/pdfs/srf-logo';
 
-import type { NikasiGatePass } from '@/features/dispatch-pre-storage/api/types';
+import type {
+  NikasiGatePass,
+  NikasiGatePassBagSizeItem,
+} from '@/features/dispatch-pre-storage/api/types';
 
 import {
+  bagLinesTotal,
+  formatPdfAmount,
   formatPdfDate,
   formatPdfNumber,
   invoiceBillNo,
@@ -309,6 +314,15 @@ function FillField({ value, style }: { value?: string; style?: { marginRight?: n
   return <View style={style ? [styles.fillLineTight, style] : styles.fillLineTight} />;
 }
 
+function sharedCostPerBag(rows: readonly NikasiGatePassBagSizeItem[]): number | undefined {
+  const rates = rows
+    .map((row) => row.costPerBag)
+    .filter((rate): rate is number => rate != null && Number.isFinite(rate) && rate > 0);
+  if (rates.length === 0) return undefined;
+  const first = rates[0];
+  return rates.every((rate) => rate === first) ? first : undefined;
+}
+
 function invoiceHeading(billBook: NikasiGatePass['billBook'] | undefined): string {
   const name = billBook == null ? '' : String(billBook).trim();
   return name || 'ASHOK KUMAR PAHUJA';
@@ -329,12 +343,16 @@ const InvoiceDocumentPdf = ({ data }: InvoiceDocumentPdfProps) => {
   const to = data?.to?.trim() || '';
   const pkgs = data ? formatPdfNumber(totalBags(data.bagSize)) : '';
   const weight = data ? splitWeightQtlKg(data.netWeight) : { qtl: '', kg: '' };
+  const billedTotal = data ? bagLinesTotal(data.bagSize) : undefined;
+  const sharedRate = sharedCostPerBag(data?.bagSize ?? []);
   const contentLines = data
     ? [
         data.category,
         ...data.bagSize.map(
           (row) => `${row.size} ${row.variety} × ${formatPdfNumber(row.quantityIssued)}`,
         ),
+        sharedRate != null ? `Cost per bag ${formatPdfAmount(sharedRate)}` : '',
+        billedTotal != null ? `Total amount ${formatPdfAmount(billedTotal)}` : '',
       ].filter(Boolean)
     : [];
 

@@ -114,6 +114,7 @@ export type DaybookOutgoingEntry = DaybookEntryBase & {
   biltiNumber?: number;
   billBook?: string | number;
   biltiBook?: string | number;
+  costPerBag?: number;
   orderDetails: DaybookOrderDetail[];
   storageGatePassSnapshots: DaybookStorageGatePassSnapshot[];
   status: 'ACTIVE';

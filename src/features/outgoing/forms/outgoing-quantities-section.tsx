@@ -13,6 +13,7 @@ import type { CreateOutgoingFormApi } from '@/features/outgoing/forms/use-create
 import { groupOutgoingItemsByVarietyAndSize } from '@/features/outgoing/utils/group-outgoing-items';
 import { useStorageGatePassesForFarmer } from '@/features/transfer-stock/hooks/use-storage-gate-passes-for-farmer';
 import { buildTransferItems } from '@/features/transfer-stock/utils/gate-pass-matrix-utils';
+import { isDirectSaleOutgoing } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
 function isFieldInvalid(meta: { isTouched: boolean; isValid: boolean }) {
@@ -23,6 +24,15 @@ function parseOptionalPositiveDecimal(value: string): number | undefined {
   if (value === '') return undefined;
   const parsed = Number(value);
   return Number.isNaN(parsed) ? undefined : parsed;
+}
+
+function formatInr(amount: number): string {
+  return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount);
+}
+
+function positiveCostPerBag(value: string): number | undefined {
+  const parsed = Number(value.trim());
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
 }
 
 const numericInputProps = {
@@ -218,12 +228,36 @@ export function OutgoingQuantitiesSection({
         </div>
       </div>
 
-      <div className="mt-4 flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3 sm:px-6 sm:py-4">
-        <span className="text-sm font-semibold text-foreground">Total bags</span>
-        <span className="font-heading text-xl font-semibold tabular-nums text-foreground">
-          {totalBags.toLocaleString('en-IN')}
-        </span>
-      </div>
+      <form.Subscribe
+        selector={(state) => ({
+          category: state.values.step1.category,
+          costPerBag: state.values.step1.costPerBag,
+        })}
+      >
+        {({ category, costPerBag }) => {
+          const rate = isDirectSaleOutgoing(category) ? positiveCostPerBag(costPerBag) : undefined;
+          const totalAmount = rate != null ? totalBags * rate : undefined;
+
+          return (
+            <div className={cn('mt-4 grid gap-3', totalAmount != null && 'sm:grid-cols-2')}>
+              <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3 sm:px-6 sm:py-4">
+                <span className="text-sm font-semibold text-foreground">Total bags</span>
+                <span className="font-heading text-xl font-semibold tabular-nums text-foreground">
+                  {totalBags.toLocaleString('en-IN')}
+                </span>
+              </div>
+              {totalAmount != null ? (
+                <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3 sm:px-6 sm:py-4">
+                  <span className="text-sm font-semibold text-foreground">Total amount</span>
+                  <span className="font-heading text-xl font-semibold tabular-nums text-foreground">
+                    {formatInr(totalAmount)}
+                  </span>
+                </div>
+              ) : null}
+            </div>
+          );
+        }}
+      </form.Subscribe>
     </FieldSet>
   );
 }

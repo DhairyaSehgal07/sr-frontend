@@ -113,6 +113,11 @@ function OutgoingReviewSummary({
   outgoingItems: TransferStockItem[];
 }) {
   const totalBags = outgoingItems.reduce((sum, item) => sum + item.quantity, 0);
+  const costPerBag = Number(values.costPerBag.trim());
+  const totalAmount =
+    isDirectSaleOutgoing(values.category) && Number.isFinite(costPerBag) && costPerBag > 0
+      ? totalBags * costPerBag
+      : undefined;
   const hasRouteDetails = [
     values.from,
     values.to,
@@ -124,6 +129,7 @@ function OutgoingReviewSummary({
     values.owner,
   ].some((value) => value.trim().length > 0);
   const hasBillDetails = [
+    values.costPerBag,
     values.billNumber,
     values.biltiNumber,
     values.billBook,
@@ -205,6 +211,16 @@ function OutgoingReviewSummary({
       <div className="space-y-2">
         <SectionLabel icon={Receipt}>Bill &amp; bilti</SectionLabel>
         <SummaryCard>
+          {values.costPerBag.trim() ? (
+            <DetailRow
+              label="Cost per bag"
+              value={Number(values.costPerBag).toLocaleString('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+              })}
+              valueClassName="tabular-nums"
+            />
+          ) : null}
           {values.billNumber.trim() ? (
             <DetailRow
               label="Bill no."
@@ -239,6 +255,17 @@ function OutgoingReviewSummary({
             icon={Warehouse}
             valueClassName="font-semibold tabular-nums"
           />
+          {totalAmount != null ? (
+            <DetailRow
+              label="Total amount"
+              value={totalAmount.toLocaleString('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+              })}
+              icon={Receipt}
+              valueClassName="font-semibold tabular-nums"
+            />
+          ) : null}
         </SummaryCard>
       </div>
 

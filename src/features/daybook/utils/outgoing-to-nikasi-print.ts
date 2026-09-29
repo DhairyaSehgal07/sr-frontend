@@ -31,10 +31,16 @@ function bagLines(entry: DaybookOutgoingEntry): NikasiGatePassBagSizeItem[] {
     quantities.set(size, (quantities.get(size) ?? 0) + row.quantityIssued);
   }
 
+  const cost =
+    entry.costPerBag != null && Number.isFinite(entry.costPerBag) && entry.costPerBag > 0
+      ? entry.costPerBag
+      : undefined;
+
   return order.map((size) => ({
     size,
     variety: entry.variety,
     quantityIssued: quantities.get(size) ?? 0,
+    ...(cost != null ? { costPerBag: cost } : {}),
   }));
 }
 

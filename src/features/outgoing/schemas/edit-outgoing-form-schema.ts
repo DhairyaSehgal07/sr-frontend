@@ -1,5 +1,7 @@
 import * as z from 'zod';
 
+import { isDirectSaleOutgoing } from '@/lib/constants';
+
 function isPositiveIntString(value: string): boolean {
   const parsed = Number(value);
   return Number.isInteger(parsed) && parsed > 0;
@@ -9,6 +11,18 @@ const optionalPositiveIntField = z.string().refine((value) => {
   const trimmed = value.trim();
   return trimmed.length === 0 || isPositiveIntString(trimmed);
 }, 'Must be a whole number greater than zero');
+
+function requireCostPerBag(value: string, ctx: z.RefinementCtx) {
+  const trimmed = value.trim();
+  const parsed = Number(trimmed);
+  if (trimmed.length === 0 || !Number.isFinite(parsed) || parsed <= 0) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Cost per bag is required.',
+      path: ['costPerBag'],
+    });
+  }
+}
 
 export const editOutgoingFormSchema = z.object({
     date: z.string().datetime('Select a valid date.'),
@@ -32,7 +46,12 @@ export const editOutgoingFormSchema = z.object({
     biltiNumber: optionalPositiveIntField,
     billBook: z.string().trim(),
     biltiBook: z.string().trim(),
+    costPerBag: z.string(),
     remarks: z.string().max(500),
+  })
+  .superRefine((value, ctx) => {
+    if (!isDirectSaleOutgoing(value.category)) return;
+    requireCostPerBag(value.costPerBag, ctx);
   });
 
 export type EditOutgoingFormValues = z.infer<typeof editOutgoingFormSchema>;

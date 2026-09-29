@@ -72,6 +72,11 @@ function formatOptionalBook(value: string | number | undefined): string {
   return value;
 }
 
+function formatCostPerBag(value: number | undefined): string {
+  if (value == null || !Number.isFinite(value)) return '—';
+  return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(value);
+}
+
 const InfoBlock = ({ label, value, icon: Icon, valueClassName }: InfoBlockProps) => (
   <div className="space-y-1.5">
     <span className="flex items-center gap-1.5 text-xs font-medium tracking-wider text-muted-foreground uppercase">
@@ -193,6 +198,12 @@ export function DaybookOutgoingGatePassCard({ data: gatePass }: DaybookOutgoingG
   const farmerStorageLink = gatePass.farmerStorageLinkId;
   const issuedBags = totalIssuedBags(gatePass);
   const uniqueWeightsKg = uniqueOutgoingWeightsKg(gatePass);
+  const isDirectSale = isDirectSaleOutgoing(gatePass.category ?? '');
+  const costPerBag =
+    gatePass.costPerBag != null && Number.isFinite(gatePass.costPerBag) && gatePass.costPerBag > 0
+      ? gatePass.costPerBag
+      : undefined;
+  const totalAmount = isDirectSale && costPerBag != null ? issuedBags * costPerBag : undefined;
   const createdBy = gatePass.createdBy?.name ?? '—';
 
   const handleCancelOpenChange = (open: boolean) => {
@@ -271,6 +282,24 @@ export function DaybookOutgoingGatePassCard({ data: gatePass }: DaybookOutgoingG
           <Badge variant="outline" className="bg-background text-xs tabular-nums">
             {issuedBags.toLocaleString('en-IN')} Bags issued
           </Badge>
+          {isDirectSale && costPerBag != null ? (
+            <Badge
+              variant="outline"
+              className="bg-background text-xs tabular-nums"
+              title="Cost per bag"
+            >
+              {formatCostPerBag(costPerBag)} / bag
+            </Badge>
+          ) : null}
+          {totalAmount != null ? (
+            <Badge
+              variant="outline"
+              className="bg-background text-xs font-medium tabular-nums"
+              title="Total amount"
+            >
+              {formatCostPerBag(totalAmount)}
+            </Badge>
+          ) : null}
           {uniqueWeightsKg.length === 1 ? (
             <Badge
               variant="outline"
@@ -324,6 +353,20 @@ export function DaybookOutgoingGatePassCard({ data: gatePass }: DaybookOutgoingG
             value={formatOptionalBook(gatePass.biltiBook)}
             valueClassName="tabular-nums"
           />
+          {isDirectSale ? (
+            <InfoBlock
+              label="Cost per bag"
+              value={formatCostPerBag(costPerBag)}
+              valueClassName="tabular-nums"
+            />
+          ) : null}
+          {totalAmount != null ? (
+            <InfoBlock
+              label="Total amount"
+              value={formatCostPerBag(totalAmount)}
+              valueClassName="tabular-nums"
+            />
+          ) : null}
         </div>
 
         {isExpanded && (
@@ -416,6 +459,20 @@ export function DaybookOutgoingGatePassCard({ data: gatePass }: DaybookOutgoingG
                     value={formatOptionalBook(gatePass.biltiBook)}
                     valueClassName="tabular-nums"
                   />
+                  {isDirectSale ? (
+                    <InfoBlock
+                      label="Cost per bag"
+                      value={formatCostPerBag(costPerBag)}
+                      valueClassName="tabular-nums"
+                    />
+                  ) : null}
+                  {totalAmount != null ? (
+                    <InfoBlock
+                      label="Total amount"
+                      value={formatCostPerBag(totalAmount)}
+                      valueClassName="tabular-nums"
+                    />
+                  ) : null}
                 </div>
               </div>
 

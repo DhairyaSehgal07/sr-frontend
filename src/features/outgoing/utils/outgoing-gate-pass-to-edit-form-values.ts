@@ -20,6 +20,7 @@ export function outgoingGatePassToEditFormValues(
     biltiNumber: gatePass.biltiNumber != null ? String(gatePass.biltiNumber) : '',
     billBook: gatePass.billBook != null ? String(gatePass.billBook) : '',
     biltiBook: gatePass.biltiBook != null ? String(gatePass.biltiBook) : '',
+    costPerBag: gatePass.costPerBag != null ? String(gatePass.costPerBag) : '',
     remarks: gatePass.remarks ?? '',
   };
 }

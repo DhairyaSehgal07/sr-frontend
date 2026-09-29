@@ -87,6 +87,26 @@ describe('outgoingEntryToNikasiPrintModel', () => {
       { size: 'Seed', variety: 'Jyoti', quantityIssued: 4 },
     ]);
     expect(model.bagSize.every((row) => row.costPerBag == null)).toBe(true);
+
+    const priced = outgoingEntryToNikasiPrintModel(entry({ costPerBag: 450 }));
+    expect(priced.bagSize).toEqual([]);
+    const pricedLines = outgoingEntryToNikasiPrintModel(
+      entry({
+        costPerBag: 450,
+        orderDetails: [
+          {
+            size: 'Ration',
+            bagType: 'JUTE',
+            quantityIssued: 2,
+            quantityAvailable: 2,
+            chamber: '1',
+            floor: '1',
+            row: '1',
+          },
+        ],
+      }),
+    );
+    expect(pricedLines.bagSize[0]?.costPerBag).toBe(450);
   });
 
   it('builds net weight from average bag weight and leaves it blank when none is recorded', () => {

@@ -12,6 +12,13 @@ function nullableTrimmed(value: string): string | null {
   return trimmed.length > 0 ? trimmed : null;
 }
 
+function nullablePositiveAmount(value: string): number | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  const parsed = Number(trimmed);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
 function nullablePositiveInt(value: string): number | null {
   const trimmed = value.trim();
   if (!trimmed) return null;
@@ -41,6 +48,7 @@ export function toUpdateOutgoingGatePassBody(
     body.biltiNumber = nullablePositiveInt(form.biltiNumber);
     body.billBook = nullableTrimmed(form.billBook);
     body.biltiBook = nullableTrimmed(form.biltiBook);
+    body.costPerBag = nullablePositiveAmount(form.costPerBag);
   } else {
     body.from = null;
     body.to = null;
@@ -54,6 +62,7 @@ export function toUpdateOutgoingGatePassBody(
     body.biltiNumber = null;
     body.billBook = null;
     body.biltiBook = null;
+    body.costPerBag = null;
   }
 
   const remarks = form.remarks.trim();

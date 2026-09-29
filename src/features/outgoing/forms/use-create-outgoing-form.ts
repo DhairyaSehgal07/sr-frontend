@@ -43,6 +43,7 @@ export function createOutgoingFormDefaultValues(coldStorageName: string, dateIso
       biltiNumber: '',
       billBook: '',
       biltiBook: '',
+      costPerBag: '',
       allocations: {} as Record<string, number>,
     },
     step2: {
