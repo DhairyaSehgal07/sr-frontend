@@ -2,6 +2,7 @@ export const BAG_SIZES = [
   'Ration',
   'Seed',
   'Goli',
+  'Keri',
   'Number-8',
   'Number-9',
   'Number-10',
@@ -9,6 +10,9 @@ export const BAG_SIZES = [
   'Number-12',
   'Number-6/4',
   'Cut',
+  'Cut-Ration',
+  'Cut-Seed',
+  'Cut-Goli',
 ] as const;
 
 export const BAG_TYPES = ['JUTE', 'LENO'] as const;
