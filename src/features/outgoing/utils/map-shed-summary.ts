@@ -1,4 +1,5 @@
 import type { BookingVarietySummary } from '@/features/booking/types/booking-summary';
+import type { ShedSummaryGroup } from '@/features/outgoing/api/types';
 
 type ShedQuantitySource = {
   quantity?: number;
@@ -14,6 +15,11 @@ type ShedSizeInput = ShedQuantitySource & {
 type ShedVarietyInput = ShedQuantitySource & {
   variety?: string;
   sizes?: ShedSizeInput[];
+};
+
+type ShedGroupInput = {
+  shed?: string;
+  varieties?: ShedVarietyInput[];
 };
 
 function readQuantity(value: unknown): number {
@@ -52,4 +58,20 @@ export function mapShedSummaryToVarietySummary(
       sizes,
     };
   });
+}
+
+export function normalizeShedSummaryGroups(data: readonly ShedGroupInput[]): ShedSummaryGroup[] {
+  return data.map((group) => ({
+    shed: String(group.shed ?? '').trim(),
+    varieties: mapShedSummaryToVarietySummary(group.varieties ?? []),
+  }));
+}
+
+export function getShedGroupVarieties(
+  groups: readonly ShedSummaryGroup[],
+  shedKey: string,
+): BookingVarietySummary[] {
+  const key = shedKey.trim();
+  const match = groups.find((group) => group.shed === key);
+  return match?.varieties ?? [];
 }

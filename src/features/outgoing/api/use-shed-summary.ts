@@ -1,6 +1,6 @@
 import { queryOptions, useQuery, type UseQueryOptions } from '@tanstack/react-query';
 
-import type { BookingVarietySummary } from '@/features/booking/types/booking-summary';
+import type { ShedSummaryGroup } from '@/features/outgoing/api/types';
 
 import { getShedSummary } from './get-shed-summary';
 import { outgoingGatePassKeys } from './query-keys';
@@ -14,9 +14,9 @@ export function shedSummaryQueryOptions() {
 
 type UseShedSummaryOptions = Omit<
   UseQueryOptions<
-    BookingVarietySummary[],
+    ShedSummaryGroup[],
     Error,
-    BookingVarietySummary[],
+    ShedSummaryGroup[],
     ReturnType<typeof outgoingGatePassKeys.shedSummary>
   >,
   'queryKey' | 'queryFn'

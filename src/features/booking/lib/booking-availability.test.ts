@@ -5,7 +5,11 @@ import {
   availabilityLineKey,
   buildNetAvailabilityMap,
 } from '@/features/booking/lib/booking-availability';
-import { mapShedSummaryToVarietySummary } from '@/features/outgoing/utils/map-shed-summary';
+import {
+  getShedGroupVarieties,
+  mapShedSummaryToVarietySummary,
+  normalizeShedSummaryGroups,
+} from '@/features/outgoing/utils/map-shed-summary';
 
 const storageSummary: SummaryVariety[] = [
   {
@@ -30,13 +34,38 @@ const storageSummary: SummaryVariety[] = [
   },
 ];
 
-const shedSummary = [
+const shedSummaryGroups = normalizeShedSummaryGroups([
   {
-    variety: 'K. Pukhraj',
-    quantity: 100,
-    sizes: [{ size: 'Goli', quantity: 100 }],
+    shed: 'all',
+    varieties: [
+      {
+        variety: 'K. Pukhraj',
+        quantity: 100,
+        sizes: [{ size: 'Goli', quantity: 100 }],
+      },
+    ],
   },
-];
+  {
+    shed: 'Solar shed',
+    varieties: [
+      {
+        variety: 'K. Pukhraj',
+        quantity: 40,
+        sizes: [{ size: 'Goli', quantity: 40 }],
+      },
+    ],
+  },
+  {
+    shed: 'Vaddi shed',
+    varieties: [
+      {
+        variety: 'K. Pukhraj',
+        quantity: 60,
+        sizes: [{ size: 'Goli', quantity: 60 }],
+      },
+    ],
+  },
+]);
 
 describe('mapShedSummaryToVarietySummary', () => {
   it('reads quantity from currentQuantity when quantity is missing', () => {
@@ -56,12 +85,68 @@ describe('mapShedSummaryToVarietySummary', () => {
   });
 });
 
+describe('normalizeShedSummaryGroups', () => {
+  it('normalizes each shed group varieties array', () => {
+    const groups = normalizeShedSummaryGroups([
+      {
+        shed: 'all',
+        varieties: [
+          {
+            variety: 'K. Pukhraj',
+            currentQuantity: 50,
+            sizes: [{ size: 'Goli', currentQuantity: 50 }],
+          },
+        ],
+      },
+    ]);
+
+    expect(groups).toEqual([
+      {
+        shed: 'all',
+        varieties: [
+          {
+            variety: 'K. Pukhraj',
+            quantity: 50,
+            sizes: [{ size: 'Goli', quantity: 50 }],
+          },
+        ],
+      },
+    ]);
+  });
+});
+
+describe('getShedGroupVarieties', () => {
+  it('returns varieties for the all group used in net math', () => {
+    expect(getShedGroupVarieties(shedSummaryGroups, 'all')).toEqual([
+      {
+        variety: 'K. Pukhraj',
+        quantity: 100,
+        sizes: [{ size: 'Goli', quantity: 100 }],
+      },
+    ]);
+  });
+
+  it('returns varieties for a named shed tab', () => {
+    expect(getShedGroupVarieties(shedSummaryGroups, 'Solar shed')).toEqual([
+      {
+        variety: 'K. Pukhraj',
+        quantity: 40,
+        sizes: [{ size: 'Goli', quantity: 40 }],
+      },
+    ]);
+  });
+
+  it('returns an empty array when the shed key is missing', () => {
+    expect(getShedGroupVarieties(shedSummaryGroups, 'Front shed')).toEqual([]);
+  });
+});
+
 describe('buildNetAvailabilityMap', () => {
-  it('adds storage currentQuantity to shed quantity per variety and size', () => {
+  it('adds storage currentQuantity to all-shed quantity per variety and size', () => {
     const map = buildNetAvailabilityMap(
       storageSummary,
       [],
-      mapShedSummaryToVarietySummary(shedSummary),
+      getShedGroupVarieties(shedSummaryGroups, 'all'),
     );
 
     expect(map.get(availabilityLineKey('K. Pukhraj', 'Goli'))).toBe(350);
@@ -72,7 +157,7 @@ describe('buildNetAvailabilityMap', () => {
     const map = buildNetAvailabilityMap(
       storageSummary,
       [],
-      mapShedSummaryToVarietySummary(shedSummary),
+      getShedGroupVarieties(shedSummaryGroups, 'all'),
     );
 
     expect(map.get(availabilityLineKey('K. Pukhraj', 'Goli'))).not.toBe(450);

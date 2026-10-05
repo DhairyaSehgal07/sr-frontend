@@ -5,16 +5,16 @@ import { bookingKeys } from '@/features/booking/api/query-keys';
 import type { SummaryVariety } from '@/features/booking/api/summary-types';
 import { useBookingStorageSummary } from '@/features/booking/api/use-booking-storage-summary';
 import { buildNetAvailabilityMap } from '@/features/booking/lib/booking-availability';
+import type { ShedSummaryGroup } from '@/features/outgoing/api/types';
 import { outgoingGatePassKeys } from '@/features/outgoing/api/query-keys';
 import { useShedSummary } from '@/features/outgoing/api/use-shed-summary';
-import type { BookingVarietySummary } from '@/features/booking/types/booking-summary';
-import { mapShedSummaryToVarietySummary } from '@/features/outgoing/utils/map-shed-summary';
+import { getShedGroupVarieties } from '@/features/outgoing/utils/map-shed-summary';
 
 export function useBookingAvailability() {
   const queryClient = useQueryClient();
 
   const cachedStorage = queryClient.getQueryData<SummaryVariety[]>(bookingKeys.storageSummary());
-  const cachedShed = queryClient.getQueryData<BookingVarietySummary[]>(
+  const cachedShed = queryClient.getQueryData<ShedSummaryGroup[]>(
     outgoingGatePassKeys.shedSummary(),
   );
 
@@ -30,7 +30,7 @@ export function useBookingAvailability() {
       buildNetAvailabilityMap(
         storageQuery.data ?? [],
         [],
-        mapShedSummaryToVarietySummary(shedQuery.data ?? []),
+        getShedGroupVarieties(shedQuery.data ?? [], 'all'),
       ),
     [storageQuery.data, shedQuery.data],
   );
@@ -43,10 +43,7 @@ export function useBookingAvailability() {
     (storageQuery.isError && storageQuery.data === undefined) ||
     (shedQuery.isError && shedQuery.data === undefined);
 
-  const isReady =
-    !isLoading &&
-    storageQuery.isFetched &&
-    shedQuery.isFetched;
+  const isReady = !isLoading && storageQuery.isFetched && shedQuery.isFetched;
 
   return {
     availabilityMap,

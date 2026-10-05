@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { UseQueryResult } from '@tanstack/react-query';
 import { AlertCircle, ChevronRight, Package, RefreshCw } from 'lucide-react';
 
@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BookingSummaryTable } from '@/features/booking/components/booking-summary-table';
 import type { SummaryVariety } from '@/features/booking/api/summary-types';
 import {
@@ -14,14 +15,14 @@ import {
   formatBookingBagCount,
   mapApiSummaryToVarietySummary,
 } from '@/features/booking/lib/booking-summary-utils';
-import type { BookingVarietySummary } from '@/features/booking/types/booking-summary';
-import { mapShedSummaryToVarietySummary } from '@/features/outgoing/utils/map-shed-summary';
+import type { ShedSummaryGroup } from '@/features/outgoing/api/types';
+import { getShedGroupVarieties } from '@/features/outgoing/utils/map-shed-summary';
 import { cn } from '@/lib/utils';
 
 type BookingSummaryProps = {
   bookingQuery: UseQueryResult<SummaryVariety[], Error>;
   storageQuery: UseQueryResult<SummaryVariety[], Error>;
-  shedQuery: UseQueryResult<BookingVarietySummary[], Error>;
+  shedQuery: UseQueryResult<ShedSummaryGroup[], Error>;
 };
 
 type BookingSummaryCollapsibleSectionProps = {
@@ -88,6 +89,18 @@ function BookingSummarySkeleton() {
   );
 }
 
+function shedTabLabel(shed: string): string {
+  return shed === 'all' ? 'All' : shed;
+}
+
+function orderShedTabs(groups: ShedSummaryGroup[]): ShedSummaryGroup[] {
+  const allGroup = groups.find((group) => group.shed === 'all');
+  const namedGroups = groups.filter((group) => group.shed !== 'all' && group.shed.length > 0);
+  if (allGroup) return [allGroup, ...namedGroups];
+  if (namedGroups.length > 0) return namedGroups;
+  return [{ shed: 'all', varieties: [] }];
+}
+
 export function BookingSummary({ bookingQuery, storageQuery, shedQuery }: BookingSummaryProps) {
   const {
     data: bookingData,
@@ -134,18 +147,29 @@ export function BookingSummary({ bookingQuery, storageQuery, shedQuery }: Bookin
     () => mapApiSummaryToVarietySummary(bookingData ?? [], 'current'),
     [bookingData],
   );
-  const mappedShed = useMemo(
-    () => mapShedSummaryToVarietySummary(shedData ?? []),
-    [shedData],
+  const mappedShedAll = useMemo(() => getShedGroupVarieties(shedData ?? [], 'all'), [shedData]);
+  const shedTabs = useMemo(() => orderShedTabs(shedData ?? []), [shedData]);
+  const [selectedShed, setSelectedShed] = useState('all');
+  const activeShed = shedTabs.some((group) => group.shed === selectedShed)
+    ? selectedShed
+    : (shedTabs[0]?.shed ?? 'all');
+
+  const mappedShedSelected = useMemo(
+    () => getShedGroupVarieties(shedData ?? [], activeShed),
+    [shedData, activeShed],
   );
 
   const totalTable = useMemo(() => buildBookingSummaryTable(mappedStorage), [mappedStorage]);
-  const shedTable = useMemo(() => buildBookingSummaryTable(mappedShed), [mappedShed]);
+  const shedAllTable = useMemo(() => buildBookingSummaryTable(mappedShedAll), [mappedShedAll]);
+  const shedSelectedTable = useMemo(
+    () => buildBookingSummaryTable(mappedShedSelected),
+    [mappedShedSelected],
+  );
   const bookedTable = useMemo(() => buildBookingSummaryTable(mappedBooked), [mappedBooked]);
   const netTable = useMemo(() => {
-    const netData = computeNetAvailable(mappedStorage, mappedBooked, mappedShed);
+    const netData = computeNetAvailable(mappedStorage, mappedBooked, mappedShedAll);
     return buildBookingSummaryTable(netData);
-  }, [mappedStorage, mappedBooked, mappedShed]);
+  }, [mappedStorage, mappedBooked, mappedShedAll]);
 
   const handleRetry = () => {
     void refetchBooking();
@@ -240,9 +264,22 @@ export function BookingSummary({ bookingQuery, storageQuery, shedQuery }: Bookin
       <BookingSummaryCollapsibleSection
         title="Shed stock"
         description="Bags currently held in the shed, included in net available for booking."
-        grandTotal={shedTable.grandTotal}
+        grandTotal={shedAllTable.grandTotal}
       >
-        <BookingSummaryTable table={shedTable} emptyMessage="No shed stock data available." />
+        <Tabs value={activeShed} onValueChange={setSelectedShed} className="w-full">
+          <TabsList className="mb-4 flex h-auto w-full flex-nowrap justify-start overflow-x-auto">
+            {shedTabs.map((group) => (
+              <TabsTrigger key={group.shed} value={group.shed} className="shrink-0 px-3 sm:px-4">
+                {shedTabLabel(group.shed)}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+
+          <BookingSummaryTable
+            table={shedSelectedTable}
+            emptyMessage="No shed stock data available."
+          />
+        </Tabs>
       </BookingSummaryCollapsibleSection>
 
       <BookingSummaryCollapsibleSection

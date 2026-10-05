@@ -107,9 +107,14 @@ export type ShedSummaryVariety = {
   sizes: ShedSummarySize[];
 };
 
+export type ShedSummaryGroup = {
+  shed: string;
+  varieties: ShedSummaryVariety[];
+};
+
 export type ShedSummaryResponse = {
   success: boolean;
-  data: ShedSummaryVariety[];
+  data: ShedSummaryGroup[];
   message?: string;
 };
 
