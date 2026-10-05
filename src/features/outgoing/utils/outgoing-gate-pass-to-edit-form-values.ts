@@ -16,6 +16,7 @@ export function outgoingGatePassToEditFormValues(
     driverMobile: gatePass.driverMobile ?? '',
     owner: gatePass.owner ?? '',
     category: gatePass.category ?? '',
+    shed: gatePass.shed ?? '',
     billNumber: gatePass.billNumber != null ? String(gatePass.billNumber) : '',
     biltiNumber: gatePass.biltiNumber != null ? String(gatePass.biltiNumber) : '',
     billBook: gatePass.billBook != null ? String(gatePass.billBook) : '',

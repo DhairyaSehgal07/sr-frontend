@@ -24,6 +24,7 @@ export type CreateOutgoingGatePassBody = {
   to?: string;
   storageGatePasses: CreateOutgoingStorageGatePass[];
   category: string;
+  shed?: string;
   dispatchLedgerId?: string;
   billBookId?: string;
   billNumber?: number;
@@ -80,6 +81,7 @@ export type UpdateOutgoingGatePassBody = {
   driverMobile?: string | null;
   owner?: string | null;
   category: string;
+  shed?: string | null;
   billNumber?: number | null;
   biltiNumber?: number | null;
   billBook?: string | null;
@@ -125,6 +127,7 @@ export type UpdateOutgoingGatePassInput = {
     driverMobile: string;
     owner: string;
     category: string;
+    shed: string;
     billNumber: string;
     biltiNumber: string;
     billBook: string;

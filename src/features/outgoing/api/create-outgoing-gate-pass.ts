@@ -25,6 +25,7 @@ function assignTrimmed(
     | 'driverMobile'
     | 'owner'
     | 'biltiBook'
+    | 'shed'
   >,
   value: string,
 ) {
@@ -32,11 +33,7 @@ function assignTrimmed(
   if (trimmed) body[key] = trimmed;
 }
 
-function assignPositiveAmount(
-  body: CreateOutgoingGatePassBody,
-  key: 'costPerBag',
-  value: string,
-) {
+function assignPositiveAmount(body: CreateOutgoingGatePassBody, key: 'costPerBag', value: string) {
   const trimmed = value.trim();
   if (!trimmed) return;
   const parsed = Number(trimmed);
@@ -122,6 +119,8 @@ export function toCreateOutgoingGatePassBody({
     storageGatePasses: buildStorageGatePassesPayload(items, step2.weightsBySize),
     idempotencyKey: crypto.randomUUID(),
   };
+
+  assignTrimmed(body, 'shed', step1.shed);
 
   if (isDirectSaleOutgoing(step1.category)) {
     body.dispatchLedgerId = step1.dispatchLedgerId;

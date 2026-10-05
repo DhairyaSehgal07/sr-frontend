@@ -1,8 +1,17 @@
 import * as z from 'zod';
 
-import { isDirectSaleOutgoing } from '@/lib/constants';
+import { isDirectSaleOutgoing, OUTGOING_SHEDS, type OutgoingShed } from '@/lib/constants';
 
 export const objectId = z.string().length(24, 'Select a valid record from the list.');
+
+function isOutgoingShed(value: string): value is OutgoingShed {
+  return (OUTGOING_SHEDS as readonly string[]).includes(value);
+}
+
+const optionalShedField = z
+  .string()
+  .trim()
+  .refine((value) => value.length === 0 || isOutgoingShed(value), 'Select a shed from the list.');
 
 function isPositiveIntString(value: string): boolean {
   const parsed = Number(value);
@@ -48,7 +57,8 @@ export const outgoingAllocationSchema = z.object({
   }),
 });
 
-export const outgoingStep1Schema = z.object({
+export const outgoingStep1Schema = z
+  .object({
     farmerStorageLinkId: objectId,
     date: z.string().datetime('Select a valid date.'),
     manualGatePassNumber: z.union([
@@ -67,6 +77,7 @@ export const outgoingStep1Schema = z.object({
     driverMobile: z.string().trim(),
     owner: z.string().trim(),
     category: z.string().trim().min(1, 'Category is required.').max(100),
+    shed: optionalShedField,
     dispatchLedgerId: z.string(),
     billBookId: z.string(),
     billNumber: optionalPositiveIntField,
@@ -81,12 +92,7 @@ export const outgoingStep1Schema = z.object({
   })
   .superRefine((value, ctx) => {
     if (!isDirectSaleOutgoing(value.category)) return;
-    requireObjectId(
-      value.dispatchLedgerId,
-      ctx,
-      'dispatchLedgerId',
-      'Select a dispatch ledger.',
-    );
+    requireObjectId(value.dispatchLedgerId, ctx, 'dispatchLedgerId', 'Select a dispatch ledger.');
     requireObjectId(value.billBookId, ctx, 'billBookId', 'Select a bill book.');
     requireCostPerBag(value.costPerBag, ctx);
   });

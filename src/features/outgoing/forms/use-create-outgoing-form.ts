@@ -39,6 +39,7 @@ export function createOutgoingFormDefaultValues(coldStorageName: string, dateIso
       driverMobile: '',
       owner: '',
       category: '',
+      shed: '',
       dispatchLedgerId: '',
       billBookId: '',
       billNumber: '',
@@ -113,7 +114,8 @@ export function useCreateOutgoingForm(options: UseCreateOutgoingFormOptions = {}
       const items = buildTransferItems(parsed.step1.allocations, passes);
 
       const missingWeight = items.some(
-        (item) => lookupOutgoingWeight(parsed.step2.weightsBySize, item.variety, item.bagSize) == null,
+        (item) =>
+          lookupOutgoingWeight(parsed.step2.weightsBySize, item.variety, item.bagSize) == null,
       );
       if (missingWeight) {
         toast.error('Enter average weight in kg for each size.', { position: 'bottom-right' });

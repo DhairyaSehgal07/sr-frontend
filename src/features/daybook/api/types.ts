@@ -110,6 +110,7 @@ export type DaybookOutgoingEntry = DaybookEntryBase & {
   driverMobile?: string;
   owner?: string;
   category?: string;
+  shed?: string;
   billNumber?: number;
   biltiNumber?: number;
   billBook?: string | number;

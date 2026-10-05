@@ -1,6 +1,15 @@
 import * as z from 'zod';
 
-import { isDirectSaleOutgoing } from '@/lib/constants';
+import { isDirectSaleOutgoing, OUTGOING_SHEDS, type OutgoingShed } from '@/lib/constants';
+
+function isOutgoingShed(value: string): value is OutgoingShed {
+  return (OUTGOING_SHEDS as readonly string[]).includes(value);
+}
+
+const optionalShedField = z
+  .string()
+  .trim()
+  .refine((value) => value.length === 0 || isOutgoingShed(value), 'Select a shed from the list.');
 
 function isPositiveIntString(value: string): boolean {
   const parsed = Number(value);
@@ -24,7 +33,8 @@ function requireCostPerBag(value: string, ctx: z.RefinementCtx) {
   }
 }
 
-export const editOutgoingFormSchema = z.object({
+export const editOutgoingFormSchema = z
+  .object({
     date: z.string().datetime('Select a valid date.'),
     manualGatePassNumber: z.union([
       z.undefined(),
@@ -42,6 +52,7 @@ export const editOutgoingFormSchema = z.object({
     driverMobile: z.string().trim(),
     owner: z.string().trim(),
     category: z.string().trim().min(1, 'Category is required.').max(100),
+    shed: optionalShedField,
     billNumber: optionalPositiveIntField,
     biltiNumber: optionalPositiveIntField,
     billBook: z.string().trim(),

@@ -34,9 +34,14 @@ import { useUpdateOutgoingGatePass } from '@/features/outgoing/api/use-update-ou
 import { editOutgoingFormSchema } from '@/features/outgoing/schemas/edit-outgoing-form-schema';
 import { outgoingGatePassToEditFormValues } from '@/features/outgoing/utils/outgoing-gate-pass-to-edit-form-values';
 import { useBillBooks } from '@/features/settings/api/use-bill-books';
-import { isDirectSaleOutgoing, OUTGOING_CATEGORIES } from '@/lib/constants';
+import { isDirectSaleOutgoing, OUTGOING_CATEGORIES, OUTGOING_SHEDS } from '@/lib/constants';
 
 const CATEGORY_ITEMS = OUTGOING_CATEGORIES.map((value) => ({
+  id: value,
+  label: value,
+}));
+
+const SHED_ITEMS = OUTGOING_SHEDS.map((value) => ({
   id: value,
   label: value,
 }));
@@ -96,6 +101,10 @@ function EditOutgoingFormFields({
     () => ensureOptionInList(CATEGORY_ITEMS, defaultValues.category),
     [defaultValues.category],
   );
+  const shedOptions = useMemo(
+    () => ensureOptionInList(SHED_ITEMS, defaultValues.shed),
+    [defaultValues.shed],
+  );
   const billBookOptions = useMemo<ComboboxOption[]>(() => {
     const options = (billBooksData ?? []).map((book) => ({
       id: book._id,
@@ -121,6 +130,8 @@ function EditOutgoingFormFields({
 
   const [categorySearch, setCategorySearch] = useState(() => defaultValues.category);
   const [categoryComboboxOpen, setCategoryComboboxOpen] = useState(false);
+  const [shedSearch, setShedSearch] = useState(() => defaultValues.shed);
+  const [shedComboboxOpen, setShedComboboxOpen] = useState(false);
   const [billBookSearch, setBillBookSearch] = useState('');
   const [billBookComboboxOpen, setBillBookComboboxOpen] = useState(false);
   const [biltiBookSearch, setBiltiBookSearch] = useState('');
@@ -129,6 +140,10 @@ function EditOutgoingFormFields({
   const sortedCategories = useMemo(
     () => filterAndSortOptions(categorySearch, categoryOptions),
     [categorySearch, categoryOptions],
+  );
+  const sortedSheds = useMemo(
+    () => filterAndSortOptions(shedSearch, shedOptions),
+    [shedSearch, shedOptions],
   );
   const sortedBillBooks = useMemo(
     () => filterAndSortOptions(billBookSearch, billBookOptions),
@@ -170,6 +185,8 @@ function EditOutgoingFormFields({
   const resetComboboxState = () => {
     setCategorySearch(defaultValues.category);
     setCategoryComboboxOpen(false);
+    setShedSearch(defaultValues.shed);
+    setShedComboboxOpen(false);
     setBillBookSearch('');
     setBillBookComboboxOpen(false);
     setBiltiBookSearch('');
@@ -280,6 +297,39 @@ function EditOutgoingFormFields({
                     );
                   }}
                 </form.Field>
+
+                <form.Field name="shed">
+                  {(field) => {
+                    const isInvalid = isFieldInvalid(field.state.meta);
+                    return (
+                      <Field data-invalid={isInvalid}>
+                        <FieldLabel htmlFor="edit-outgoing-shed">Shed</FieldLabel>
+                        <SearchableOptionCombobox
+                          id="edit-outgoing-shed"
+                          name={field.name}
+                          value={field.state.value}
+                          onValueChange={field.handleChange}
+                          onBlur={field.handleBlur}
+                          isInvalid={isInvalid}
+                          placeholder="Select shed"
+                          emptyMessage="No sheds found."
+                          options={shedOptions}
+                          sortedOptions={sortedSheds}
+                          search={shedSearch}
+                          setSearch={setShedSearch}
+                          open={shedComboboxOpen}
+                          setOpen={setShedComboboxOpen}
+                          disabled={isPending}
+                          portalContainer={comboboxPortalContainer}
+                        />
+                        <FieldDescription>
+                          Optional. Leave blank if no shed applies.
+                        </FieldDescription>
+                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                      </Field>
+                    );
+                  }}
+                </form.Field>
               </FieldGroup>
             </FieldSet>
 
@@ -288,361 +338,371 @@ function EditOutgoingFormFields({
               children={(category) =>
                 isDirectSaleOutgoing(category) ? (
                   <>
-            <FieldSet>
-              <FieldLegend className="font-heading text-base font-semibold">
-                Route &amp; vehicle
-              </FieldLegend>
-              <FieldDescription>
-                Optional source, destination, and vehicle details for this dispatch.
-              </FieldDescription>
-              <FieldGroup className="mt-5 grid grid-cols-1 gap-6">
-                <form.Field name="from">
-                  {(field) => {
-                    const isInvalid = isFieldInvalid(field.state.meta);
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>From</FieldLabel>
-                        <Input
-                          id={field.name}
-                          name={field.name}
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onChange={(event) => field.handleChange(event.target.value)}
-                          placeholder="Optional"
-                          autoComplete="off"
-                          aria-invalid={isInvalid}
-                          className="h-11 text-base"
-                        />
-                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                      </Field>
-                    );
-                  }}
-                </form.Field>
-
-                <form.Field name="to">
-                  {(field) => {
-                    const isInvalid = isFieldInvalid(field.state.meta);
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>To</FieldLabel>
-                        <Input
-                          id={field.name}
-                          name={field.name}
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onChange={(event) => field.handleChange(event.target.value)}
-                          placeholder="Optional"
-                          autoComplete="off"
-                          aria-invalid={isInvalid}
-                          className="h-11 text-base"
-                        />
-                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                      </Field>
-                    );
-                  }}
-                </form.Field>
-
-                <form.Field name="truckNumber">
-                  {(field) => {
-                    const isInvalid = isFieldInvalid(field.state.meta);
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>Truck Number</FieldLabel>
-                        <Input
-                          id={field.name}
-                          name={field.name}
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onChange={(event) => field.handleChange(event.target.value.toUpperCase())}
-                          placeholder="Optional"
-                          autoComplete="off"
-                          aria-invalid={isInvalid}
-                          className="h-11 text-base uppercase"
-                        />
-                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                      </Field>
-                    );
-                  }}
-                </form.Field>
-
-                <form.Field name="transportCompany">
-                  {(field) => {
-                    const isInvalid = isFieldInvalid(field.state.meta);
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>Transport company</FieldLabel>
-                        <Input
-                          id={field.name}
-                          name={field.name}
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onChange={(event) => field.handleChange(event.target.value)}
-                          placeholder="Optional"
-                          autoComplete="organization"
-                          aria-invalid={isInvalid}
-                          className="h-11 text-base"
-                        />
-                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                      </Field>
-                    );
-                  }}
-                </form.Field>
-
-                <form.Field name="LSNumber">
-                  {(field) => {
-                    const isInvalid = isFieldInvalid(field.state.meta);
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>L.S. No.</FieldLabel>
-                        <Input
-                          id={field.name}
-                          name={field.name}
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onChange={(event) => field.handleChange(event.target.value)}
-                          placeholder="Optional"
-                          autoComplete="off"
-                          aria-invalid={isInvalid}
-                          className="h-11 text-base"
-                        />
-                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                      </Field>
-                    );
-                  }}
-                </form.Field>
-
-                <form.Field name="driverName">
-                  {(field) => {
-                    const isInvalid = isFieldInvalid(field.state.meta);
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>Driver name</FieldLabel>
-                        <Input
-                          id={field.name}
-                          name={field.name}
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onChange={(event) => field.handleChange(event.target.value)}
-                          placeholder="Optional"
-                          autoComplete="name"
-                          aria-invalid={isInvalid}
-                          className="h-11 text-base"
-                        />
-                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                      </Field>
-                    );
-                  }}
-                </form.Field>
-
-                <form.Field name="driverMobile">
-                  {(field) => {
-                    const isInvalid = isFieldInvalid(field.state.meta);
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>Driver mobile</FieldLabel>
-                        <Input
-                          id={field.name}
-                          name={field.name}
-                          type="tel"
-                          inputMode="tel"
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onChange={(event) => field.handleChange(event.target.value)}
-                          placeholder="Optional"
-                          autoComplete="tel"
-                          aria-invalid={isInvalid}
-                          className="h-11 text-base"
-                        />
-                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                      </Field>
-                    );
-                  }}
-                </form.Field>
-
-                <form.Field name="owner">
-                  {(field) => {
-                    const isInvalid = isFieldInvalid(field.state.meta);
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>Owner</FieldLabel>
-                        <Input
-                          id={field.name}
-                          name={field.name}
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onChange={(event) => field.handleChange(event.target.value)}
-                          placeholder="Optional"
-                          autoComplete="name"
-                          aria-invalid={isInvalid}
-                          className="h-11 text-base"
-                        />
-                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                      </Field>
-                    );
-                  }}
-                </form.Field>
-              </FieldGroup>
-            </FieldSet>
-
-            <FieldSet>
-              <FieldLegend className="font-heading text-base font-semibold">
-                Bill &amp; bilti
-              </FieldLegend>
-              <FieldDescription>
-                Cost per bag is required. Bill number, bilti number, and book references are
-                optional.
-              </FieldDescription>
-              <FieldGroup className="mt-5 grid grid-cols-1 gap-6">
-                <form.Field name="costPerBag">
-                  {(field) => {
-                    const isInvalid = isFieldInvalid(field.state.meta);
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>Cost per bag</FieldLabel>
-                        <Input
-                          {...numericInputProps}
-                          id={field.name}
-                          name={field.name}
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onChange={(event) => field.handleChange(event.target.value)}
-                          inputMode="decimal"
-                          placeholder="e.g. 450"
-                          aria-invalid={isInvalid}
-                          disabled={isPending}
-                          className="h-11 text-base tabular-nums"
-                        />
-                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                      </Field>
-                    );
-                  }}
-                </form.Field>
-
-                <form.Field name="billNumber">
-                  {(field) => {
-                    const isInvalid = isFieldInvalid(field.state.meta);
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>Bill Number</FieldLabel>
-                        <Input
-                          {...numericInputProps}
-                          id={field.name}
-                          name={field.name}
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onChange={(event) => field.handleChange(event.target.value)}
-                          inputMode="numeric"
-                          placeholder="Optional"
-                          aria-invalid={isInvalid}
-                          disabled={isPending}
-                          className="h-11 text-base tabular-nums"
-                        />
-                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                      </Field>
-                    );
-                  }}
-                </form.Field>
-
-                <form.Field name="biltiNumber">
-                  {(field) => {
-                    const isInvalid = isFieldInvalid(field.state.meta);
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>Bilti No.</FieldLabel>
-                        <Input
-                          {...numericInputProps}
-                          id={field.name}
-                          name={field.name}
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onChange={(event) => field.handleChange(event.target.value)}
-                          inputMode="numeric"
-                          placeholder="Optional"
-                          aria-invalid={isInvalid}
-                          disabled={isPending}
-                          className="h-11 text-base tabular-nums"
-                        />
-                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                      </Field>
-                    );
-                  }}
-                </form.Field>
-
-                <form.Field name="billBook">
-                  {(field) => {
-                    const isInvalid = isFieldInvalid(field.state.meta);
-                    const selectedId =
-                      billBookOptions.find((book) => book.label === field.state.value)?.id ?? '';
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor="edit-outgoing-bill-book">Bill book</FieldLabel>
-                        <SearchableOptionCombobox
-                          id="edit-outgoing-bill-book"
-                          name={field.name}
-                          value={selectedId}
-                          onValueChange={(bookId) => {
-                            const label =
-                              billBookOptions.find((book) => book.id === bookId)?.label ?? '';
-                            field.handleChange(label);
+                    <FieldSet>
+                      <FieldLegend className="font-heading text-base font-semibold">
+                        Route &amp; vehicle
+                      </FieldLegend>
+                      <FieldDescription>
+                        Optional source, destination, and vehicle details for this dispatch.
+                      </FieldDescription>
+                      <FieldGroup className="mt-5 grid grid-cols-1 gap-6">
+                        <form.Field name="from">
+                          {(field) => {
+                            const isInvalid = isFieldInvalid(field.state.meta);
+                            return (
+                              <Field data-invalid={isInvalid}>
+                                <FieldLabel htmlFor={field.name}>From</FieldLabel>
+                                <Input
+                                  id={field.name}
+                                  name={field.name}
+                                  value={field.state.value}
+                                  onBlur={field.handleBlur}
+                                  onChange={(event) => field.handleChange(event.target.value)}
+                                  placeholder="Optional"
+                                  autoComplete="off"
+                                  aria-invalid={isInvalid}
+                                  className="h-11 text-base"
+                                />
+                                {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                              </Field>
+                            );
                           }}
-                          onBlur={field.handleBlur}
-                          isInvalid={isInvalid}
-                          placeholder={
-                            isLoadingBillBooks ? 'Loading bill books…' : 'Optional'
-                          }
-                          emptyMessage={
-                            isLoadingBillBooks ? 'Loading bill books…' : 'No active bill books.'
-                          }
-                          options={billBookOptions}
-                          sortedOptions={sortedBillBooks}
-                          search={billBookSearch}
-                          setSearch={setBillBookSearch}
-                          open={billBookComboboxOpen}
-                          setOpen={setBillBookComboboxOpen}
-                          disabled={isPending || isLoadingBillBooks}
-                          portalContainer={comboboxPortalContainer}
-                        />
-                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                      </Field>
-                    );
-                  }}
-                </form.Field>
+                        </form.Field>
 
-                <form.Field name="biltiBook">
-                  {(field) => {
-                    const isInvalid = isFieldInvalid(field.state.meta);
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor="edit-outgoing-bilti-book">Bilti book</FieldLabel>
-                        <SearchableOptionCombobox
-                          id="edit-outgoing-bilti-book"
-                          name={field.name}
-                          value={field.state.value}
-                          onValueChange={field.handleChange}
-                          onBlur={field.handleBlur}
-                          isInvalid={isInvalid}
-                          placeholder={
-                            isLoadingBillBooks ? 'Loading bill books…' : 'Optional'
-                          }
-                          emptyMessage={
-                            isLoadingBillBooks ? 'Loading bill books…' : 'No active bill books.'
-                          }
-                          options={biltiBookOptions}
-                          sortedOptions={sortedBiltiBooks}
-                          search={biltiBookSearch}
-                          setSearch={setBiltiBookSearch}
-                          open={biltiBookComboboxOpen}
-                          setOpen={setBiltiBookComboboxOpen}
-                          disabled={isPending || isLoadingBillBooks}
-                          portalContainer={comboboxPortalContainer}
-                        />
-                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                      </Field>
-                    );
-                  }}
-                </form.Field>
-              </FieldGroup>
-            </FieldSet>
+                        <form.Field name="to">
+                          {(field) => {
+                            const isInvalid = isFieldInvalid(field.state.meta);
+                            return (
+                              <Field data-invalid={isInvalid}>
+                                <FieldLabel htmlFor={field.name}>To</FieldLabel>
+                                <Input
+                                  id={field.name}
+                                  name={field.name}
+                                  value={field.state.value}
+                                  onBlur={field.handleBlur}
+                                  onChange={(event) => field.handleChange(event.target.value)}
+                                  placeholder="Optional"
+                                  autoComplete="off"
+                                  aria-invalid={isInvalid}
+                                  className="h-11 text-base"
+                                />
+                                {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                              </Field>
+                            );
+                          }}
+                        </form.Field>
+
+                        <form.Field name="truckNumber">
+                          {(field) => {
+                            const isInvalid = isFieldInvalid(field.state.meta);
+                            return (
+                              <Field data-invalid={isInvalid}>
+                                <FieldLabel htmlFor={field.name}>Truck Number</FieldLabel>
+                                <Input
+                                  id={field.name}
+                                  name={field.name}
+                                  value={field.state.value}
+                                  onBlur={field.handleBlur}
+                                  onChange={(event) =>
+                                    field.handleChange(event.target.value.toUpperCase())
+                                  }
+                                  placeholder="Optional"
+                                  autoComplete="off"
+                                  aria-invalid={isInvalid}
+                                  className="h-11 text-base uppercase"
+                                />
+                                {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                              </Field>
+                            );
+                          }}
+                        </form.Field>
+
+                        <form.Field name="transportCompany">
+                          {(field) => {
+                            const isInvalid = isFieldInvalid(field.state.meta);
+                            return (
+                              <Field data-invalid={isInvalid}>
+                                <FieldLabel htmlFor={field.name}>Transport company</FieldLabel>
+                                <Input
+                                  id={field.name}
+                                  name={field.name}
+                                  value={field.state.value}
+                                  onBlur={field.handleBlur}
+                                  onChange={(event) => field.handleChange(event.target.value)}
+                                  placeholder="Optional"
+                                  autoComplete="organization"
+                                  aria-invalid={isInvalid}
+                                  className="h-11 text-base"
+                                />
+                                {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                              </Field>
+                            );
+                          }}
+                        </form.Field>
+
+                        <form.Field name="LSNumber">
+                          {(field) => {
+                            const isInvalid = isFieldInvalid(field.state.meta);
+                            return (
+                              <Field data-invalid={isInvalid}>
+                                <FieldLabel htmlFor={field.name}>L.S. No.</FieldLabel>
+                                <Input
+                                  id={field.name}
+                                  name={field.name}
+                                  value={field.state.value}
+                                  onBlur={field.handleBlur}
+                                  onChange={(event) => field.handleChange(event.target.value)}
+                                  placeholder="Optional"
+                                  autoComplete="off"
+                                  aria-invalid={isInvalid}
+                                  className="h-11 text-base"
+                                />
+                                {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                              </Field>
+                            );
+                          }}
+                        </form.Field>
+
+                        <form.Field name="driverName">
+                          {(field) => {
+                            const isInvalid = isFieldInvalid(field.state.meta);
+                            return (
+                              <Field data-invalid={isInvalid}>
+                                <FieldLabel htmlFor={field.name}>Driver name</FieldLabel>
+                                <Input
+                                  id={field.name}
+                                  name={field.name}
+                                  value={field.state.value}
+                                  onBlur={field.handleBlur}
+                                  onChange={(event) => field.handleChange(event.target.value)}
+                                  placeholder="Optional"
+                                  autoComplete="name"
+                                  aria-invalid={isInvalid}
+                                  className="h-11 text-base"
+                                />
+                                {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                              </Field>
+                            );
+                          }}
+                        </form.Field>
+
+                        <form.Field name="driverMobile">
+                          {(field) => {
+                            const isInvalid = isFieldInvalid(field.state.meta);
+                            return (
+                              <Field data-invalid={isInvalid}>
+                                <FieldLabel htmlFor={field.name}>Driver mobile</FieldLabel>
+                                <Input
+                                  id={field.name}
+                                  name={field.name}
+                                  type="tel"
+                                  inputMode="tel"
+                                  value={field.state.value}
+                                  onBlur={field.handleBlur}
+                                  onChange={(event) => field.handleChange(event.target.value)}
+                                  placeholder="Optional"
+                                  autoComplete="tel"
+                                  aria-invalid={isInvalid}
+                                  className="h-11 text-base"
+                                />
+                                {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                              </Field>
+                            );
+                          }}
+                        </form.Field>
+
+                        <form.Field name="owner">
+                          {(field) => {
+                            const isInvalid = isFieldInvalid(field.state.meta);
+                            return (
+                              <Field data-invalid={isInvalid}>
+                                <FieldLabel htmlFor={field.name}>Owner</FieldLabel>
+                                <Input
+                                  id={field.name}
+                                  name={field.name}
+                                  value={field.state.value}
+                                  onBlur={field.handleBlur}
+                                  onChange={(event) => field.handleChange(event.target.value)}
+                                  placeholder="Optional"
+                                  autoComplete="name"
+                                  aria-invalid={isInvalid}
+                                  className="h-11 text-base"
+                                />
+                                {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                              </Field>
+                            );
+                          }}
+                        </form.Field>
+                      </FieldGroup>
+                    </FieldSet>
+
+                    <FieldSet>
+                      <FieldLegend className="font-heading text-base font-semibold">
+                        Bill &amp; bilti
+                      </FieldLegend>
+                      <FieldDescription>
+                        Cost per bag is required. Bill number, bilti number, and book references are
+                        optional.
+                      </FieldDescription>
+                      <FieldGroup className="mt-5 grid grid-cols-1 gap-6">
+                        <form.Field name="costPerBag">
+                          {(field) => {
+                            const isInvalid = isFieldInvalid(field.state.meta);
+                            return (
+                              <Field data-invalid={isInvalid}>
+                                <FieldLabel htmlFor={field.name}>Cost per bag</FieldLabel>
+                                <Input
+                                  {...numericInputProps}
+                                  id={field.name}
+                                  name={field.name}
+                                  value={field.state.value}
+                                  onBlur={field.handleBlur}
+                                  onChange={(event) => field.handleChange(event.target.value)}
+                                  inputMode="decimal"
+                                  placeholder="e.g. 450"
+                                  aria-invalid={isInvalid}
+                                  disabled={isPending}
+                                  className="h-11 text-base tabular-nums"
+                                />
+                                {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                              </Field>
+                            );
+                          }}
+                        </form.Field>
+
+                        <form.Field name="billNumber">
+                          {(field) => {
+                            const isInvalid = isFieldInvalid(field.state.meta);
+                            return (
+                              <Field data-invalid={isInvalid}>
+                                <FieldLabel htmlFor={field.name}>Bill Number</FieldLabel>
+                                <Input
+                                  {...numericInputProps}
+                                  id={field.name}
+                                  name={field.name}
+                                  value={field.state.value}
+                                  onBlur={field.handleBlur}
+                                  onChange={(event) => field.handleChange(event.target.value)}
+                                  inputMode="numeric"
+                                  placeholder="Optional"
+                                  aria-invalid={isInvalid}
+                                  disabled={isPending}
+                                  className="h-11 text-base tabular-nums"
+                                />
+                                {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                              </Field>
+                            );
+                          }}
+                        </form.Field>
+
+                        <form.Field name="biltiNumber">
+                          {(field) => {
+                            const isInvalid = isFieldInvalid(field.state.meta);
+                            return (
+                              <Field data-invalid={isInvalid}>
+                                <FieldLabel htmlFor={field.name}>Bilti No.</FieldLabel>
+                                <Input
+                                  {...numericInputProps}
+                                  id={field.name}
+                                  name={field.name}
+                                  value={field.state.value}
+                                  onBlur={field.handleBlur}
+                                  onChange={(event) => field.handleChange(event.target.value)}
+                                  inputMode="numeric"
+                                  placeholder="Optional"
+                                  aria-invalid={isInvalid}
+                                  disabled={isPending}
+                                  className="h-11 text-base tabular-nums"
+                                />
+                                {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                              </Field>
+                            );
+                          }}
+                        </form.Field>
+
+                        <form.Field name="billBook">
+                          {(field) => {
+                            const isInvalid = isFieldInvalid(field.state.meta);
+                            const selectedId =
+                              billBookOptions.find((book) => book.label === field.state.value)
+                                ?.id ?? '';
+                            return (
+                              <Field data-invalid={isInvalid}>
+                                <FieldLabel htmlFor="edit-outgoing-bill-book">Bill book</FieldLabel>
+                                <SearchableOptionCombobox
+                                  id="edit-outgoing-bill-book"
+                                  name={field.name}
+                                  value={selectedId}
+                                  onValueChange={(bookId) => {
+                                    const label =
+                                      billBookOptions.find((book) => book.id === bookId)?.label ??
+                                      '';
+                                    field.handleChange(label);
+                                  }}
+                                  onBlur={field.handleBlur}
+                                  isInvalid={isInvalid}
+                                  placeholder={
+                                    isLoadingBillBooks ? 'Loading bill books…' : 'Optional'
+                                  }
+                                  emptyMessage={
+                                    isLoadingBillBooks
+                                      ? 'Loading bill books…'
+                                      : 'No active bill books.'
+                                  }
+                                  options={billBookOptions}
+                                  sortedOptions={sortedBillBooks}
+                                  search={billBookSearch}
+                                  setSearch={setBillBookSearch}
+                                  open={billBookComboboxOpen}
+                                  setOpen={setBillBookComboboxOpen}
+                                  disabled={isPending || isLoadingBillBooks}
+                                  portalContainer={comboboxPortalContainer}
+                                />
+                                {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                              </Field>
+                            );
+                          }}
+                        </form.Field>
+
+                        <form.Field name="biltiBook">
+                          {(field) => {
+                            const isInvalid = isFieldInvalid(field.state.meta);
+                            return (
+                              <Field data-invalid={isInvalid}>
+                                <FieldLabel htmlFor="edit-outgoing-bilti-book">
+                                  Bilti book
+                                </FieldLabel>
+                                <SearchableOptionCombobox
+                                  id="edit-outgoing-bilti-book"
+                                  name={field.name}
+                                  value={field.state.value}
+                                  onValueChange={field.handleChange}
+                                  onBlur={field.handleBlur}
+                                  isInvalid={isInvalid}
+                                  placeholder={
+                                    isLoadingBillBooks ? 'Loading bill books…' : 'Optional'
+                                  }
+                                  emptyMessage={
+                                    isLoadingBillBooks
+                                      ? 'Loading bill books…'
+                                      : 'No active bill books.'
+                                  }
+                                  options={biltiBookOptions}
+                                  sortedOptions={sortedBiltiBooks}
+                                  search={biltiBookSearch}
+                                  setSearch={setBiltiBookSearch}
+                                  open={biltiBookComboboxOpen}
+                                  setOpen={setBiltiBookComboboxOpen}
+                                  disabled={isPending || isLoadingBillBooks}
+                                  portalContainer={comboboxPortalContainer}
+                                />
+                                {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                              </Field>
+                            );
+                          }}
+                        </form.Field>
+                      </FieldGroup>
+                    </FieldSet>
                   </>
                 ) : null
               }

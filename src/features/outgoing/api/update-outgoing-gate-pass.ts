@@ -33,6 +33,7 @@ export function toUpdateOutgoingGatePassBody(
     date: form.date,
     manualGatePassNumber: form.manualGatePassNumber ?? null,
     category: form.category.trim(),
+    shed: nullableTrimmed(form.shed),
   };
 
   if (isDirectSaleOutgoing(form.category)) {

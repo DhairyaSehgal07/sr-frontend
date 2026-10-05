@@ -38,6 +38,7 @@ const form: OutgoingFormSubmitValues = {
     driverMobile: '9876543210',
     owner: 'Kapur',
     category: 'Direct Sale',
+    shed: '',
     dispatchLedgerId: '64f1a2b3c4d5e6f7a8b9c0d4',
     billBookId: '64f1a2b3c4d5e6f7a8b9c0d5',
     billNumber: '45',
@@ -85,6 +86,7 @@ describe('direct sale fields', () => {
       driverMobile: '',
       owner: '',
       category: 'Direct Sale',
+      shed: '',
       billNumber: '',
       biltiNumber: '',
       billBook: '',
@@ -193,7 +195,9 @@ describe('toCreateOutgoingGatePassBody', () => {
         step1: { ...form.step1, category: 'Outgoing to Shed' },
       },
       gatePassNo: 101,
-      items: [item({ storageGatePassId: '64f1a2b3c4d5e6f7a8b9c0d2', gatePassNo: 11, quantity: 20 })],
+      items: [
+        item({ storageGatePassId: '64f1a2b3c4d5e6f7a8b9c0d2', gatePassNo: 11, quantity: 20 }),
+      ],
     });
 
     expect(body.category).toBe('Outgoing to Shed');
@@ -212,6 +216,7 @@ describe('toCreateOutgoingGatePassBody', () => {
     expect(body).not.toHaveProperty('dispatchLedgerId');
     expect(body).not.toHaveProperty('billBookId');
     expect(body).not.toHaveProperty('costPerBag');
+    expect(body).not.toHaveProperty('shed');
 
     vi.unstubAllGlobals();
   });
@@ -238,7 +243,9 @@ describe('toCreateOutgoingGatePassBody', () => {
         },
       },
       gatePassNo: 101,
-      items: [item({ storageGatePassId: '64f1a2b3c4d5e6f7a8b9c0d2', gatePassNo: 11, quantity: 20 })],
+      items: [
+        item({ storageGatePassId: '64f1a2b3c4d5e6f7a8b9c0d2', gatePassNo: 11, quantity: 20 }),
+      ],
     });
 
     expect(body.category).toBe('Direct Sale');
@@ -251,6 +258,40 @@ describe('toCreateOutgoingGatePassBody', () => {
     expect(body).not.toHaveProperty('biltiNumber');
     expect(body).not.toHaveProperty('billBook');
     expect(body.costPerBag).toBe(450);
+    expect(body).not.toHaveProperty('shed');
+
+    vi.unstubAllGlobals();
+  });
+
+  it('sends a selected shed for any category and omits a blank shed', () => {
+    vi.stubGlobal('crypto', { randomUUID: () => 'outgoing-create-104' });
+
+    const withShed = toCreateOutgoingGatePassBody({
+      form: {
+        ...form,
+        step1: { ...form.step1, category: 'Outgoing to Shed', shed: 'Solar shed' },
+      },
+      gatePassNo: 101,
+      items: [
+        item({ storageGatePassId: '64f1a2b3c4d5e6f7a8b9c0d2', gatePassNo: 11, quantity: 20 }),
+      ],
+    });
+
+    expect(withShed.shed).toBe('Solar shed');
+    expect(withShed).not.toHaveProperty('dispatchLedgerId');
+
+    const blankShed = toCreateOutgoingGatePassBody({
+      form: {
+        ...form,
+        step1: { ...form.step1, shed: '   ' },
+      },
+      gatePassNo: 101,
+      items: [
+        item({ storageGatePassId: '64f1a2b3c4d5e6f7a8b9c0d2', gatePassNo: 11, quantity: 20 }),
+      ],
+    });
+
+    expect(blankShed).not.toHaveProperty('shed');
 
     vi.unstubAllGlobals();
   });

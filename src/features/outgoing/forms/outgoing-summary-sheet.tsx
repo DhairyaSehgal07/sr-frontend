@@ -177,6 +177,7 @@ function OutgoingReviewSummary({
             />
           ) : null}
           <DetailRow label="Category" value={values.category} />
+          {values.shed.trim() ? <DetailRow label="Shed" value={values.shed} /> : null}
           {isDirectSaleOutgoing(values.category) && dispatchLedgerLabel.trim() ? (
             <DetailRow label="Dispatch ledger" value={dispatchLedgerLabel} icon={User2} />
           ) : null}
@@ -184,74 +185,78 @@ function OutgoingReviewSummary({
       </div>
 
       {isDirectSaleOutgoing(values.category) ? (
-      <>
-      {hasRouteDetails ? (
-      <div className="space-y-2">
-        <SectionLabel icon={Truck}>Route &amp; vehicle</SectionLabel>
-        <SummaryCard>
-          {values.from.trim() ? (
-            <DetailRow label="From" value={values.from} icon={MapPin} />
+        <>
+          {hasRouteDetails ? (
+            <div className="space-y-2">
+              <SectionLabel icon={Truck}>Route &amp; vehicle</SectionLabel>
+              <SummaryCard>
+                {values.from.trim() ? (
+                  <DetailRow label="From" value={values.from} icon={MapPin} />
+                ) : null}
+                {values.to.trim() ? <DetailRow label="To" value={values.to} icon={MapPin} /> : null}
+                {values.truckNumber.trim() ? (
+                  <DetailRow
+                    label="Truck"
+                    value={values.truckNumber}
+                    icon={Truck}
+                    valueClassName="font-mono uppercase"
+                  />
+                ) : null}
+                {values.transportCompany.trim() ? (
+                  <DetailRow label="Transport company" value={values.transportCompany} />
+                ) : null}
+                {values.LSNumber.trim() ? (
+                  <DetailRow label="L.S. No." value={values.LSNumber} />
+                ) : null}
+                {values.driverName.trim() ? (
+                  <DetailRow label="Driver name" value={values.driverName} />
+                ) : null}
+                {values.driverMobile.trim() ? (
+                  <DetailRow label="Driver mobile" value={values.driverMobile} />
+                ) : null}
+                {values.owner.trim() ? <DetailRow label="Owner" value={values.owner} /> : null}
+              </SummaryCard>
+            </div>
           ) : null}
-          {values.to.trim() ? <DetailRow label="To" value={values.to} icon={MapPin} /> : null}
-          {values.truckNumber.trim() ? (
-            <DetailRow
-              label="Truck"
-              value={values.truckNumber}
-              icon={Truck}
-              valueClassName="font-mono uppercase"
-            />
-          ) : null}
-          {values.transportCompany.trim() ? (
-            <DetailRow label="Transport company" value={values.transportCompany} />
-          ) : null}
-          {values.LSNumber.trim() ? <DetailRow label="L.S. No." value={values.LSNumber} /> : null}
-          {values.driverName.trim() ? (
-            <DetailRow label="Driver name" value={values.driverName} />
-          ) : null}
-          {values.driverMobile.trim() ? (
-            <DetailRow label="Driver mobile" value={values.driverMobile} />
-          ) : null}
-          {values.owner.trim() ? <DetailRow label="Owner" value={values.owner} /> : null}
-        </SummaryCard>
-      </div>
-      ) : null}
 
-      {hasBillDetails ? (
-      <div className="space-y-2">
-        <SectionLabel icon={Receipt}>Bill &amp; bilti</SectionLabel>
-        <SummaryCard>
-          {values.costPerBag.trim() ? (
-            <DetailRow
-              label="Cost per bag"
-              value={Number(values.costPerBag).toLocaleString('en-IN', {
-                style: 'currency',
-                currency: 'INR',
-              })}
-              valueClassName="tabular-nums"
-            />
+          {hasBillDetails ? (
+            <div className="space-y-2">
+              <SectionLabel icon={Receipt}>Bill &amp; bilti</SectionLabel>
+              <SummaryCard>
+                {values.costPerBag.trim() ? (
+                  <DetailRow
+                    label="Cost per bag"
+                    value={Number(values.costPerBag).toLocaleString('en-IN', {
+                      style: 'currency',
+                      currency: 'INR',
+                    })}
+                    valueClassName="tabular-nums"
+                  />
+                ) : null}
+                {values.billNumber.trim() ? (
+                  <DetailRow
+                    label="Bill no."
+                    value={Number(values.billNumber).toLocaleString('en-IN')}
+                    valueClassName="tabular-nums"
+                  />
+                ) : null}
+                {values.biltiNumber.trim() ? (
+                  <DetailRow
+                    label="Bilti no."
+                    value={Number(values.biltiNumber).toLocaleString('en-IN')}
+                    valueClassName="tabular-nums"
+                  />
+                ) : null}
+                {billBookLabel.trim() ? (
+                  <DetailRow label="Bill book" value={billBookLabel} />
+                ) : null}
+                {values.biltiBook.trim() ? (
+                  <DetailRow label="Bilti book" value={values.biltiBook} />
+                ) : null}
+              </SummaryCard>
+            </div>
           ) : null}
-          {values.billNumber.trim() ? (
-            <DetailRow
-              label="Bill no."
-              value={Number(values.billNumber).toLocaleString('en-IN')}
-              valueClassName="tabular-nums"
-            />
-          ) : null}
-          {values.biltiNumber.trim() ? (
-            <DetailRow
-              label="Bilti no."
-              value={Number(values.biltiNumber).toLocaleString('en-IN')}
-              valueClassName="tabular-nums"
-            />
-          ) : null}
-          {billBookLabel.trim() ? <DetailRow label="Bill book" value={billBookLabel} /> : null}
-          {values.biltiBook.trim() ? (
-            <DetailRow label="Bilti book" value={values.biltiBook} />
-          ) : null}
-        </SummaryCard>
-      </div>
-      ) : null}
-      </>
+        </>
       ) : null}
 
       <div className="space-y-2">
