@@ -39,13 +39,6 @@ export default defineConfig({
               priority: 40,
             },
             {
-              name: 'chart-vendor',
-              // es-toolkit/compat is CJS. Splitting it from recharts makes Rolldown
-              // call an uninitialized binding (`r is not a function`) in production.
-              test: /[\\/]node_modules[\\/](recharts|es-toolkit)[\\/]/,
-              priority: 35,
-            },
-            {
               name: 'pdf-vendor',
               // pdfkit/queue are CJS. Keep them in one chunk, off the app shell.
               test: /[\\/]node_modules[\\/](@react-pdf|pdfkit)[\\/]/,

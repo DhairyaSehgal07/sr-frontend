@@ -7,5 +7,4 @@ export const env = {
   apiBaseUrl: import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000/api',
   appName: import.meta.env.VITE_APP_NAME ?? 'Kapur Frontend',
   enableDevtools: readBooleanFlag(import.meta.env.VITE_ENABLE_DEVTOOLS),
-  googleSheetUrl: import.meta.env.VITE_GOOGLE_SHEET_URL ?? '',
 } as const;

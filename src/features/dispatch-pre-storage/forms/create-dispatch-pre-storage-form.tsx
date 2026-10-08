@@ -37,7 +37,7 @@ import {
   type ComboboxOption,
 } from '@/components/searchable-option-combobox';
 import { DISPATCH_PRE_STORAGE_CATEGORIES, POTATO_VARIETY_OPTIONS } from '@/lib/constants';
-import { useDispatchLedgers } from '@/features/people/api/use-dispatch-ledgers';
+import { useDispatchLedgers } from '@/features/ledgers/api/use-dispatch-ledgers';
 import { useGetReceiptVoucherNumber, voucherNumberKeys } from '@/hooks/use-get-voucher-number';
 import { queryClient } from '@/lib/queryClient';
 import { useCreateNikasiGatePass } from '@/features/dispatch-pre-storage/api/use-create-nikasi-gate-pass';
@@ -286,7 +286,7 @@ const CreateDispatchPreStorageForm = () => {
     setReviewOpen(true);
   };
 
-  const handleConfirmSubmit = async (isBooked: boolean) => {
+  const handleConfirmSubmit = async () => {
     if (!canSubmit || !summaryValues) return;
 
     const gatePassNo = queryClient.getQueryData<number>(
@@ -302,7 +302,7 @@ const CreateDispatchPreStorageForm = () => {
 
     let body;
     try {
-      body = buildCreateApiBody(summaryValues, gatePassNo, isBooked);
+      body = buildCreateApiBody(summaryValues, gatePassNo, false);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Invalid form data.', {
         position: 'bottom-right',
@@ -385,7 +385,7 @@ const CreateDispatchPreStorageForm = () => {
                   Gate Pass Details
                 </FieldLegend>
                 <FieldDescription>
-                  Manual reference, date, booking flag, and category.
+                  Manual reference, date, and category.
                 </FieldDescription>
                 <FieldGroup className="mt-5 grid grid-cols-1 gap-6 @md/field-group:grid-cols-2">
                   <Field>

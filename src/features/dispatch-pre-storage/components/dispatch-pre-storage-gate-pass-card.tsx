@@ -139,15 +139,6 @@ export function DispatchPreStorageGatePassCard({
           >
             {gatePass.category}
           </Badge>
-          <Badge
-            variant="outline"
-            className={cn(
-              'text-xs',
-              gatePass.isBooked ? nikasiAccent.booked : 'bg-background text-muted-foreground',
-            )}
-          >
-            {gatePass.isBooked ? 'Booked' : 'Not booked'}
-          </Badge>
           <Badge variant="outline" className="bg-background text-xs tabular-nums">
             {totalBags.toLocaleString('en-IN')} Bags
           </Badge>

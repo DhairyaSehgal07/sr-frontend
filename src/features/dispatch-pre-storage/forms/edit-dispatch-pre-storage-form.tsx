@@ -39,7 +39,7 @@ import {
   type ComboboxOption,
 } from '@/components/searchable-option-combobox';
 import { DISPATCH_PRE_STORAGE_CATEGORIES, POTATO_VARIETY_OPTIONS } from '@/lib/constants';
-import { useDispatchLedgers } from '@/features/people/api/use-dispatch-ledgers';
+import { useDispatchLedgers } from '@/features/ledgers/api/use-dispatch-ledgers';
 import type { NikasiGatePass } from '@/features/dispatch-pre-storage/api/types';
 import { useNikasiGatePassById } from '@/features/dispatch-pre-storage/api/use-nikasi-gate-pass-by-id';
 import { useUpdateNikasiGatePass } from '@/features/dispatch-pre-storage/api/use-update-nikasi-gate-pass';
@@ -259,14 +259,14 @@ function EditDispatchPreStorageFormFields({ gatePass }: EditDispatchPreStorageFo
     setReviewOpen(true);
   };
 
-  const handleConfirmSubmit = async (isBooked: boolean) => {
+  const handleConfirmSubmit = async () => {
     if (!canSubmit || !summaryValues) return;
 
     try {
       const { message } = await updateNikasiGatePass({
         id: gatePass._id,
         summaryValues,
-        isBooked,
+        isBooked: false,
       });
       toast.success(message ?? 'Nikasi gate pass updated.', {
         position: 'bottom-right',
@@ -329,7 +329,7 @@ function EditDispatchPreStorageFormFields({ gatePass }: EditDispatchPreStorageFo
             </span>
           </CardTitle>
           <CardDescription className="text-base">
-            Update this nikasi gate pass before storage booking.
+            Update this dispatch gate pass.
           </CardDescription>
         </CardHeader>
 
@@ -341,7 +341,7 @@ function EditDispatchPreStorageFormFields({ gatePass }: EditDispatchPreStorageFo
                   Gate Pass Details
                 </FieldLegend>
                 <FieldDescription>
-                  Manual reference, date, booking flag, and category.
+                  Manual reference, date, and category.
                 </FieldDescription>
                 <FieldGroup className="mt-5 grid grid-cols-1 gap-6 @md/field-group:grid-cols-2">
                   <Field>

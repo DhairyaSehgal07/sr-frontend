@@ -1,15 +1,6 @@
 import { Link, useRouterState } from '@tanstack/react-router';
 import type { LucideIcon } from 'lucide-react';
-import {
-  BarChart3,
-  BookOpen,
-  ChevronRight,
-  FileBarChart,
-  IndianRupee,
-  Layers,
-  Settings,
-  Users,
-} from 'lucide-react';
+import { BookOpen, ChevronRight, FileBarChart, IndianRupee, Settings, Users } from 'lucide-react';
 import { Collapsible } from 'radix-ui';
 import { useState } from 'react';
 import {
@@ -45,34 +36,13 @@ const coreNavItems: NavItem[] = [
     name: 'Daybook',
     icon: BookOpen,
     to: '/daybook',
-    activePaths: [
-      '/daybook',
-      '/incoming',
-      '/grading',
-      '/storage',
-      '/transfer',
-      '/dispatch',
-      '/booking',
-      '/outgoing',
-    ],
+    activePaths: ['/daybook', '/dispatch'],
   },
   {
-    name: 'People',
+    name: 'Ledgers',
     icon: Users,
-    to: '/people',
-    activePaths: ['/people'],
-  },
-  {
-    name: 'Analytics',
-    icon: BarChart3,
-    to: '/analytics',
-    activePaths: ['/analytics'],
-  },
-  {
-    name: 'Additional',
-    icon: Layers,
-    to: '/additional',
-    activePaths: ['/additional'],
+    to: '/ledgers',
+    activePaths: ['/ledgers'],
   },
   {
     name: 'Finances',
@@ -82,14 +52,7 @@ const coreNavItems: NavItem[] = [
   },
 ];
 
-const reportNavItems = [
-  { name: 'Incoming', to: '/incoming/report' },
-  { name: 'Grading', to: '/grading/report' },
-  { name: 'Storage', to: '/storage/report' },
-  { name: 'Transfer Stock', to: '/transfer/report' },
-  { name: 'Dispatch', to: '/dispatch/report' },
-  { name: 'Booking', to: '/dispatch-post-storage/report' },
-] as const;
+const reportNavItems = [{ name: 'Dispatch', to: '/dispatch/report' }] as const;
 
 function isReportPath(pathname: string) {
   return reportNavItems.some((item) => pathname === item.to);
@@ -190,7 +153,7 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link to="/daybook" search={{ tab: 'incoming' }}>
+              <Link to="/daybook" search={{ tab: 'dispatch' }}>
                 <img src="/favicon.svg" alt="Coldop" className="size-8 shrink-0 rounded-md" />
                 <div className="grid min-w-0 flex-1 text-left leading-tight">
                   <span className="truncate font-heading text-sm tracking-tight">

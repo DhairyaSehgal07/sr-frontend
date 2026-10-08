@@ -24,27 +24,12 @@ import { cn } from '@/lib/utils';
 
 const routeTitles: Record<string, string> = {
   '/daybook': 'Daybook',
-  '/people': 'People',
-  '/analytics': 'Analytics',
+  '/ledgers': 'Ledgers',
   '/settings': 'Settings',
   '/settings/bill-books': 'Manage Bill Books',
-  '/incoming/edit-history': 'Incoming edit history',
-  '/storage/edit-history': 'Storage edit history',
-  '/grading/edit-history': 'Grading edit history',
-  '/booking/edit-history': 'Booking edit history',
-  '/additional': 'Additional',
   '/finances': 'Finances',
-  '/additional/temperature': 'Temperature',
-  '/incoming/report': 'Incoming report',
-  '/grading/report': 'Grading report',
-  '/storage/report': 'Storage report',
-  '/transfer/report': 'Transfer stock report',
   '/dispatch/report': 'Dispatch report',
   '/dispatch/': 'Dispatch',
-  '/dispatch-post-storage/report': 'Booking report',
-  '/booking': 'Booking',
-  '/outgoing': 'Outgoing',
-  '/transfer': 'Transfer stock',
   '/pdf-report': 'PDF Report',
 };
 

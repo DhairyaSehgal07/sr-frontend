@@ -40,7 +40,7 @@ export function useLogin() {
         return;
       }
 
-      router.navigate({ to: '/daybook', search: { tab: 'incoming' } });
+      router.navigate({ to: '/daybook', search: { tab: 'dispatch' } });
     },
   });
 }
