@@ -96,6 +96,7 @@ export type DaybookStorageEntry = DaybookEntryBase & {
   passKind: 'storage';
   storageCategory: string;
   stage?: string;
+  customMarka?: string;
   bagSizes: DaybookBagSize[];
 };
 

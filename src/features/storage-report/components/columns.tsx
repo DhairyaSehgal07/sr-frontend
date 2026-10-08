@@ -150,6 +150,14 @@ const baseColumns: ColumnDef<ReportFeatures, StorageGatePass>[] = [
     cell: ({ getValue }) => getValue<string | undefined>() || '-',
   },
   {
+    accessorKey: 'customMarka',
+    header: 'Marka',
+    meta: { filterLabel: 'Marka' },
+    ...sortText,
+    ...aggregateNone,
+    cell: ({ getValue }) => getValue<string | undefined>() || '-',
+  },
+  {
     accessorKey: 'storageCategory',
     header: 'Storage Category',
     meta: { filterLabel: 'Storage category' },

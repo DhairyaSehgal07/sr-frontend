@@ -86,6 +86,7 @@ const reportNavItems = [
   { name: 'Incoming', to: '/incoming/report' },
   { name: 'Grading', to: '/grading/report' },
   { name: 'Storage', to: '/storage/report' },
+  { name: 'Outgoing', to: '/outgoing/report' },
   { name: 'Transfer Stock', to: '/transfer/report' },
   { name: 'Dispatch', to: '/dispatch/report' },
   { name: 'Booking', to: '/dispatch-post-storage/report' },

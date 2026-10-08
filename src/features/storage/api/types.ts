@@ -46,6 +46,7 @@ export type StorageGatePass = {
   storageCategory: string;
   generation?: string;
   stage?: string;
+  customMarka?: string;
   bagSizes: StorageGatePassBagSize[];
   totalBags?: number;
   remarks?: string;
@@ -146,6 +147,7 @@ export type CreateStorageGatePassBody = {
   variety: string;
   storageCategory: string;
   stage?: string;
+  customMarka?: string;
   bagSizes: StorageGatePassBagSize[];
   manualGatePassNumber?: number;
   remarks?: string;
@@ -171,6 +173,7 @@ export type UpdateStorageGatePassBody = {
   variety: string;
   storageCategory: string;
   stage?: string;
+  customMarka?: string;
   bagSizes: StorageGatePassBagSize[];
   remarks?: string;
 };
@@ -200,6 +203,7 @@ export type StorageGatePassAuditState = Partial<{
   variety: string;
   storageCategory: string;
   stage: string;
+  customMarka: string;
   bagSizes: StorageGatePassBagSize[];
   remarks: string;
 }>;

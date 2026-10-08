@@ -163,6 +163,9 @@ function StorageReviewSummary({
           <DetailRow label="Variety" value={values.variety} />
           <DetailRow label="Category" value={`Cat. ${values.category}`} />
           {values.stage.trim() ? <DetailRow label="Stage" value={values.stage} /> : null}
+          {values.customMarka.trim() ? (
+            <DetailRow label="Marka" value={values.customMarka} />
+          ) : null}
           <DetailRow label="Date" value={formatReviewDate(values.date)} icon={Calendar} />
         </SummaryCard>
       </div>

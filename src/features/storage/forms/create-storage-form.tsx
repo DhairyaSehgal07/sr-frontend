@@ -413,6 +413,28 @@ const CreateStorageForm = () => {
                     );
                   }}
                 </form.Field>
+
+                <form.Field name="customMarka">
+                  {(field) => {
+                    const isInvalid = isFieldInvalid(field.state.meta);
+                    return (
+                      <Field data-invalid={isInvalid}>
+                        <FieldLabel htmlFor="create-storage-marka">Marka</FieldLabel>
+                        <Input
+                          id="create-storage-marka"
+                          name={field.name}
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                          aria-invalid={isInvalid}
+                          placeholder="Enter marka (optional)"
+                          className="h-11 text-base"
+                        />
+                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                      </Field>
+                    );
+                  }}
+                </form.Field>
               </FieldGroup>
             </FieldSet>
 

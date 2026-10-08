@@ -30,6 +30,7 @@ export function toUpdateStorageGatePassBody(
     body.stage = stage;
   }
 
+  body.customMarka = form.customMarka.trim();
   body.remarks = form.remarks.trim();
 
   return body;

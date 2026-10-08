@@ -13,6 +13,7 @@ const storageBaseSchema = z.object({
   variety: z.string().min(1, 'Select a variety.'),
   category: z.string().min(1, 'Select a category.'),
   stage: z.string(),
+  customMarka: z.string(),
   date: z.string().datetime('Select a valid date.'),
   remarks: z.string(),
 });

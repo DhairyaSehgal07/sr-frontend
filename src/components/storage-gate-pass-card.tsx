@@ -139,7 +139,7 @@ export function StorageGatePassCard({
       </CardHeader>
 
       <CardContent className="pt-5">
-        <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-5">
           <InfoBlock label="Farmer" value={farmer.name ?? '—'} icon={User} />
           <InfoBlock
             label="Account"
@@ -147,6 +147,7 @@ export function StorageGatePassCard({
             valueClassName="tabular-nums"
           />
           <InfoBlock label="Variety" value={gatePass.variety} icon={Sprout} />
+          <InfoBlock label="Marka" value={gatePass.customMarka?.trim() || '—'} />
           <InfoBlock
             label="Bag lines"
             value={gatePass.bagSizes.length}
@@ -310,8 +311,8 @@ export function StorageGatePassCardSkeleton() {
         </div>
       </CardHeader>
       <CardContent className="pt-5">
-        <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, index) => (
+        <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-5">
+          {Array.from({ length: 5 }).map((_, index) => (
             <div key={index} className="space-y-2">
               <Skeleton className="h-3 w-14" />
               <Skeleton className="h-5 w-full max-w-28" />

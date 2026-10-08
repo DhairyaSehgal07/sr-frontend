@@ -12,6 +12,7 @@ export const STORAGE_GATE_PASS_AUDIT_FIELD_LABELS: Record<keyof StorageGatePassA
     variety: 'Variety',
     storageCategory: 'Storage category',
     stage: 'Stage',
+    customMarka: 'Marka',
     bagSizes: 'Bag sizes',
     remarks: 'Remarks',
   };

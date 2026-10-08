@@ -81,6 +81,7 @@ export function storageGatePassToFormValues(
     variety: gatePass.variety,
     category: gatePass.storageCategory,
     stage: gatePass.stage ?? '',
+    customMarka: gatePass.customMarka ?? '',
     date: toIsoDateTime(gatePass.date),
     quantities: storageBagSizesToFormQuantities(gatePass.bagSizes),
     remarks: gatePass.remarks ?? '',

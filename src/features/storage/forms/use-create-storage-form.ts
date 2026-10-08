@@ -27,6 +27,7 @@ export function useCreateStorageForm(options: UseCreateStorageFormOptions = {}) 
       variety: '',
       category: '',
       stage: '',
+      customMarka: '',
       date: todayIso,
       quantities: createDefaultStorageQuantities(),
       remarks: '',

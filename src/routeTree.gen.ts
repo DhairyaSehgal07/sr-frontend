@@ -37,6 +37,7 @@ import { Route as AuthenticatedIncomingIdRouteImport } from './routes/_authentic
 import { Route as AuthenticatedIncomingEditHistoryRouteImport } from './routes/_authenticated/incoming.edit-history'
 import { Route as AuthenticatedIncomingReportRouteImport } from './routes/_authenticated/incoming.report'
 import { Route as AuthenticatedOutgoingIndexRouteImport } from './routes/_authenticated/outgoing.index'
+import { Route as AuthenticatedOutgoingReportRouteImport } from './routes/_authenticated/outgoing.report'
 import { Route as AuthenticatedPeopleIndexRouteImport } from './routes/_authenticated/people.index'
 import { Route as AuthenticatedPeopleIdRouteImport } from './routes/_authenticated/people.$id'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings.index'
@@ -207,6 +208,12 @@ const AuthenticatedOutgoingIndexRoute =
     path: '/outgoing/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedOutgoingReportRoute =
+  AuthenticatedOutgoingReportRouteImport.update({
+    id: '/outgoing/report',
+    path: '/outgoing/report',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedPeopleIndexRoute =
   AuthenticatedPeopleIndexRouteImport.update({
     id: '/people/',
@@ -292,6 +299,7 @@ export interface FileRoutesByFullPath {
   '/incoming/$id': typeof AuthenticatedIncomingIdRoute
   '/incoming/edit-history': typeof AuthenticatedIncomingEditHistoryRoute
   '/incoming/report': typeof AuthenticatedIncomingReportRoute
+  '/outgoing/report': typeof AuthenticatedOutgoingReportRoute
   '/people/$id': typeof AuthenticatedPeopleIdRoute
   '/settings/bill-books': typeof AuthenticatedSettingsBillBooksRoute
   '/storage/$id': typeof AuthenticatedStorageIdRoute
@@ -332,6 +340,7 @@ export interface FileRoutesByTo {
   '/incoming/$id': typeof AuthenticatedIncomingIdRoute
   '/incoming/edit-history': typeof AuthenticatedIncomingEditHistoryRoute
   '/incoming/report': typeof AuthenticatedIncomingReportRoute
+  '/outgoing/report': typeof AuthenticatedOutgoingReportRoute
   '/people/$id': typeof AuthenticatedPeopleIdRoute
   '/settings/bill-books': typeof AuthenticatedSettingsBillBooksRoute
   '/storage/$id': typeof AuthenticatedStorageIdRoute
@@ -374,6 +383,7 @@ export interface FileRoutesById {
   '/_authenticated/incoming/$id': typeof AuthenticatedIncomingIdRoute
   '/_authenticated/incoming/edit-history': typeof AuthenticatedIncomingEditHistoryRoute
   '/_authenticated/incoming/report': typeof AuthenticatedIncomingReportRoute
+  '/_authenticated/outgoing/report': typeof AuthenticatedOutgoingReportRoute
   '/_authenticated/people/$id': typeof AuthenticatedPeopleIdRoute
   '/_authenticated/settings/bill-books': typeof AuthenticatedSettingsBillBooksRoute
   '/_authenticated/storage/$id': typeof AuthenticatedStorageIdRoute
@@ -416,6 +426,7 @@ export interface FileRouteTypes {
     | '/incoming/$id'
     | '/incoming/edit-history'
     | '/incoming/report'
+    | '/outgoing/report'
     | '/people/$id'
     | '/settings/bill-books'
     | '/storage/$id'
@@ -456,6 +467,7 @@ export interface FileRouteTypes {
     | '/incoming/$id'
     | '/incoming/edit-history'
     | '/incoming/report'
+    | '/outgoing/report'
     | '/people/$id'
     | '/settings/bill-books'
     | '/storage/$id'
@@ -497,6 +509,7 @@ export interface FileRouteTypes {
     | '/_authenticated/incoming/$id'
     | '/_authenticated/incoming/edit-history'
     | '/_authenticated/incoming/report'
+    | '/_authenticated/outgoing/report'
     | '/_authenticated/people/$id'
     | '/_authenticated/settings/bill-books'
     | '/_authenticated/storage/$id'
@@ -721,6 +734,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOutgoingIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/outgoing/report': {
+      id: '/_authenticated/outgoing/report'
+      path: '/outgoing/report'
+      fullPath: '/outgoing/report'
+      preLoaderRoute: typeof AuthenticatedOutgoingReportRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/people/': {
       id: '/_authenticated/people/'
       path: '/people'
@@ -820,6 +840,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedIncomingIdRoute: typeof AuthenticatedIncomingIdRoute
   AuthenticatedIncomingEditHistoryRoute: typeof AuthenticatedIncomingEditHistoryRoute
   AuthenticatedIncomingReportRoute: typeof AuthenticatedIncomingReportRoute
+  AuthenticatedOutgoingReportRoute: typeof AuthenticatedOutgoingReportRoute
   AuthenticatedPeopleIdRoute: typeof AuthenticatedPeopleIdRoute
   AuthenticatedSettingsBillBooksRoute: typeof AuthenticatedSettingsBillBooksRoute
   AuthenticatedStorageIdRoute: typeof AuthenticatedStorageIdRoute
@@ -864,6 +885,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedIncomingIdRoute: AuthenticatedIncomingIdRoute,
   AuthenticatedIncomingEditHistoryRoute: AuthenticatedIncomingEditHistoryRoute,
   AuthenticatedIncomingReportRoute: AuthenticatedIncomingReportRoute,
+  AuthenticatedOutgoingReportRoute: AuthenticatedOutgoingReportRoute,
   AuthenticatedPeopleIdRoute: AuthenticatedPeopleIdRoute,
   AuthenticatedSettingsBillBooksRoute: AuthenticatedSettingsBillBooksRoute,
   AuthenticatedStorageIdRoute: AuthenticatedStorageIdRoute,

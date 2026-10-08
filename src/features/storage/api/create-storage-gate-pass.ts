@@ -66,6 +66,11 @@ export function toCreateStorageGatePassBody({
     body.stage = stage;
   }
 
+  const customMarka = form.customMarka.trim();
+  if (customMarka) {
+    body.customMarka = customMarka;
+  }
+
   const remarks = form.remarks.trim();
   if (remarks) {
     body.remarks = remarks;

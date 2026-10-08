@@ -10,6 +10,7 @@ export function daybookStorageEntryToGatePass(entry: DaybookStorageEntry): Stora
     variety: entry.variety,
     storageCategory: entry.storageCategory,
     stage: entry.stage,
+    customMarka: entry.customMarka,
     bagSizes: entry.bagSizes,
     remarks: entry.remarks,
     farmerStorageLinkId: entry.farmerStorageLinkId,
