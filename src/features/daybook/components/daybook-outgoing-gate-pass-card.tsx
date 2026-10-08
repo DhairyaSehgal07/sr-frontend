@@ -12,6 +12,7 @@ import {
   Sprout,
   Truck,
   User,
+  Warehouse,
   type LucideIcon,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -205,6 +206,7 @@ export function DaybookOutgoingGatePassCard({ data: gatePass }: DaybookOutgoingG
       : undefined;
   const totalAmount = isDirectSale && costPerBag != null ? issuedBags * costPerBag : undefined;
   const createdBy = gatePass.createdBy?.name ?? '—';
+  const shed = gatePass.shed?.trim() || '';
 
   const handleCancelOpenChange = (open: boolean) => {
     if (isCancelling) return;
@@ -279,6 +281,11 @@ export function DaybookOutgoingGatePassCard({ data: gatePass }: DaybookOutgoingG
               {gatePass.category}
             </Badge>
           ) : null}
+          {shed ? (
+            <Badge variant="outline" className="bg-background text-xs" title={shed}>
+              {shed}
+            </Badge>
+          ) : null}
           <Badge variant="outline" className="bg-background text-xs tabular-nums">
             {issuedBags.toLocaleString('en-IN')} Bags issued
           </Badge>
@@ -320,7 +327,7 @@ export function DaybookOutgoingGatePassCard({ data: gatePass }: DaybookOutgoingG
       </CardHeader>
 
       <CardContent className="pt-5">
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5">
           <InfoBlock label="Farmer" value={farmer.name ?? '—'} icon={User} />
           <InfoBlock
             label="Account"
@@ -329,6 +336,7 @@ export function DaybookOutgoingGatePassCard({ data: gatePass }: DaybookOutgoingG
           />
           <InfoBlock label="From" value={gatePass.from || '—'} icon={Truck} />
           <InfoBlock label="To" value={gatePass.to || '—'} />
+          <InfoBlock label="Shed" value={shed || '—'} icon={Warehouse} />
         </div>
 
         <div className="mt-6 grid grid-cols-2 gap-6 sm:grid-cols-4">
@@ -398,6 +406,7 @@ export function DaybookOutgoingGatePassCard({ data: gatePass }: DaybookOutgoingG
                   <div className="grid grid-cols-2 gap-4 rounded-xl border border-border/50 bg-muted/20 p-4">
                     <InfoBlock label="From" value={gatePass.from || '—'} />
                     <InfoBlock label="To" value={gatePass.to || '—'} />
+                    <InfoBlock label="Shed" value={shed || '—'} icon={Warehouse} />
                     <InfoBlock
                       label="Truck"
                       value={gatePass.truckNumber || '—'}
@@ -647,8 +656,8 @@ export function DaybookOutgoingGatePassCardSkeleton() {
         </div>
       </CardHeader>
       <CardContent className="pt-5">
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, index) => (
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5">
+          {Array.from({ length: 5 }).map((_, index) => (
             <div key={index} className="space-y-2">
               <Skeleton className="h-3 w-14" />
               <Skeleton className="h-5 w-full max-w-28" />
