@@ -178,6 +178,10 @@ function OutgoingReviewSummary({
           ) : null}
           <DetailRow label="Category" value={values.category} />
           {values.shed.trim() ? <DetailRow label="Shed" value={values.shed} /> : null}
+          <DetailRow
+            label="Pre-sowing treatment"
+            value={values.preSowingTreatment ? 'Yes' : 'No'}
+          />
           {isDirectSaleOutgoing(values.category) && dispatchLedgerLabel.trim() ? (
             <DetailRow label="Dispatch ledger" value={dispatchLedgerLabel} icon={User2} />
           ) : null}

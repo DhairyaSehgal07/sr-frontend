@@ -17,6 +17,7 @@ export function outgoingGatePassToEditFormValues(
     owner: gatePass.owner ?? '',
     category: gatePass.category ?? '',
     shed: gatePass.shed ?? '',
+    preSowingTreatment: gatePass['pre-sowing-treatment'] ?? false,
     billNumber: gatePass.billNumber != null ? String(gatePass.billNumber) : '',
     biltiNumber: gatePass.biltiNumber != null ? String(gatePass.biltiNumber) : '',
     billBook: gatePass.billBook != null ? String(gatePass.billBook) : '',

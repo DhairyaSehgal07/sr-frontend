@@ -39,6 +39,7 @@ const form: OutgoingFormSubmitValues = {
     owner: 'Kapur',
     category: 'Direct Sale',
     shed: '',
+    preSowingTreatment: false,
     dispatchLedgerId: '64f1a2b3c4d5e6f7a8b9c0d4',
     billBookId: '64f1a2b3c4d5e6f7a8b9c0d5',
     billNumber: '45',
@@ -87,6 +88,7 @@ describe('direct sale fields', () => {
       owner: '',
       category: 'Direct Sale',
       shed: '',
+      preSowingTreatment: false,
       billNumber: '',
       biltiNumber: '',
       billBook: '',
@@ -158,6 +160,7 @@ describe('toCreateOutgoingGatePassBody', () => {
     });
 
     expect(body).toMatchObject({
+      'pre-sowing-treatment': false,
       dispatchLedgerId: '64f1a2b3c4d5e6f7a8b9c0d4',
       billBookId: '64f1a2b3c4d5e6f7a8b9c0d5',
       transportCompany: 'Punjab Roadways',
@@ -201,6 +204,7 @@ describe('toCreateOutgoingGatePassBody', () => {
     });
 
     expect(body.category).toBe('Outgoing to Shed');
+    expect(body['pre-sowing-treatment']).toBe(false);
     expect(body).not.toHaveProperty('from');
     expect(body).not.toHaveProperty('to');
     expect(body).not.toHaveProperty('truckNumber');
@@ -292,6 +296,25 @@ describe('toCreateOutgoingGatePassBody', () => {
     });
 
     expect(blankShed).not.toHaveProperty('shed');
+
+    vi.unstubAllGlobals();
+  });
+
+  it('sends pre-sowing treatment as true when the checkbox is checked', () => {
+    vi.stubGlobal('crypto', { randomUUID: () => 'outgoing-create-105' });
+
+    const body = toCreateOutgoingGatePassBody({
+      form: {
+        ...form,
+        step1: { ...form.step1, preSowingTreatment: true },
+      },
+      gatePassNo: 101,
+      items: [
+        item({ storageGatePassId: '64f1a2b3c4d5e6f7a8b9c0d2', gatePassNo: 11, quantity: 20 }),
+      ],
+    });
+
+    expect(body['pre-sowing-treatment']).toBe(true);
 
     vi.unstubAllGlobals();
   });

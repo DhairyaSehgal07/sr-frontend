@@ -25,6 +25,7 @@ export type CreateOutgoingGatePassBody = {
   storageGatePasses: CreateOutgoingStorageGatePass[];
   category: string;
   shed?: string;
+  'pre-sowing-treatment': boolean;
   dispatchLedgerId?: string;
   billBookId?: string;
   billNumber?: number;
@@ -82,6 +83,7 @@ export type UpdateOutgoingGatePassBody = {
   owner?: string | null;
   category: string;
   shed?: string | null;
+  'pre-sowing-treatment': boolean;
   billNumber?: number | null;
   biltiNumber?: number | null;
   billBook?: string | null;
@@ -133,6 +135,7 @@ export type UpdateOutgoingGatePassInput = {
     owner: string;
     category: string;
     shed: string;
+    preSowingTreatment: boolean;
     billNumber: string;
     biltiNumber: string;
     billBook: string;

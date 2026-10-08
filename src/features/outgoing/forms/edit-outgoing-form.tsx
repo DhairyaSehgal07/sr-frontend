@@ -10,6 +10,7 @@ import {
   type ComboboxOption,
 } from '@/components/searchable-option-combobox';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Field,
   FieldDescription,
@@ -329,6 +330,24 @@ function EditOutgoingFormFields({
                       </Field>
                     );
                   }}
+                </form.Field>
+
+                <form.Field name="preSowingTreatment">
+                  {(field) => (
+                    <Field orientation="horizontal" className="min-h-11">
+                      <Checkbox
+                        id="edit-outgoing-pre-sowing-treatment"
+                        name={field.name}
+                        checked={field.state.value}
+                        onCheckedChange={(checked) => field.handleChange(checked === true)}
+                        onBlur={field.handleBlur}
+                        disabled={isPending}
+                      />
+                      <FieldLabel htmlFor="edit-outgoing-pre-sowing-treatment">
+                        Pre-sowing treatment
+                      </FieldLabel>
+                    </Field>
+                  )}
                 </form.Field>
               </FieldGroup>
             </FieldSet>

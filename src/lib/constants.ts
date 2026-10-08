@@ -65,7 +65,13 @@ export const OUTGOING_CATEGORIES = [
 
 export type OutgoingCategory = (typeof OUTGOING_CATEGORIES)[number];
 
-export const OUTGOING_SHEDS = ['Solar shed', 'Vaddi shed', 'Chhoti shed', 'Front shed'] as const;
+export const OUTGOING_SHEDS = [
+  'Solar shed',
+  'Vaddi shed',
+  'Chhoti shed',
+  'Front shed',
+  'Grader Shed',
+] as const;
 
 export type OutgoingShed = (typeof OUTGOING_SHEDS)[number];
 

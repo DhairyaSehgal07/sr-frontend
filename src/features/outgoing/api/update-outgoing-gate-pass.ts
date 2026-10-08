@@ -34,6 +34,7 @@ export function toUpdateOutgoingGatePassBody(
     manualGatePassNumber: form.manualGatePassNumber ?? null,
     category: form.category.trim(),
     shed: nullableTrimmed(form.shed),
+    'pre-sowing-treatment': form.preSowingTreatment,
   };
 
   if (isDirectSaleOutgoing(form.category)) {

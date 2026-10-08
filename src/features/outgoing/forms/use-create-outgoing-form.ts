@@ -40,6 +40,7 @@ export function createOutgoingFormDefaultValues(coldStorageName: string, dateIso
       owner: '',
       category: '',
       shed: '',
+      preSowingTreatment: false as boolean,
       dispatchLedgerId: '',
       billBookId: '',
       billNumber: '',

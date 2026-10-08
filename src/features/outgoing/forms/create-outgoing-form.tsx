@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { useFarmerLinkOptions } from '@/features/people/api/use-farmer-link-options';
 import { useDispatchLedgers } from '@/features/people/api/use-dispatch-ledgers';
@@ -449,6 +450,23 @@ const CreateOutgoingForm = () => {
                               </Field>
                             );
                           }}
+                        </form.Field>
+
+                        <form.Field name="step1.preSowingTreatment">
+                          {(field) => (
+                            <Field orientation="horizontal" className="min-h-11">
+                              <Checkbox
+                                id="outgoing-pre-sowing-treatment"
+                                name={field.name}
+                                checked={field.state.value}
+                                onCheckedChange={(checked) => field.handleChange(checked === true)}
+                                onBlur={field.handleBlur}
+                              />
+                              <FieldLabel htmlFor="outgoing-pre-sowing-treatment">
+                                Pre-sowing treatment
+                              </FieldLabel>
+                            </Field>
+                          )}
                         </form.Field>
                       </FieldGroup>
                     </FieldSet>

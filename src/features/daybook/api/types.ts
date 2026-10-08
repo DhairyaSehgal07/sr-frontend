@@ -111,6 +111,7 @@ export type DaybookOutgoingEntry = DaybookEntryBase & {
   owner?: string;
   category?: string;
   shed?: string;
+  'pre-sowing-treatment'?: boolean;
   billNumber?: number;
   biltiNumber?: number;
   billBook?: string | number;

@@ -116,6 +116,7 @@ export function toCreateOutgoingGatePassBody({
     date: step1.date,
     variety: deriveVarietyFromItems(items),
     category: step1.category.trim(),
+    'pre-sowing-treatment': step1.preSowingTreatment,
     storageGatePasses: buildStorageGatePassesPayload(items, step2.weightsBySize),
     idempotencyKey: crypto.randomUUID(),
   };

@@ -53,6 +53,7 @@ export const editOutgoingFormSchema = z
     owner: z.string().trim(),
     category: z.string().trim().min(1, 'Category is required.').max(100),
     shed: optionalShedField,
+    preSowingTreatment: z.boolean(),
     billNumber: optionalPositiveIntField,
     biltiNumber: optionalPositiveIntField,
     billBook: z.string().trim(),
