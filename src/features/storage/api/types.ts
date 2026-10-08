@@ -1,3 +1,4 @@
+import type { DaybookOutgoingEntry, DaybookStorageEntry } from '@/features/daybook/api/types';
 import type { StorageFormValues } from '@/features/storage/types';
 import type { BagType } from '@/lib/constants';
 
@@ -115,18 +116,27 @@ export type GetStorageGatePassesResponse = {
   message?: string;
 };
 
-export type SearchStorageGatePassResult = {
-  storageGatePasses: StorageGatePass[];
+export type StorageGatePassSearchBy = 'gatePassNumber' | 'manualGatePassNumber';
+
+export type SearchStorageGatePassApiResult = {
+  storageGatePasses: DaybookStorageEntry[];
+  outgoingGatePasses: DaybookOutgoingEntry[];
 };
 
 export type SearchStorageGatePassesResponse = {
   success: boolean;
-  data: SearchStorageGatePassResult;
+  data: SearchStorageGatePassApiResult;
   message?: string;
 };
 
 export type SearchStorageGatePassBody = {
   number: number;
+  searchBy?: StorageGatePassSearchBy;
+};
+
+export type StorageGatePassSearchResult = {
+  storageGatePasses: StorageGatePass[];
+  outgoingGatePasses: DaybookOutgoingEntry[];
 };
 
 export type CreateStorageGatePassBody = {

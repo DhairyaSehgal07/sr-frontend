@@ -1,7 +1,11 @@
 import type { QueryClient } from '@tanstack/react-query';
 
 import { storageGatePassKeys } from './query-keys';
-import type { StorageGatePass, StorageGatePassListResult } from './types';
+import type {
+  StorageGatePass,
+  StorageGatePassListResult,
+  StorageGatePassSearchResult,
+} from './types';
 
 export function findStorageGatePassInCache(
   queryClient: QueryClient,
@@ -16,7 +20,7 @@ export function findStorageGatePassInCache(
     if (match) return match;
   }
 
-  const searchQueries = queryClient.getQueriesData<StorageGatePassListResult>({
+  const searchQueries = queryClient.getQueriesData<StorageGatePassSearchResult>({
     queryKey: storageGatePassKeys.searches(),
   });
 
