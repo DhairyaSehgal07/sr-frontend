@@ -37,7 +37,10 @@ import {
   type ComboboxOption,
 } from '@/components/searchable-option-combobox';
 import { DISPATCH_PRE_STORAGE_CATEGORIES, POTATO_VARIETY_OPTIONS } from '@/lib/constants';
+import { ledgerQueryKeys } from '@/features/ledgers/api/query-keys';
 import { useDispatchLedgers } from '@/features/ledgers/api/use-dispatch-ledgers';
+import { AddDispatchLedgerDialog } from '@/features/ledgers/components/add-dispatch-ledger-dialog';
+import type { DispatchLedger } from '@/features/ledgers/types';
 import { useGetReceiptVoucherNumber, voucherNumberKeys } from '@/hooks/use-get-voucher-number';
 import { queryClient } from '@/lib/queryClient';
 import { useCreateNikasiGatePass } from '@/features/dispatch-pre-storage/api/use-create-nikasi-gate-pass';
@@ -137,6 +140,7 @@ const CreateDispatchPreStorageForm = () => {
   const [biltiBookSearch, setBiltiBookSearch] = useState('');
   const [biltiBookComboboxOpen, setBiltiBookComboboxOpen] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
+  const [addDispatchLedgerOpen, setAddDispatchLedgerOpen] = useState(false);
 
   const sortedDispatchLedgers = useMemo(
     () => filterAndSortOptions(dispatchLedgerSearch, dispatchLedgerOptions),
@@ -324,6 +328,19 @@ const CreateDispatchPreStorageForm = () => {
     }
   };
 
+  const handleDispatchLedgerCreated = (ledger: DispatchLedger) => {
+    queryClient.setQueryData<DispatchLedger[]>(ledgerQueryKeys.dispatchLedgers(), (current) => {
+      const list = current ?? [];
+      if (list.some((item) => item._id === ledger._id)) {
+        return list;
+      }
+      return [...list, ledger];
+    });
+    setDispatchLedgerId(ledger._id);
+    setDispatchLedgerSearch(ledger.name);
+    setDispatchLedgerComboboxOpen(false);
+  };
+
   const resetComboboxState = () => {
     setDispatchLedgerSearch('');
     setDispatchLedgerComboboxOpen(false);
@@ -355,6 +372,7 @@ const CreateDispatchPreStorageForm = () => {
     setBagSize(createDefaultBagSizeRows());
     setNetWeight('');
     setRemarks('');
+    setAddDispatchLedgerOpen(false);
     resetComboboxState();
   };
 
@@ -472,6 +490,7 @@ const CreateDispatchPreStorageForm = () => {
                         variant="secondary"
                         className="h-auto min-h-9 shrink-0 gap-1.5 px-3"
                         aria-label="Add dispatch ledger"
+                        onClick={() => setAddDispatchLedgerOpen(true)}
                       >
                         <UserPlus className="size-4 shrink-0" />
                         <span className="hidden sm:inline">Add</span>
@@ -943,6 +962,12 @@ const CreateDispatchPreStorageForm = () => {
           </CardFooter>
         </form>
       </Card>
+
+      <AddDispatchLedgerDialog
+        open={addDispatchLedgerOpen}
+        onOpenChange={setAddDispatchLedgerOpen}
+        onSuccess={handleDispatchLedgerCreated}
+      />
 
       <DispatchPreStorageSummarySheet
         open={reviewOpen}

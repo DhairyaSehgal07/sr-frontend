@@ -177,15 +177,11 @@ const styles = StyleSheet.create({
     fontFamily: 'Helvetica-Bold',
     textAlign: 'center',
   },
-  bagLineRow: {
-    flexDirection: 'row',
-    width: '100%',
+  bagLineCell: {
+    minHeight: 22,
+    justifyContent: 'center',
     paddingVertical: 4,
-    borderBottomWidth: 0.5,
-    borderBottomColor: colors.border,
-  },
-  bagLineLast: {
-    borderBottomWidth: 0,
+    paddingHorizontal: 6,
   },
   cellHeaderText: {
     fontSize: 8,
@@ -275,9 +271,9 @@ const BiltiDocumentPdf = ({ data }: BiltiDocumentPdfProps) => {
   const delivery = data?.to?.trim() || '';
   const lorryNo = data?.truckNumber?.trim() || '';
   const challanNo = data ? formatPdfNumber(data.bitliNumber) : '';
-  const bags = data ? formatPdfNumber(totalBags(data.bagSize)) : '';
-  const bagRows = data?.bagSize ?? [];
-  const totalAmount = data ? bagLinesTotal(data.bagSize) : undefined;
+  const bagRows = (data?.bagSize ?? []).filter((row) => row.quantityIssued > 0);
+  const bags = data ? formatPdfNumber(totalBags(bagRows)) : '';
+  const totalAmount = bagLinesTotal(bagRows);
   const totalAmountLabel = totalAmount != null ? formatPdfAmount(totalAmount) : '';
   const amountInWords = rupeesInWords(totalAmount);
 
@@ -386,100 +382,71 @@ const BiltiDocumentPdf = ({ data }: BiltiDocumentPdfProps) => {
             </View>
           </View>
 
-          {/* Row 3: Main Data Body */}
-          <View style={[styles.gridRow, { minHeight: 200 }]}>
-            <View style={[styles.gridCell, { width: '8%', padding: 0 }]}>
-              {bagRows.map((row, index) => (
-                <View
-                  key={`${row.size}-${row.variety}-${index}`}
-                  style={[
-                    styles.bagLineRow,
-                    index === bagRows.length - 1 ? styles.bagLineLast : undefined,
-                    { justifyContent: 'center', paddingHorizontal: 4 },
-                  ]}
-                >
-                  <Text style={styles.cellValueTextBold}>
-                    {formatPdfNumber(row.quantityIssued)}
-                  </Text>
-                </View>
-              ))}
-            </View>
-            <View
-              style={[
-                styles.gridCell,
-                {
-                  width: '62%',
-                  padding: 0,
-                  justifyContent: bagRows.length ? 'flex-start' : 'center',
-                  alignItems: bagRows.length ? 'stretch' : 'center',
-                },
-              ]}
-            >
-              {bagRows.length > 0 ? (
-                bagRows.map((row, index) => (
-                  <View
-                    key={`${row.size}-${row.variety}-p-${index}`}
-                    style={[
-                      styles.bagLineRow,
-                      index === bagRows.length - 1 ? styles.bagLineLast : undefined,
-                      { paddingHorizontal: 8 },
-                    ]}
-                  >
-                    <Text style={styles.cellValueText}>{bagLineParticulars(row)}</Text>
-                  </View>
-                ))
-              ) : (
+          {bagRows.length === 0 ? (
+            <View style={[styles.gridRow, { minHeight: 200 }]}>
+              <View style={[styles.gridCell, styles.bagLineCell, { width: '8%' }]} />
+              <View
+                style={[
+                  styles.gridCell,
+                  styles.bagLineCell,
+                  { width: '62%', alignItems: 'center' },
+                ]}
+              >
                 <Text style={styles.particularsAccent}>
                   Insurance, Chattai & Loading Charges Extra
                 </Text>
-              )}
-              {bagRows.length > 0 ? (
-                <Text
-                  style={[
-                    styles.particularsAccent,
-                    { textAlign: 'center', marginTop: 12, marginBottom: 8 },
-                  ]}
-                >
-                  Insurance, Chattai & Loading Charges Extra
-                </Text>
-              ) : null}
+              </View>
+              <View style={[styles.gridCell, styles.bagLineCell, { width: '15%' }]} />
+              <View style={[styles.gridCellNoBorderRight, styles.bagLineCell, { width: '15%' }]} />
             </View>
-            <View style={[styles.gridCell, { width: '15%', padding: 0 }]}>
-              {bagRows.map((row, index) => (
-                <View
-                  key={`${row.size}-${row.variety}-r-${index}`}
-                  style={[
-                    styles.bagLineRow,
-                    index === bagRows.length - 1 ? styles.bagLineLast : undefined,
-                    { justifyContent: 'center', paddingHorizontal: 4 },
-                  ]}
-                >
-                  <Text style={styles.cellValueTextBold}>
-                    {row.costPerBag != null ? formatPdfAmount(row.costPerBag) : ''}
-                  </Text>
-                </View>
-              ))}
-            </View>
-            <View style={[styles.gridCellNoBorderRight, { width: '15%', padding: 0 }]}>
-              {bagRows.map((row, index) => {
-                const amount = lineAmount(row);
-                return (
-                  <View
-                    key={`${row.size}-${row.variety}-a-${index}`}
-                    style={[
-                      styles.bagLineRow,
-                      index === bagRows.length - 1 ? styles.bagLineLast : undefined,
-                      { justifyContent: 'center', paddingHorizontal: 4 },
-                    ]}
-                  >
+          ) : (
+            bagRows.map((row, index) => {
+              const amount = lineAmount(row);
+              return (
+                <View key={`${row.size}-${row.variety}-${index}`} style={styles.gridRow}>
+                  <View style={[styles.gridCell, styles.bagLineCell, { width: '8%' }]}>
                     <Text style={styles.cellValueTextBold}>
-                      {amount != null ? formatPdfAmount(amount) : ''}
+                      {formatPdfNumber(row.quantityIssued)}
                     </Text>
                   </View>
-                );
-              })}
+                  <View style={[styles.gridCell, styles.bagLineCell, { width: '62%' }]}>
+                    <Text style={[styles.cellValueText, { marginTop: 0 }]}>
+                      {bagLineParticulars(row)}
+                    </Text>
+                  </View>
+                  <View style={[styles.gridCell, styles.bagLineCell, { width: '15%' }]}>
+                    {row.costPerBag != null ? (
+                      <Text style={styles.cellValueTextBold}>
+                        {formatPdfAmount(row.costPerBag)}
+                      </Text>
+                    ) : null}
+                  </View>
+                  <View
+                    style={[styles.gridCellNoBorderRight, styles.bagLineCell, { width: '15%' }]}
+                  >
+                    {amount != null ? (
+                      <Text style={styles.cellValueTextBold}>{formatPdfAmount(amount)}</Text>
+                    ) : null}
+                  </View>
+                </View>
+              );
+            })
+          )}
+
+          {bagRows.length > 0 ? (
+            <View style={[styles.gridRow, { minHeight: 120 }]}>
+              <View style={[styles.gridCell, { width: '8%' }]} />
+              <View
+                style={[styles.gridCell, { width: '62%', alignItems: 'center', paddingTop: 12 }]}
+              >
+                <Text style={[styles.particularsAccent, { textAlign: 'center' }]}>
+                  Insurance, Chattai & Loading Charges Extra
+                </Text>
+              </View>
+              <View style={[styles.gridCell, { width: '15%' }]} />
+              <View style={[styles.gridCellNoBorderRight, { width: '15%' }]} />
             </View>
-          </View>
+          ) : null}
 
           {/* Row 4: Total */}
           <View style={[styles.gridRow, { minHeight: 28, alignItems: 'center' }]}>
