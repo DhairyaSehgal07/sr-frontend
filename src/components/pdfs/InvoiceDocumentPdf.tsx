@@ -53,21 +53,21 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.brandGreen,
   },
   logoSection: {
-    width: 130,
+    width: 168,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoRow: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
-  logoBadge: {
-    borderWidth: 0.75,
-    borderColor: colors.brandGreen,
-    paddingVertical: 3,
-    paddingHorizontal: 4,
-    fontSize: 5,
-    marginBottom: 5,
-    fontFamily: 'Helvetica-Bold',
-    textAlign: 'center',
-    width: '100%',
-    color: colors.brandGreen,
+  jpgaText: {
+    fontSize: 7,
     lineHeight: 1.3,
+    fontFamily: 'Helvetica-Bold',
+    color: colors.brandGreen,
+    marginLeft: 6,
+    width: 78,
   },
   companyInfoSection: {
     flex: 1,
@@ -80,13 +80,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Helvetica-Bold',
     letterSpacing: 1.5,
     lineHeight: 1.2,
-    marginBottom: 6,
+    marginBottom: 4,
   },
   tagline: {
     fontSize: 10,
     fontFamily: 'Helvetica-BoldOblique',
     color: colors.brandGreen,
-    marginBottom: 8,
+    marginBottom: 6,
   },
   addressText: {
     fontSize: 8.5,
@@ -373,19 +373,19 @@ const InvoiceDocumentPdf = ({ data, layout = 'freight' }: InvoiceDocumentPdfProp
         {/* --- Header Section --- */}
         <View style={styles.headerContainer}>
           <View style={styles.logoSection}>
-            <SrfLogo size={72} />
-            <Text style={styles.logoBadge}>POSCON JALANDHAR (PUNJAB) 0135</Text>
-            <Text style={styles.logoBadge}>PGFA NO. KAPURTHALA (PUNJAB) 005</Text>
+            <View style={styles.logoRow}>
+              <SrfLogo size={72} />
+              <Text style={styles.jpgaText}>JPGA NO. 01083</Text>
+            </View>
           </View>
 
           <View style={styles.companyInfoSection}>
             <Text style={styles.companyName}>{heading}</Text>
             <Text style={styles.tagline}>Producers of Top Quality Potatoes of Punjab</Text>
+            <Text style={styles.addressText}>V.P.O Uggi , Distt. Jalandhar</Text>
             <Text style={styles.addressText}>
-              Vill. Thigli, P.O. Sidhwan Dona, Distt. Kapurthala - 144 625 (Pb.)
+              M. 98152-09363, 99159-83498, WhatsApp 95926-09363
             </Text>
-            <Text style={styles.addressText}>Mob. 088720-07070, 099150-69815</Text>
-            <Text style={styles.addressText}>E-mail: srf_ashokpahuja@yahoo.co.in</Text>
           </View>
         </View>
 

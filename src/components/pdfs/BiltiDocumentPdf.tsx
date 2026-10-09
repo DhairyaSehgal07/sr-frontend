@@ -48,17 +48,22 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
 
-  // Left: Logo & POSCON
   logoSection: {
-    width: 140,
+    width: 168,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoRow: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
-  membershipText: {
+  jpgaText: {
     fontSize: 7,
     lineHeight: 1.4,
     fontFamily: 'Helvetica-Bold',
     color: colors.brandGreen,
-    textAlign: 'center',
+    marginLeft: 6,
+    width: 78,
   },
 
   // Center: Company Info
@@ -73,28 +78,20 @@ const styles = StyleSheet.create({
     color: colors.brandGreen,
     fontFamily: 'Helvetica-Bold',
     letterSpacing: 1.5,
-    marginBottom: 8,
+    marginBottom: 6,
   },
   tagline: {
     fontSize: 10,
     lineHeight: 1,
     fontFamily: 'Helvetica-Bold',
     color: colors.brandRed,
-    marginBottom: 8,
+    marginBottom: 6,
   },
   addressText: {
     fontSize: 9,
-    lineHeight: 1.5,
+    lineHeight: 1.4,
     textAlign: 'center',
     color: colors.brandRed,
-  },
-  pgfaText: {
-    fontSize: 7,
-    lineHeight: 1,
-    fontFamily: 'Helvetica-Bold',
-    color: colors.brandGreen,
-    marginTop: 8,
-    textAlign: 'center',
   },
 
   // Right: Bill Details Box
@@ -291,22 +288,20 @@ const BiltiDocumentPdf = ({ data }: BiltiDocumentPdfProps) => {
         <View style={styles.headerContainer}>
           {/* Logo & Membership */}
           <View style={styles.logoSection}>
-            <SrfLogo size={72} />
-            <Text style={styles.membershipText}>POSCON®</Text>
-            <Text style={styles.membershipText}>Membership No. 0135</Text>
+            <View style={styles.logoRow}>
+              <SrfLogo size={72} />
+              <Text style={styles.jpgaText}>JPGA NO. 01083</Text>
+            </View>
           </View>
 
           {/* Company Identity */}
           <View style={styles.companyInfoSection}>
             <Text style={styles.companyName}>{heading}</Text>
             <Text style={styles.tagline}>Producers of Top Quality Potatoes of Punjab</Text>
+            <Text style={styles.addressText}>V.P.O Uggi , Distt. Jalandhar</Text>
             <Text style={styles.addressText}>
-              Vill. Thigli, P.O. Sidhwan Dona, Distt. Kapurthala - 144 625 (Pb.)
+              M. 98152-09363, 99159-83498, WhatsApp 95926-09363
             </Text>
-            <Text style={styles.addressText}>
-              Mob. 088720-07070, 099150-69815 • E-mail : srf_ashokpahuja@yahoo.co.in
-            </Text>
-            <Text style={styles.pgfaText}>PGFA Membership No. 005</Text>
           </View>
 
           {/* Bill No & Date Boxes */}
@@ -542,7 +537,7 @@ const BiltiDocumentPdf = ({ data }: BiltiDocumentPdfProps) => {
             <View style={styles.bulletPointRow}>
               <Text style={styles.bulletIcon}>•</Text>
               <Text style={styles.bulletText}>
-                All disputes as to rates & delivery of Potatoes shall be subject to Kapurthala
+                All disputes as to rates & delivery of Potatoes shall be subject to Jalandhar
                 Jurisdiction.
               </Text>
             </View>

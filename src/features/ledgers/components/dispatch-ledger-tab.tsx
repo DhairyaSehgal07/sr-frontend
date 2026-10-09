@@ -1,19 +1,8 @@
-import { useMemo, useState } from 'react';
+import { Link } from '@tanstack/react-router';
 import { BookOpen, Loader2, Plus, RefreshCw, Search } from 'lucide-react';
+import { useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { Item, ItemActions, ItemContent, ItemMedia, ItemTitle } from '@/components/ui/item';
-
-import { Input } from '@/components/ui/input';
-
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-
 import {
   Empty,
   EmptyDescription,
@@ -21,6 +10,16 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@/components/ui/empty';
+
+import { Input } from '@/components/ui/input';
+import { Item, ItemActions, ItemContent, ItemMedia, ItemTitle } from '@/components/ui/item';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useDispatchLedgers } from '../api/use-dispatch-ledgers';
 import type { DispatchLedger } from '../types';
@@ -245,7 +244,15 @@ const DispatchLedgerTab = () => {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {visibleDispatchLedgers.map((ledger) => (
-            <DispatchLedgerCard key={ledger._id} ledger={ledger} />
+            <Link
+              key={ledger._id}
+              to="/ledgers/$id"
+              params={{ id: ledger._id }}
+              aria-label={`Open ${ledger.name}`}
+              className="min-w-0 rounded-4xl focus-visible:ring-3 focus-visible:ring-ring/30 focus-visible:outline-none"
+            >
+              <DispatchLedgerCard ledger={ledger} />
+            </Link>
           ))}
         </div>
       )}

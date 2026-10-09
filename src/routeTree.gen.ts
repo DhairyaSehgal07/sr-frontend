@@ -21,6 +21,7 @@ import { Route as AuthenticatedDispatchIdRouteImport } from './routes/_authentic
 import { Route as AuthenticatedDispatchReportRouteImport } from './routes/_authenticated/dispatch.report'
 import { Route as AuthenticatedFinancesIndexRouteImport } from './routes/_authenticated/finances.index'
 import { Route as AuthenticatedLedgersIndexRouteImport } from './routes/_authenticated/ledgers.index'
+import { Route as AuthenticatedLedgersIdRouteImport } from './routes/_authenticated/ledgers.$id'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings.index'
 import { Route as AuthenticatedSettingsBillBooksRouteImport } from './routes/_authenticated/settings.bill-books'
 
@@ -90,6 +91,11 @@ const AuthenticatedLedgersIndexRoute =
     path: '/ledgers/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedLedgersIdRoute = AuthenticatedLedgersIdRouteImport.update({
+  id: '/ledgers/$id',
+  path: '/ledgers/$id',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedSettingsIndexRoute =
   AuthenticatedSettingsIndexRouteImport.update({
     id: '/settings/',
@@ -111,6 +117,7 @@ export interface FileRoutesByFullPath {
   '/dispatch-pre-storage/report': typeof AuthenticatedDispatchPreStorageReportRoute
   '/dispatch/$id': typeof AuthenticatedDispatchIdRoute
   '/dispatch/report': typeof AuthenticatedDispatchReportRoute
+  '/ledgers/$id': typeof AuthenticatedLedgersIdRoute
   '/settings/bill-books': typeof AuthenticatedSettingsBillBooksRoute
   '/dispatch-pre-storage/': typeof AuthenticatedDispatchPreStorageIndexRoute
   '/dispatch/': typeof AuthenticatedDispatchIndexRoute
@@ -126,6 +133,7 @@ export interface FileRoutesByTo {
   '/dispatch-pre-storage/report': typeof AuthenticatedDispatchPreStorageReportRoute
   '/dispatch/$id': typeof AuthenticatedDispatchIdRoute
   '/dispatch/report': typeof AuthenticatedDispatchReportRoute
+  '/ledgers/$id': typeof AuthenticatedLedgersIdRoute
   '/settings/bill-books': typeof AuthenticatedSettingsBillBooksRoute
   '/dispatch-pre-storage': typeof AuthenticatedDispatchPreStorageIndexRoute
   '/dispatch': typeof AuthenticatedDispatchIndexRoute
@@ -143,6 +151,7 @@ export interface FileRoutesById {
   '/_authenticated/dispatch-pre-storage/report': typeof AuthenticatedDispatchPreStorageReportRoute
   '/_authenticated/dispatch/$id': typeof AuthenticatedDispatchIdRoute
   '/_authenticated/dispatch/report': typeof AuthenticatedDispatchReportRoute
+  '/_authenticated/ledgers/$id': typeof AuthenticatedLedgersIdRoute
   '/_authenticated/settings/bill-books': typeof AuthenticatedSettingsBillBooksRoute
   '/_authenticated/dispatch-pre-storage/': typeof AuthenticatedDispatchPreStorageIndexRoute
   '/_authenticated/dispatch/': typeof AuthenticatedDispatchIndexRoute
@@ -160,6 +169,7 @@ export interface FileRouteTypes {
     | '/dispatch-pre-storage/report'
     | '/dispatch/$id'
     | '/dispatch/report'
+    | '/ledgers/$id'
     | '/settings/bill-books'
     | '/dispatch-pre-storage/'
     | '/dispatch/'
@@ -175,6 +185,7 @@ export interface FileRouteTypes {
     | '/dispatch-pre-storage/report'
     | '/dispatch/$id'
     | '/dispatch/report'
+    | '/ledgers/$id'
     | '/settings/bill-books'
     | '/dispatch-pre-storage'
     | '/dispatch'
@@ -191,6 +202,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dispatch-pre-storage/report'
     | '/_authenticated/dispatch/$id'
     | '/_authenticated/dispatch/report'
+    | '/_authenticated/ledgers/$id'
     | '/_authenticated/settings/bill-books'
     | '/_authenticated/dispatch-pre-storage/'
     | '/_authenticated/dispatch/'
@@ -290,6 +302,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLedgersIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/ledgers/$id': {
+      id: '/_authenticated/ledgers/$id'
+      path: '/ledgers/$id'
+      fullPath: '/ledgers/$id'
+      preLoaderRoute: typeof AuthenticatedLedgersIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/settings/': {
       id: '/_authenticated/settings/'
       path: '/settings'
@@ -314,6 +333,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDispatchPreStorageReportRoute: typeof AuthenticatedDispatchPreStorageReportRoute
   AuthenticatedDispatchIdRoute: typeof AuthenticatedDispatchIdRoute
   AuthenticatedDispatchReportRoute: typeof AuthenticatedDispatchReportRoute
+  AuthenticatedLedgersIdRoute: typeof AuthenticatedLedgersIdRoute
   AuthenticatedSettingsBillBooksRoute: typeof AuthenticatedSettingsBillBooksRoute
   AuthenticatedDispatchPreStorageIndexRoute: typeof AuthenticatedDispatchPreStorageIndexRoute
   AuthenticatedDispatchIndexRoute: typeof AuthenticatedDispatchIndexRoute
@@ -331,6 +351,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
     AuthenticatedDispatchPreStorageReportRoute,
   AuthenticatedDispatchIdRoute: AuthenticatedDispatchIdRoute,
   AuthenticatedDispatchReportRoute: AuthenticatedDispatchReportRoute,
+  AuthenticatedLedgersIdRoute: AuthenticatedLedgersIdRoute,
   AuthenticatedSettingsBillBooksRoute: AuthenticatedSettingsBillBooksRoute,
   AuthenticatedDispatchPreStorageIndexRoute:
     AuthenticatedDispatchPreStorageIndexRoute,

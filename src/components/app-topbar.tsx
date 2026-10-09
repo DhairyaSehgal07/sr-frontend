@@ -120,7 +120,9 @@ export function AppTopbar() {
     routeTitles[pathname] ??
     (/^\/dispatch\/[a-f0-9]{24}$/i.test(pathname)
       ? 'Edit dispatch gate pass'
-      : (user?.coldStorageId.name ?? 'Dashboard'));
+      : /^\/ledgers\/[a-f0-9]{24}$/i.test(pathname)
+        ? 'Dispatch ledger'
+        : (user?.coldStorageId.name ?? 'Dashboard'));
 
   return (
     <header className={cn('flex h-14 shrink-0 items-center border-b bg-background px-4')}>

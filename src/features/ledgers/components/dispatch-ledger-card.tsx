@@ -34,7 +34,7 @@ function formatCreatedAt(createdAt?: string) {
 
 export function DispatchLedgerCard({ ledger }: DispatchLedgerCardProps) {
   return (
-    <Card size="sm" className={cn('card-hover gap-0')}>
+    <Card size="sm" className={cn('card-hover h-full gap-0')}>
       <CardHeader className="pb-2">
         <CardTitle className="truncate" title={ledger.name}>
           {ledger.name}
