@@ -144,7 +144,7 @@ function GatePassSizeCell({
   allocations: Record<string, number>;
   onSlotClick: (pass: StorageGatePass, sizeName: string, slot: BagSlotDetail) => void;
 }) {
-  const slots = getBagSlotsForSize(pass, sizeName);
+  const slots = getBagSlotsForSize(pass, sizeName).filter((slot) => slot.currentQuantity > 0);
 
   if (slots.length === 0) {
     return <EmptySeat />;

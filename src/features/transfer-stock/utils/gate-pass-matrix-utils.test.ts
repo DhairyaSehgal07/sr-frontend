@@ -4,6 +4,7 @@ import {
   allocationKey,
   buildTransferItems,
   filterStorageGatePasses,
+  getUniqueSizes,
   groupItemsByVariety,
   groupPassesByDate,
   parseAllocationKey,
@@ -85,6 +86,28 @@ describe('groupPassesByDate', () => {
     expect(groups[0]?.dateKey).toBe('2026-03-04');
     expect(groups[0]?.passes).toHaveLength(1);
     expect(groups[0]?.dateLabel).toMatch(/2026/);
+  });
+});
+
+describe('getUniqueSizes', () => {
+  it('omits sizes that have no bags on hand', () => {
+    const pass: StorageGatePass = {
+      ...samplePass,
+      bagSizes: [
+        ...samplePass.bagSizes,
+        {
+          size: 'Seed',
+          currentQuantity: 0,
+          initialQuantity: 12,
+          bagType: 'JUTE',
+          chamber: '1',
+          floor: '1',
+          row: 'A',
+        },
+      ],
+    };
+
+    expect(getUniqueSizes([pass])).toEqual(['Large|Special', 'Ration']);
   });
 });
 

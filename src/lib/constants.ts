@@ -19,6 +19,11 @@ export const BAG_TYPES = ['JUTE', 'LENO'] as const;
 
 export type BagType = (typeof BAG_TYPES)[number];
 
+export const BAG_TYPE_OPTIONS = BAG_TYPES.map((bagType) => ({
+  id: bagType,
+  label: bagType,
+}));
+
 export const DEFAULT_BAG_TYPE = 'JUTE';
 
 /** Example chamber values (free-text in storage forms; used for placeholders) */
@@ -77,8 +82,14 @@ export type OutgoingShed = (typeof OUTGOING_SHEDS)[number];
 
 export const DIRECT_SALE_OUTGOING_CATEGORY = 'Direct Sale' satisfies OutgoingCategory;
 
+export const OUTGOING_TO_SHED_CATEGORY = 'Outgoing to Shed' satisfies OutgoingCategory;
+
 export function isDirectSaleOutgoing(category: string): boolean {
   return category.trim() === DIRECT_SALE_OUTGOING_CATEGORY;
+}
+
+export function isOutgoingToShed(category: string): boolean {
+  return category.trim() === OUTGOING_TO_SHED_CATEGORY;
 }
 
 export const INCOMING_STAGES = [

@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { StorageGatePass, StorageGatePassBagSize } from '@/features/storage/api/types';
 
 interface InfoBlockProps {
@@ -62,6 +63,10 @@ function storageTotalBags(bagSizes: readonly StorageGatePassBagSize[]): number {
   return bagSizes.reduce((sum, row) => sum + row.currentQuantity, 0);
 }
 
+function quantitiesDiffer(bagSizes: readonly StorageGatePassBagSize[]): boolean {
+  return bagSizes.some((row) => row.currentQuantity !== row.initialQuantity);
+}
+
 function formatLocation(slot: StorageGatePassBagSize) {
   const parts = [slot.chamber, slot.floor, slot.row].filter(Boolean);
   return parts.length > 0 ? parts.join(' / ') : '—';
@@ -84,9 +89,10 @@ export function StorageGatePassCard({
   const totalBags = storageTotalBags(gatePass.bagSizes);
   const createdBy = gatePass.createdBy?.name ?? '—';
   const stage = gatePass.stage?.trim();
+  const editDisabled = quantitiesDiffer(gatePass.bagSizes);
 
   const handleEditClick = () => {
-    if (!canUpdate) return;
+    if (!canUpdate || editDisabled) return;
 
     navigate({
       to: '/storage/$id',
@@ -272,17 +278,39 @@ export function StorageGatePassCard({
         </Button>
 
         <div className="flex items-center gap-2">
-          {canUpdate && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleEditClick}
-              className="h-8 bg-background"
-            >
-              <Pencil className="mr-2 h-3.5 w-3.5" />
-              Edit
-            </Button>
-          )}
+          {canUpdate &&
+            (editDisabled ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="inline-flex cursor-not-allowed">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled
+                      className="h-8 bg-background"
+                      aria-label="Edit unavailable because current quantity differs from the initial quantity"
+                    >
+                      <Pencil className="mr-2 h-3.5 w-3.5" />
+                      Edit
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Current quantity differs from the initial quantity, so this gate pass cannot be
+                  edited.
+                </TooltipContent>
+              </Tooltip>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleEditClick}
+                className="h-8 bg-background"
+              >
+                <Pencil className="mr-2 h-3.5 w-3.5" />
+                Edit
+              </Button>
+            ))}
           <Button variant="secondary" size="sm" className="h-8">
             <Printer className="mr-2 h-3.5 w-3.5" />
             Print

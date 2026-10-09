@@ -22,22 +22,18 @@ import {
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { DatePickerInput } from '@/components/date-picker';
 import { BagSizeSelectField, FixedBagSizeLabel } from '@/components/bag-quantity-size-field';
 import {
+  ManagedSearchableOptionCombobox,
   SearchableOptionCombobox,
   filterAndSortOptions,
   type ComboboxOption,
 } from '@/components/searchable-option-combobox';
 import { DISPATCH_PRE_STORAGE_CATEGORIES, POTATO_VARIETY_OPTIONS } from '@/lib/constants';
 import { useDispatchLedgers } from '@/features/people/api/use-dispatch-ledgers';
+import { AddDispatchLedgerDialog } from '@/features/people/components/add-dispatch-ledger-dialog';
+import type { DispatchLedger } from '@/features/people/types';
 import { useGetReceiptVoucherNumber, voucherNumberKeys } from '@/hooks/use-get-voucher-number';
 import { queryClient } from '@/lib/queryClient';
 import { useCreateNikasiGatePass } from '@/features/dispatch-pre-storage/api/use-create-nikasi-gate-pass';
@@ -137,6 +133,7 @@ const CreateDispatchPreStorageForm = () => {
   const [biltiBookSearch, setBiltiBookSearch] = useState('');
   const [biltiBookComboboxOpen, setBiltiBookComboboxOpen] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
+  const [addLedgerOpen, setAddLedgerOpen] = useState(false);
 
   const sortedDispatchLedgers = useMemo(
     () => filterAndSortOptions(dispatchLedgerSearch, dispatchLedgerOptions),
@@ -324,6 +321,12 @@ const CreateDispatchPreStorageForm = () => {
     }
   };
 
+  const handleLedgerCreated = (ledger: DispatchLedger) => {
+    setDispatchLedgerId(ledger._id);
+    setDispatchLedgerSearch(ledger.name);
+    setDispatchLedgerComboboxOpen(false);
+  };
+
   const resetComboboxState = () => {
     setDispatchLedgerSearch('');
     setDispatchLedgerComboboxOpen(false);
@@ -471,6 +474,7 @@ const CreateDispatchPreStorageForm = () => {
                         type="button"
                         variant="secondary"
                         className="h-auto min-h-9 shrink-0 gap-1.5 px-3"
+                        onClick={() => setAddLedgerOpen(true)}
                         aria-label="Add dispatch ledger"
                       >
                         <UserPlus className="size-4 shrink-0" />
@@ -724,24 +728,17 @@ const CreateDispatchPreStorageForm = () => {
                             >
                               Variety (row {index + 1})
                             </FieldLabel>
-                            <Select
-                              value={row.variety || undefined}
+                            <ManagedSearchableOptionCombobox
+                              id={`dispatch-pre-storage-bag-size-${index}-variety`}
+                              name={`bagSize.${index}.variety`}
+                              value={row.variety}
                               onValueChange={(value) => updateBagSizeRow(index, { variety: value })}
-                            >
-                              <SelectTrigger
-                                id={`dispatch-pre-storage-bag-size-${index}-variety`}
-                                className="w-full"
-                              >
-                                <SelectValue placeholder="Select variety" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {POTATO_VARIETY_OPTIONS.map((item) => (
-                                  <SelectItem key={item.id} value={item.id}>
-                                    {item.label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                              onBlur={() => {}}
+                              isInvalid={false}
+                              placeholder="Search varieties..."
+                              emptyMessage="No varieties found."
+                              options={POTATO_VARIETY_OPTIONS}
+                            />
                           </Field>
                         </div>
 
@@ -953,6 +950,12 @@ const CreateDispatchPreStorageForm = () => {
         onSubmit={handleConfirmSubmit}
         canSubmit={canSubmit}
         isSubmitting={isSubmitting}
+      />
+
+      <AddDispatchLedgerDialog
+        open={addLedgerOpen}
+        onOpenChange={setAddLedgerOpen}
+        onSuccess={handleLedgerCreated}
       />
     </>
   );

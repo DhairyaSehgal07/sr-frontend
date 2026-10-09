@@ -12,13 +12,7 @@ import {
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { BagSizeSelectField, FixedBagSizeLabel } from '@/components/bag-quantity-size-field';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { ManagedSearchableOptionCombobox } from '@/components/searchable-option-combobox';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { IncomingGatePassesSummaryCard } from '@/features/grading/components/incoming-gate-passes-summary-card';
@@ -30,7 +24,7 @@ import {
   createEmptyQuantityRow,
   gradingTotalWeightKg,
 } from '@/features/grading/schemas/grading-fill-details-schema';
-import { BAG_TYPES } from '@/lib/constants';
+import { BAG_TYPE_OPTIONS } from '@/lib/constants';
 import { Plus, Trash2 } from 'lucide-react';
 import type { GradingSelectIncomingGatePasses } from '@/features/grading/types';
 
@@ -243,26 +237,17 @@ export function FillDetailsStep({ form, linkedGatePasses }: FillDetailsStepProps
                                 <FieldLabel htmlFor={subField.name} className="md:sr-only">
                                   Bag type ({sizeLabel})
                                 </FieldLabel>
-                                <Select
+                                <ManagedSearchableOptionCombobox
+                                  id={subField.name}
+                                  name={subField.name}
                                   value={subField.state.value}
                                   onValueChange={subField.handleChange}
-                                >
-                                  <SelectTrigger
-                                    id={subField.name}
-                                    className="w-full"
-                                    onBlur={subField.handleBlur}
-                                    aria-invalid={isInvalid}
-                                  >
-                                    <SelectValue placeholder="Bag type" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {BAG_TYPES.map((bagType) => (
-                                      <SelectItem key={bagType} value={bagType}>
-                                        {bagType}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
+                                  onBlur={subField.handleBlur}
+                                  isInvalid={isInvalid}
+                                  placeholder="Bag type"
+                                  emptyMessage="No bag types found."
+                                  options={BAG_TYPE_OPTIONS}
+                                />
                                 {isInvalid && <FieldError errors={subField.state.meta.errors} />}
                               </Field>
                             );

@@ -8,13 +8,7 @@ import {
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { BagSizeSelectField, FixedBagSizeLabel } from '@/components/bag-quantity-size-field';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { ManagedSearchableOptionCombobox } from '@/components/searchable-option-combobox';
 import { Button } from '@/components/ui/button';
 import type { CreateStorageFormApi } from '@/features/storage/forms/use-create-storage-form';
 import {
@@ -22,7 +16,7 @@ import {
   createEmptyStorageQuantityRow,
 } from '@/features/storage/schemas/storage-quantities-schema';
 import {
-  BAG_TYPES,
+  BAG_TYPE_OPTIONS,
   DEFAULT_CHAMBER,
   DEFAULT_FLOOR,
   DEFAULT_STORAGE_ROW,
@@ -145,26 +139,17 @@ export function StorageQuantitiesSection({ form }: StorageQuantitiesSectionProps
                               <FieldLabel htmlFor={subField.name} className="lg:sr-only">
                                 Bag type ({sizeLabel})
                               </FieldLabel>
-                              <Select
+                              <ManagedSearchableOptionCombobox
+                                id={subField.name}
+                                name={subField.name}
                                 value={subField.state.value}
                                 onValueChange={(value) => subField.handleChange(value as BagType)}
-                              >
-                                <SelectTrigger
-                                  id={subField.name}
-                                  className="w-full"
-                                  onBlur={subField.handleBlur}
-                                  aria-invalid={isInvalid}
-                                >
-                                  <SelectValue placeholder="Bag type" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {BAG_TYPES.map((bagType) => (
-                                    <SelectItem key={bagType} value={bagType}>
-                                      {bagType}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
+                                onBlur={subField.handleBlur}
+                                isInvalid={isInvalid}
+                                placeholder="Bag type"
+                                emptyMessage="No bag types found."
+                                options={BAG_TYPE_OPTIONS}
+                              />
                               {isInvalid && <FieldError errors={subField.state.meta.errors} />}
                             </Field>
                           );

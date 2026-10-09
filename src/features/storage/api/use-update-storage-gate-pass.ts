@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from '@tanstack/react-router';
 
+import { daybookKeys } from '@/features/daybook/api/query-keys';
 import { storageGatePassKeys } from '@/features/storage/api/query-keys';
 import type { UpdateStorageGatePassInput } from '@/features/storage/api/types';
 import { updateStorageGatePass } from '@/features/storage/api/update-storage-gate-pass';
@@ -23,6 +24,9 @@ export function useUpdateStorageGatePass(id: string) {
       });
       void queryClient.invalidateQueries({
         queryKey: storageGatePassKeys.searches(),
+      });
+      void queryClient.invalidateQueries({
+        queryKey: daybookKeys.lists(),
       });
 
       void router.navigate({ to: '/daybook', search: { tab: 'storage' } });

@@ -46,7 +46,12 @@ import {
   filterAndSortOptions,
   type ComboboxOption,
 } from '@/components/searchable-option-combobox';
-import { isDirectSaleOutgoing, OUTGOING_CATEGORIES, OUTGOING_SHEDS } from '@/lib/constants';
+import {
+  isDirectSaleOutgoing,
+  isOutgoingToShed,
+  OUTGOING_CATEGORIES,
+  OUTGOING_SHEDS,
+} from '@/lib/constants';
 
 const CATEGORY_ITEMS = OUTGOING_CATEGORIES.map((value) => ({
   id: value,
@@ -422,34 +427,46 @@ const CreateOutgoingForm = () => {
                         </form.Field>
 
                         <form.Field name="step1.shed">
-                          {(field) => {
-                            const isInvalid = isFieldInvalid(field.state.meta);
-                            return (
-                              <Field data-invalid={isInvalid} className="@md/field-group:max-w-sm">
-                                <FieldLabel htmlFor="outgoing-shed">Shed</FieldLabel>
-                                <SearchableOptionCombobox
-                                  id="outgoing-shed"
-                                  name={field.name}
-                                  value={field.state.value}
-                                  onValueChange={field.handleChange}
-                                  onBlur={field.handleBlur}
-                                  isInvalid={isInvalid}
-                                  placeholder="Select shed"
-                                  emptyMessage="No sheds found."
-                                  options={SHED_ITEMS}
-                                  sortedOptions={sortedSheds}
-                                  search={shedSearch}
-                                  setSearch={setShedSearch}
-                                  open={shedComboboxOpen}
-                                  setOpen={setShedComboboxOpen}
-                                />
-                                <FieldDescription>
-                                  Optional. Leave blank if no shed applies.
-                                </FieldDescription>
-                                {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                              </Field>
-                            );
-                          }}
+                          {(field) => (
+                            <form.Subscribe selector={(state) => state.values.step1.category}>
+                              {(category) => {
+                                const shedRequired = isOutgoingToShed(category);
+                                const isInvalid = shedRequired
+                                  ? field.state.meta.errors.length > 0
+                                  : isFieldInvalid(field.state.meta);
+                                return (
+                                  <Field
+                                    data-invalid={isInvalid}
+                                    className="@md/field-group:max-w-sm"
+                                  >
+                                    <FieldLabel htmlFor="outgoing-shed">Shed</FieldLabel>
+                                    <SearchableOptionCombobox
+                                      id="outgoing-shed"
+                                      name={field.name}
+                                      value={field.state.value}
+                                      onValueChange={field.handleChange}
+                                      onBlur={field.handleBlur}
+                                      isInvalid={isInvalid}
+                                      placeholder="Select shed"
+                                      emptyMessage="No sheds found."
+                                      options={SHED_ITEMS}
+                                      sortedOptions={sortedSheds}
+                                      search={shedSearch}
+                                      setSearch={setShedSearch}
+                                      open={shedComboboxOpen}
+                                      setOpen={setShedComboboxOpen}
+                                    />
+                                    <FieldDescription>
+                                      {shedRequired
+                                        ? 'Required when the category is Outgoing to Shed.'
+                                        : 'Optional. Leave blank if no shed applies.'}
+                                    </FieldDescription>
+                                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                                  </Field>
+                                );
+                              }}
+                            </form.Subscribe>
+                          )}
                         </form.Field>
 
                         <form.Field name="step1.preSowingTreatment">

@@ -8,13 +8,7 @@ import {
   FieldSet,
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { ManagedSearchableOptionCombobox } from '@/components/searchable-option-combobox';
 import type { CreateBookingFormApi } from '@/features/booking/forms/use-create-booking-form';
 import {
   BOOKING_PAYMENT_MODES,
@@ -22,6 +16,11 @@ import {
 } from '@/features/booking/schemas/booking-form-schema';
 
 const NONE_PAYMENT_MODE = '__none__';
+
+const PAYMENT_MODE_OPTIONS = [
+  { id: NONE_PAYMENT_MODE, label: 'None' },
+  ...BOOKING_PAYMENT_MODES.map((mode) => ({ id: mode, label: mode })),
+];
 
 function isFieldInvalid(meta: { isTouched: boolean; isValid: boolean }) {
   return meta.isTouched && !meta.isValid;
@@ -65,33 +64,23 @@ export function BookingPaymentFields({ form }: BookingPaymentFieldsProps) {
             return (
               <Field data-invalid={isInvalid}>
                 <FieldLabel htmlFor={field.name}>Mode of payment</FieldLabel>
-                <Select
-                  value={field.state.value || undefined}
+                <ManagedSearchableOptionCombobox
+                  id={field.name}
+                  name={field.name}
+                  value={field.state.value ?? ''}
                   onValueChange={(value) =>
                     field.handleChange(
-                      value === NONE_PAYMENT_MODE ? undefined : (value as BookingPaymentMode),
+                      !value || value === NONE_PAYMENT_MODE
+                        ? undefined
+                        : (value as BookingPaymentMode),
                     )
                   }
-                  onOpenChange={(open) => {
-                    if (!open) field.handleBlur();
-                  }}
-                >
-                  <SelectTrigger
-                    id={field.name}
-                    className="w-full text-base"
-                    aria-invalid={isInvalid}
-                  >
-                    <SelectValue placeholder="Select mode (optional)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={NONE_PAYMENT_MODE}>None</SelectItem>
-                    {BOOKING_PAYMENT_MODES.map((mode) => (
-                      <SelectItem key={mode} value={mode}>
-                        {mode}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  onBlur={field.handleBlur}
+                  isInvalid={isInvalid}
+                  placeholder="Select mode (optional)"
+                  emptyMessage="No payment modes found."
+                  options={PAYMENT_MODE_OPTIONS}
+                />
                 {isInvalid && <FieldError errors={field.state.meta.errors} />}
               </Field>
             );

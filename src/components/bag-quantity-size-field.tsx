@@ -1,13 +1,12 @@
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { ManagedSearchableOptionCombobox } from '@/components/searchable-option-combobox';
 import { BAG_SIZES } from '@/lib/constants';
 import { cn } from '@/lib/utils';
+
+const BAG_SIZE_OPTIONS = BAG_SIZES.map((size) => ({
+  id: size,
+  label: size,
+}));
 
 export type BagSizeSelectValue = (typeof BAG_SIZES)[number] | '';
 
@@ -57,27 +56,17 @@ export function BagSizeSelectField({
       <FieldLabel htmlFor={id} className={cn(labelClassName)}>
         Size (row {rowIndex + 1})
       </FieldLabel>
-      <Select
-        value={value || undefined}
+      <ManagedSearchableOptionCombobox
+        id={id}
+        name={name}
+        value={value}
         onValueChange={(next) => onValueChange(next as BagSizeSelectValue)}
-      >
-        <SelectTrigger
-          id={id}
-          name={name}
-          className="w-full"
-          onBlur={onBlur}
-          aria-invalid={isInvalid}
-        >
-          <SelectValue placeholder="Select size" />
-        </SelectTrigger>
-        <SelectContent>
-          {BAG_SIZES.map((size) => (
-            <SelectItem key={size} value={size}>
-              {size}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        onBlur={onBlur}
+        isInvalid={isInvalid}
+        placeholder="Select size"
+        emptyMessage="No sizes found."
+        options={BAG_SIZE_OPTIONS}
+      />
       {isInvalid && <FieldError errors={errors} />}
     </Field>
   );

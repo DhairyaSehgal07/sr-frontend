@@ -1,6 +1,11 @@
 import * as z from 'zod';
 
-import { isDirectSaleOutgoing, OUTGOING_SHEDS, type OutgoingShed } from '@/lib/constants';
+import {
+  isDirectSaleOutgoing,
+  isOutgoingToShed,
+  OUTGOING_SHEDS,
+  type OutgoingShed,
+} from '@/lib/constants';
 
 function isOutgoingShed(value: string): value is OutgoingShed {
   return (OUTGOING_SHEDS as readonly string[]).includes(value);
@@ -62,6 +67,14 @@ export const editOutgoingFormSchema = z
     remarks: z.string().max(500),
   })
   .superRefine((value, ctx) => {
+    if (isOutgoingToShed(value.category) && value.shed.trim().length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Select a shed.',
+        path: ['shed'],
+      });
+    }
+
     if (!isDirectSaleOutgoing(value.category)) return;
     requireCostPerBag(value.costPerBag, ctx);
   });

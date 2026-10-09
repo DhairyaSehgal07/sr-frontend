@@ -29,6 +29,7 @@ import {
   SidebarRail,
 } from '@/components/ui/sidebar';
 import { useAuthStore } from '@/features/auth/store/use-auth-store';
+import { useDaybookTabStore } from '@/features/daybook/store/use-daybook-tab-store';
 import { cn } from '@/lib/utils';
 
 type NavItem = {
@@ -142,6 +143,7 @@ function NavReports({ pathname }: { pathname: string }) {
 
 function NavMain() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const daybookTab = useDaybookTabStore((state) => state.tab);
 
   return (
     <SidebarGroup>
@@ -157,7 +159,14 @@ function NavMain() {
 
             return (
               <SidebarMenuItem key={item.name}>
-                {item.to && !item.disabled ? (
+                {item.to === '/daybook' ? (
+                  <SidebarMenuButton asChild isActive={isActive} tooltip={item.name}>
+                    <Link to="/daybook" search={{ tab: daybookTab }}>
+                      <Icon />
+                      <span>{item.name}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                ) : item.to && !item.disabled ? (
                   <SidebarMenuButton asChild isActive={isActive} tooltip={item.name}>
                     <Link to={item.to}>
                       <Icon />
@@ -182,6 +191,7 @@ function NavMain() {
 
 export function AppSidebar() {
   const coldStorageName = useAuthStore((s) => s.user?.coldStorageId.name);
+  const daybookTab = useDaybookTabStore((state) => state.tab);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const settingsActive = isPathActive(pathname, ['/settings']);
 
@@ -191,7 +201,7 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link to="/daybook" search={{ tab: 'incoming' }}>
+              <Link to="/daybook" search={{ tab: daybookTab }}>
                 <img src="/favicon.svg" alt="Coldop" className="size-8 shrink-0 rounded-md" />
                 <div className="grid min-w-0 flex-1 text-left leading-tight">
                   <span className="truncate font-heading text-sm tracking-tight">

@@ -1,19 +1,18 @@
 import { getRouteApi } from '@tanstack/react-router';
 import {
-  Sprout,
-  Truck,
-  Tractor,
-  Inbox,
-  Warehouse,
-  PackageCheck,
   CalendarCheck,
+  Inbox,
+  PackageCheck,
+  Sprout,
+  Tractor,
+  Truck,
+  Warehouse,
 } from 'lucide-react';
+import { useEffect } from 'react';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 import { preserveScroll } from '@/lib/preserve-scroll';
-
-import type { DaybookTab } from './search';
 import DaybookBookingTab from './components/booking-tab';
 import DaybookDispatchTab from './components/dispatch-tab';
 import DaybookFarmManagementTab from './components/farm-management-tab';
@@ -21,12 +20,19 @@ import DaybookGradingTab from './components/grading-tab';
 import DaybookIncomingTab from './components/incoming-tab';
 import DaybookSeedTab from './components/seed-tab';
 import DaybookStorageTab from './components/storage-tab';
+import type { DaybookTab } from './search';
+import { useDaybookTabStore } from './store/use-daybook-tab-store';
 
 const daybookRouteApi = getRouteApi('/_authenticated/daybook');
 
 const DaybookPage = () => {
   const { tab } = daybookRouteApi.useSearch();
   const navigate = daybookRouteApi.useNavigate();
+  const setTab = useDaybookTabStore((state) => state.setTab);
+
+  useEffect(() => {
+    setTab(tab);
+  }, [setTab, tab]);
 
   const handleTabChange = (value: string) => {
     navigate({

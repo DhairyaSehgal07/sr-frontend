@@ -35,7 +35,12 @@ import { useUpdateOutgoingGatePass } from '@/features/outgoing/api/use-update-ou
 import { editOutgoingFormSchema } from '@/features/outgoing/schemas/edit-outgoing-form-schema';
 import { outgoingGatePassToEditFormValues } from '@/features/outgoing/utils/outgoing-gate-pass-to-edit-form-values';
 import { useBillBooks } from '@/features/settings/api/use-bill-books';
-import { isDirectSaleOutgoing, OUTGOING_CATEGORIES, OUTGOING_SHEDS } from '@/lib/constants';
+import {
+  isDirectSaleOutgoing,
+  isOutgoingToShed,
+  OUTGOING_CATEGORIES,
+  OUTGOING_SHEDS,
+} from '@/lib/constants';
 
 const CATEGORY_ITEMS = OUTGOING_CATEGORIES.map((value) => ({
   id: value,
@@ -300,36 +305,45 @@ function EditOutgoingFormFields({
                 </form.Field>
 
                 <form.Field name="shed">
-                  {(field) => {
-                    const isInvalid = isFieldInvalid(field.state.meta);
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor="edit-outgoing-shed">Shed</FieldLabel>
-                        <SearchableOptionCombobox
-                          id="edit-outgoing-shed"
-                          name={field.name}
-                          value={field.state.value}
-                          onValueChange={field.handleChange}
-                          onBlur={field.handleBlur}
-                          isInvalid={isInvalid}
-                          placeholder="Select shed"
-                          emptyMessage="No sheds found."
-                          options={shedOptions}
-                          sortedOptions={sortedSheds}
-                          search={shedSearch}
-                          setSearch={setShedSearch}
-                          open={shedComboboxOpen}
-                          setOpen={setShedComboboxOpen}
-                          disabled={isPending}
-                          portalContainer={comboboxPortalContainer}
-                        />
-                        <FieldDescription>
-                          Optional. Leave blank if no shed applies.
-                        </FieldDescription>
-                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                      </Field>
-                    );
-                  }}
+                  {(field) => (
+                    <form.Subscribe selector={(state) => state.values.category}>
+                      {(category) => {
+                        const shedRequired = isOutgoingToShed(category);
+                        const isInvalid = shedRequired
+                          ? field.state.meta.errors.length > 0
+                          : isFieldInvalid(field.state.meta);
+                        return (
+                          <Field data-invalid={isInvalid}>
+                            <FieldLabel htmlFor="edit-outgoing-shed">Shed</FieldLabel>
+                            <SearchableOptionCombobox
+                              id="edit-outgoing-shed"
+                              name={field.name}
+                              value={field.state.value}
+                              onValueChange={field.handleChange}
+                              onBlur={field.handleBlur}
+                              isInvalid={isInvalid}
+                              placeholder="Select shed"
+                              emptyMessage="No sheds found."
+                              options={shedOptions}
+                              sortedOptions={sortedSheds}
+                              search={shedSearch}
+                              setSearch={setShedSearch}
+                              open={shedComboboxOpen}
+                              setOpen={setShedComboboxOpen}
+                              disabled={isPending}
+                              portalContainer={comboboxPortalContainer}
+                            />
+                            <FieldDescription>
+                              {shedRequired
+                                ? 'Required when the category is Outgoing to Shed.'
+                                : 'Optional. Leave blank if no shed applies.'}
+                            </FieldDescription>
+                            {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                          </Field>
+                        );
+                      }}
+                    </form.Subscribe>
+                  )}
                 </form.Field>
 
                 <form.Field name="preSowingTreatment">

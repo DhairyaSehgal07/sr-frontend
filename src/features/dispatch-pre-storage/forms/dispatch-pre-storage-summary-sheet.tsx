@@ -140,9 +140,7 @@ function StatPill({ label, value, suffix }: { label: string; value: string; suff
 }
 
 function activeBagRows(bagSize: DispatchPreStorageBagSizeSummary[]) {
-  return bagSize.filter(
-    (row) => row.size.trim() !== '' || row.variety.trim() !== '' || row.quantityIssued > 0,
-  );
+  return bagSize.filter((row) => row.quantityIssued > 0 && row.size.trim() !== '');
 }
 
 function DispatchPreStorageReviewSummary({

@@ -24,16 +24,10 @@ import {
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { DatePickerInput } from '@/components/date-picker';
 import { BagSizeSelectField, FixedBagSizeLabel } from '@/components/bag-quantity-size-field';
 import {
+  ManagedSearchableOptionCombobox,
   SearchableOptionCombobox,
   filterAndSortOptions,
   type ComboboxOption,
@@ -688,24 +682,17 @@ function EditDispatchPreStorageFormFields({ gatePass }: EditDispatchPreStorageFo
                             >
                               Variety (row {index + 1})
                             </FieldLabel>
-                            <Select
-                              value={row.variety || undefined}
+                            <ManagedSearchableOptionCombobox
+                              id={`dispatch-pre-storage-bag-size-${index}-variety`}
+                              name={`bagSize.${index}.variety`}
+                              value={row.variety}
                               onValueChange={(value) => updateBagSizeRow(index, { variety: value })}
-                            >
-                              <SelectTrigger
-                                id={`dispatch-pre-storage-bag-size-${index}-variety`}
-                                className="w-full"
-                              >
-                                <SelectValue placeholder="Select variety" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {POTATO_VARIETY_OPTIONS.map((item) => (
-                                  <SelectItem key={item.id} value={item.id}>
-                                    {item.label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                              onBlur={() => {}}
+                              isInvalid={false}
+                              placeholder="Search varieties..."
+                              emptyMessage="No varieties found."
+                              options={POTATO_VARIETY_OPTIONS}
+                            />
                           </Field>
                         </div>
 

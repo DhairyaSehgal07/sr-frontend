@@ -1,6 +1,11 @@
 import * as z from 'zod';
 
-import { isDirectSaleOutgoing, OUTGOING_SHEDS, type OutgoingShed } from '@/lib/constants';
+import {
+  isDirectSaleOutgoing,
+  isOutgoingToShed,
+  OUTGOING_SHEDS,
+  type OutgoingShed,
+} from '@/lib/constants';
 
 export const objectId = z.string().length(24, 'Select a valid record from the list.');
 
@@ -92,6 +97,14 @@ export const outgoingStep1Schema = z
       }),
   })
   .superRefine((value, ctx) => {
+    if (isOutgoingToShed(value.category) && value.shed.trim().length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Select a shed.',
+        path: ['shed'],
+      });
+    }
+
     if (!isDirectSaleOutgoing(value.category)) return;
     requireObjectId(value.dispatchLedgerId, ctx, 'dispatchLedgerId', 'Select a dispatch ledger.');
     requireObjectId(value.billBookId, ctx, 'billBookId', 'Select a bill book.');

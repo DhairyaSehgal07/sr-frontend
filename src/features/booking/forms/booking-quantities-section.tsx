@@ -12,13 +12,9 @@ import {
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import type { ComboboxOption } from '@/components/searchable-option-combobox';
+  ManagedSearchableOptionCombobox,
+  type ComboboxOption,
+} from '@/components/searchable-option-combobox';
 import { bookingAmountFromQuantities } from '@/features/booking/api/create-booking';
 import { getRowRemainingQty } from '@/features/booking/lib/booking-availability';
 import { formatBookingBagCount } from '@/features/booking/lib/booking-summary-utils';
@@ -167,28 +163,17 @@ export function BookingQuantitiesSection({
                                   <FieldLabel htmlFor={subField.name} className="md:sr-only">
                                     Variety (row {index + 1})
                                   </FieldLabel>
-                                  <Select
-                                    value={subField.state.value || undefined}
+                                  <ManagedSearchableOptionCombobox
+                                    id={subField.name}
+                                    name={subField.name}
+                                    value={subField.state.value}
                                     onValueChange={subField.handleChange}
-                                    onOpenChange={(open) => {
-                                      if (!open) subField.handleBlur();
-                                    }}
-                                  >
-                                    <SelectTrigger
-                                      id={subField.name}
-                                      className="w-full"
-                                      aria-invalid={isInvalid}
-                                    >
-                                      <SelectValue placeholder="Select variety" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {varietyOptions.map((item) => (
-                                        <SelectItem key={item.id} value={item.id}>
-                                          {item.label}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
+                                    onBlur={subField.handleBlur}
+                                    isInvalid={isInvalid}
+                                    placeholder="Search varieties..."
+                                    emptyMessage="No varieties found."
+                                    options={varietyOptions}
+                                  />
                                   {isInvalid && <FieldError errors={subField.state.meta.errors} />}
                                 </Field>
                               );

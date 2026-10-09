@@ -115,6 +115,7 @@ describe('direct sale fields', () => {
     const otherCategory = outgoingStep1Schema.safeParse({
       ...form.step1,
       category: 'Outgoing to Shed',
+      shed: 'Solar shed',
       dispatchLedgerId: '',
       billBookId: '',
       costPerBag: '',
@@ -132,9 +133,91 @@ describe('direct sale fields', () => {
     const otherCategory = outgoingStep1Schema.safeParse({
       ...form.step1,
       category: 'Outgoing to Shed',
+      shed: 'Solar shed',
       costPerBag: '',
     });
     expect(otherCategory.success).toBe(true);
+  });
+
+  it('requires a shed only for Outgoing to Shed', () => {
+    const missing = outgoingStep1Schema.safeParse({
+      ...form.step1,
+      category: 'Outgoing to Shed',
+      shed: '',
+      dispatchLedgerId: '',
+      billBookId: '',
+      costPerBag: '',
+    });
+    expect(missing.success).toBe(false);
+    if (!missing.success) {
+      expect(missing.error.issues.some((issue) => issue.path.join('.') === 'shed')).toBe(true);
+    }
+
+    const selected = outgoingStep1Schema.safeParse({
+      ...form.step1,
+      category: 'Outgoing to Shed',
+      shed: 'Solar shed',
+      dispatchLedgerId: '',
+      billBookId: '',
+      costPerBag: '',
+    });
+    expect(selected.success).toBe(true);
+
+    const otherCategory = outgoingStep1Schema.safeParse({
+      ...form.step1,
+      category: 'Outgoing To Farmer',
+      shed: '',
+      dispatchLedgerId: '',
+      billBookId: '',
+      costPerBag: '',
+    });
+    expect(otherCategory.success).toBe(true);
+
+    const editMissing = editOutgoingFormSchema.safeParse({
+      date: form.step1.date,
+      manualGatePassNumber: undefined,
+      from: '',
+      to: '',
+      truckNumber: '',
+      transportCompany: '',
+      LSNumber: '',
+      driverName: '',
+      driverMobile: '',
+      owner: '',
+      category: 'Outgoing to Shed',
+      shed: '   ',
+      preSowingTreatment: false,
+      billNumber: '',
+      biltiNumber: '',
+      billBook: '',
+      biltiBook: '',
+      costPerBag: '',
+      remarks: '',
+    });
+    expect(editMissing.success).toBe(false);
+
+    const editSelected = editOutgoingFormSchema.safeParse({
+      date: form.step1.date,
+      manualGatePassNumber: undefined,
+      from: '',
+      to: '',
+      truckNumber: '',
+      transportCompany: '',
+      LSNumber: '',
+      driverName: '',
+      driverMobile: '',
+      owner: '',
+      category: 'Outgoing to Shed',
+      shed: 'Vaddi shed',
+      preSowingTreatment: false,
+      billNumber: '',
+      biltiNumber: '',
+      billBook: '',
+      biltiBook: '',
+      costPerBag: '',
+      remarks: '',
+    });
+    expect(editSelected.success).toBe(true);
   });
 
   it('rejects a non-numeric bill number when one is entered', () => {

@@ -76,7 +76,7 @@ export function getUniqueSizes(passes: StorageGatePass[]): string[] {
   for (const pass of passes) {
     for (const bag of pass.bagSizes) {
       const name = bag.size?.trim();
-      if (name) names.add(name);
+      if (name && bag.currentQuantity > 0) names.add(name);
     }
   }
   return [...names].sort();

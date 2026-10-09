@@ -1,4 +1,4 @@
-import type { RefObject } from 'react';
+import { useEffect, useMemo, useState, type RefObject } from 'react';
 
 import {
   Combobox,
@@ -16,6 +16,10 @@ export type ComboboxOption = {
   name?: string;
   accountNumber?: number;
 };
+
+function labelForValue(options: ComboboxOption[], value: string): string {
+  return options.find((option) => option.id === value)?.label ?? '';
+}
 
 export type SearchableOptionComboboxProps = {
   id: string;
@@ -210,5 +214,39 @@ export function SearchableOptionCombobox({
         </ComboboxList>
       </ComboboxContent>
     </Combobox>
+  );
+}
+
+export type ManagedSearchableOptionComboboxProps = Omit<
+  SearchableOptionComboboxProps,
+  'sortedOptions' | 'search' | 'setSearch' | 'open' | 'setOpen'
+>;
+
+/** Owns search and open state so each row can host its own combobox. */
+export function ManagedSearchableOptionCombobox({
+  value,
+  options,
+  ...rest
+}: ManagedSearchableOptionComboboxProps) {
+  const [search, setSearch] = useState(() => labelForValue(options, value));
+  const [open, setOpen] = useState(false);
+  const sortedOptions = useMemo(() => filterAndSortOptions(search, options), [search, options]);
+
+  useEffect(() => {
+    if (open) return;
+    setSearch(labelForValue(options, value));
+  }, [open, options, value]);
+
+  return (
+    <SearchableOptionCombobox
+      {...rest}
+      value={value}
+      options={options}
+      sortedOptions={sortedOptions}
+      search={search}
+      setSearch={setSearch}
+      open={open}
+      setOpen={setOpen}
+    />
   );
 }
