@@ -1,4 +1,4 @@
-export type SaleStatus = 'open' | 'partial' | 'settled';
+export type SaleStatus = 'open' | 'partial' | 'settled' | 'null';
 
 export type FinancesTotals = {
   sales: number;
