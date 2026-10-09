@@ -1,9 +1,8 @@
 import { Link, useParams } from '@tanstack/react-router';
-import { AlertCircle, ArrowLeft, BookOpen, Loader2, MapPin, Phone, RefreshCw } from 'lucide-react';
+import { AlertCircle, ArrowLeft, BookOpen, Loader2, RefreshCw } from 'lucide-react';
 import { type ReactNode, useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import {
   Empty,
   EmptyDescription,
@@ -11,7 +10,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@/components/ui/empty';
-import { Field, FieldDescription, FieldLabel } from '@/components/ui/field';
+import { Field, FieldLabel } from '@/components/ui/field';
 import {
   Select,
   SelectContent,
@@ -20,19 +19,26 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ALL_BILL_BOOKS } from '@/features/finances/search';
 import { useBillBooks } from '@/features/settings/api/use-bill-books';
 import type { DispatchLedgerFinanceDetail } from '../api/types';
 import { useDispatchLedgerFinance } from '../api/use-dispatch-ledger-finance';
 import { useDispatchLedgerGatePasses } from '../api/use-dispatch-ledger-gate-passes';
+import type { DispatchLedger } from '../types';
 import { BillBookSummary } from './bill-book-summary';
 import { GatePassTable } from './gate-pass-table';
 import { gatePassBillBookId } from './lib';
-import { MaterialSummary } from './material-summary';
-import { MoneySummary } from './money-summary';
+import { LedgerTotals } from './money-summary';
 import { RecoveriesTable } from './recoveries-table';
 import { SalesTable } from './sales-table';
 import { StockSummary } from './stock-summary';
+
+function partyContact(ledger: DispatchLedger) {
+  const mobile = ledger.mobileNumber?.trim() || 'No mobile';
+  const address = ledger.address?.trim() || 'No address';
+  return `${mobile} · ${address}`;
+}
 
 function BackLink() {
   return (
@@ -46,21 +52,10 @@ function BackLink() {
   );
 }
 
-function Section({
-  title,
-  description,
-  children,
-}: {
-  title: string;
-  description: string;
-  children: ReactNode;
-}) {
+function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="flex min-w-0 flex-col gap-3">
-      <div className="min-w-0 space-y-1">
-        <h2 className="font-heading text-base font-semibold text-foreground">{title}</h2>
-        <p className="text-sm text-muted-foreground">{description}</p>
-      </div>
+      <h2 className="font-heading text-base font-semibold text-foreground">{title}</h2>
       {children}
     </section>
   );
@@ -68,23 +63,18 @@ function Section({
 
 function DetailSkeleton() {
   return (
-    <div className="flex flex-col gap-4 sm:gap-6" aria-busy="true">
-      <div className="space-y-2">
-        <Skeleton className="h-8 w-56" />
-        <Skeleton className="h-4 w-40" />
-        <Skeleton className="h-4 w-72" />
+    <div className="flex flex-col gap-4" aria-busy="true">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1 space-y-2">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-4 w-full max-w-sm" />
+        </div>
+        <Skeleton className="size-11 shrink-0 rounded-full" />
       </div>
-      <div className="grid gap-4 sm:grid-cols-3">
-        {Array.from({ length: 3 }).map((_, index) => (
-          <Card key={index} size="sm" className="gap-0">
-            <CardHeader className="pb-2">
-              <Skeleton className="h-4 w-24" />
-            </CardHeader>
-            <CardContent className="flex flex-col gap-2.5">
-              <Skeleton className="ml-auto h-8 w-32" />
-              <Skeleton className="h-3 w-40" />
-            </CardContent>
-          </Card>
+      <Skeleton className="h-11 w-full sm:max-w-xs" />
+      <div className="overflow-hidden rounded-lg border border-border">
+        {Array.from({ length: 6 }).map((_, index) => (
+          <Skeleton key={index} className="h-12 w-full rounded-none" />
         ))}
       </div>
       <div className="space-y-2 overflow-hidden rounded-lg border border-border p-3">
@@ -160,10 +150,6 @@ const DispatchLedgerDetailPage = () => {
     return [...names.entries()].map(([bookId, name]) => ({ id: bookId, name }));
   }, [billBookId, billBooks, finance?.byBillBook]);
 
-  const selectedBookName = billBookId
-    ? bookOptions.find((book) => book.id === billBookId)?.name
-    : undefined;
-
   const visiblePasses = useMemo(() => {
     const passes = gatePassQuery.data ?? [];
     if (!billBookId) return passes;
@@ -182,7 +168,7 @@ const DispatchLedgerDetailPage = () => {
   const refreshing = financeQuery.isFetching || gatePassQuery.isFetching;
 
   return (
-    <main className="flex min-w-0 flex-1 flex-col gap-4 sm:gap-6">
+    <main className="flex min-w-0 flex-1 flex-col gap-6">
       <BackLink />
 
       {waitingForParty ? (
@@ -212,45 +198,35 @@ const DispatchLedgerDetailPage = () => {
         </Empty>
       ) : (
         <>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0 space-y-2">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 space-y-1">
               <h1
                 className="font-heading truncate text-xl font-semibold tracking-tight text-foreground sm:text-2xl"
                 title={finance.dispatchLedger.name}
               >
                 {finance.dispatchLedger.name}
               </h1>
-              <p className="flex items-center gap-2 text-sm text-foreground">
-                <Phone className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-                {finance.dispatchLedger.mobileNumber ? (
-                  <span className="tabular-nums">{finance.dispatchLedger.mobileNumber}</span>
-                ) : (
-                  <span className="text-muted-foreground">Mobile number not available</span>
-                )}
-              </p>
-              <p className="flex items-start gap-2 text-sm text-foreground">
-                <MapPin
-                  className="mt-0.5 size-4 shrink-0 text-muted-foreground"
-                  aria-hidden="true"
-                />
-                <span className="min-w-0" title={finance.dispatchLedger.address}>
-                  {finance.dispatchLedger.address || 'Address not available'}
-                </span>
+              <p
+                className="truncate text-sm text-muted-foreground tabular-nums"
+                title={partyContact(finance.dispatchLedger)}
+              >
+                {partyContact(finance.dispatchLedger)}
               </p>
             </div>
             <Button
               type="button"
               variant="outline"
+              size="icon"
               onClick={refresh}
               disabled={refreshing}
-              className="h-11 w-full sm:h-9 sm:w-auto"
+              aria-label="Refresh"
+              className="size-11 shrink-0"
             >
               {refreshing ? (
                 <Loader2 className="size-4 animate-spin" aria-hidden="true" />
               ) : (
                 <RefreshCw className="size-4" aria-hidden="true" />
               )}
-              Refresh
             </Button>
           </div>
 
@@ -267,123 +243,98 @@ const DispatchLedgerDetailPage = () => {
             />
           ) : null}
 
-          <div className="flex flex-col gap-3 rounded-xl border bg-card p-3 text-card-foreground shadow-sm sm:p-4">
-            <Field className="sm:max-w-xs">
-              <FieldLabel htmlFor="dispatch-ledger-bill-book">Bill book</FieldLabel>
-              <Select
-                value={billBookId ?? ALL_BILL_BOOKS}
-                onValueChange={(value) =>
-                  setBillBookId(value === ALL_BILL_BOOKS ? undefined : value)
-                }
-              >
-                <SelectTrigger id="dispatch-ledger-bill-book" className="h-11 w-full sm:h-9">
-                  <SelectValue placeholder="All bill books" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={ALL_BILL_BOOKS}>All bill books</SelectItem>
-                  {bookOptions.map((book) => (
-                    <SelectItem key={book.id} value={book.id}>
-                      {book.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FieldDescription>
-                Bills, recoveries, and gate passes follow this book.
-              </FieldDescription>
-            </Field>
-          </div>
+          <Field className="w-full sm:max-w-xs">
+            <FieldLabel htmlFor="dispatch-ledger-bill-book">Bill book</FieldLabel>
+            <Select
+              value={billBookId ?? ALL_BILL_BOOKS}
+              onValueChange={(value) => setBillBookId(value === ALL_BILL_BOOKS ? undefined : value)}
+            >
+              <SelectTrigger id="dispatch-ledger-bill-book" className="h-11 w-full">
+                <SelectValue placeholder="All bill books" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL_BILL_BOOKS}>All bill books</SelectItem>
+                {bookOptions.map((book) => (
+                  <SelectItem key={book.id} value={book.id}>
+                    {book.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
 
-          <MoneySummary summary={finance.summary} />
+          <LedgerTotals
+            summary={finance.summary}
+            passes={gatePassQuery.isSuccess ? visiblePasses : null}
+          />
 
-          <Section
-            title="Material dispatched"
-            description={
-              selectedBookName
-                ? `Bags and weight on gate passes in ${selectedBookName}.`
-                : 'Bags and weight that left the store for this party.'
-            }
-          >
-            {gatePassQuery.isLoading ? (
-              <div className="grid gap-4 sm:grid-cols-3">
-                {Array.from({ length: 3 }).map((_, index) => (
-                  <Skeleton key={index} className="h-28 w-full rounded-4xl" />
+          {gatePassQuery.isLoading ? (
+            <Section title="Stock dispatched">
+              <div className="space-y-2 overflow-hidden rounded-lg border border-border p-3">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <Skeleton key={index} className="h-10 w-full" />
                 ))}
               </div>
-            ) : gatePassQuery.isError ? (
-              <LoadError
-                title="Could not load dispatch gate passes"
-                message={
-                  gatePassQuery.error instanceof Error
-                    ? gatePassQuery.error.message
-                    : 'Dispatch gate passes could not be loaded.'
-                }
-                onRetry={() => void gatePassQuery.refetch()}
-                pending={gatePassQuery.isFetching}
-              />
-            ) : (
-              <MaterialSummary passes={visiblePasses} bookName={selectedBookName} />
-            )}
-          </Section>
-
-          {gatePassQuery.isLoading || gatePassQuery.isError ? null : (
-            <Section
-              title="Stock dispatched"
-              description={
-                selectedBookName
-                  ? `Variety and bag size totals on gate passes in ${selectedBookName}.`
-                  : 'Bags of each variety, split by the sizes that were dispatched.'
-              }
-            >
+            </Section>
+          ) : gatePassQuery.isError ? null : (
+            <Section title="Stock dispatched">
               <StockSummary passes={visiblePasses} bookFiltered={Boolean(billBookId)} />
             </Section>
           )}
 
-          <Section
-            title="By bill book"
-            description="Where the bill was cut, what has been collected, and what is still open."
-          >
-            <BillBookSummary
-              rows={finance.byBillBook}
-              summary={finance.summary}
-              bookFiltered={Boolean(billBookId)}
-            />
-          </Section>
+          <Tabs defaultValue="gate-passes" className="min-w-0 gap-4 border-t border-border pt-6">
+            <TabsList className="grid h-11 w-full grid-cols-3">
+              <TabsTrigger value="gate-passes" className="px-2">
+                Gate passes
+              </TabsTrigger>
+              <TabsTrigger value="bills" className="px-2">
+                Bills
+              </TabsTrigger>
+              <TabsTrigger value="recoveries" className="px-2">
+                Recoveries
+              </TabsTrigger>
+            </TabsList>
 
-          {gatePassQuery.isError ? null : (
-            <Section
-              title="Dispatch gate passes"
-              description="Each voucher issued to this party, newest gate pass number first."
-            >
+            <TabsContent value="gate-passes" className="min-w-0">
               {gatePassQuery.isLoading ? (
                 <div className="space-y-2 overflow-hidden rounded-lg border border-border p-3">
                   {Array.from({ length: 4 }).map((_, index) => (
                     <Skeleton key={index} className="h-10 w-full" />
                   ))}
                 </div>
+              ) : gatePassQuery.isError ? (
+                <LoadError
+                  title="Could not load dispatch gate passes"
+                  message={
+                    gatePassQuery.error instanceof Error
+                      ? gatePassQuery.error.message
+                      : 'Dispatch gate passes could not be loaded.'
+                  }
+                  onRetry={() => void gatePassQuery.refetch()}
+                  pending={gatePassQuery.isFetching}
+                />
               ) : (
                 <GatePassTable passes={visiblePasses} bookFiltered={Boolean(billBookId)} />
               )}
-            </Section>
-          )}
+            </TabsContent>
 
-          <Section
-            title="Bills"
-            description="Sales posted from booked gate passes, with what this party still owes on each."
-          >
-            <SalesTable sales={finance.sales} bookFiltered={Boolean(billBookId)} />
-          </Section>
+            <TabsContent value="bills" className="flex min-w-0 flex-col gap-4">
+              <BillBookSummary
+                rows={finance.byBillBook}
+                summary={finance.summary}
+                bookFiltered={Boolean(billBookId)}
+              />
+              <SalesTable sales={finance.sales} bookFiltered={Boolean(billBookId)} />
+            </TabsContent>
 
-          <Section
-            title="Recoveries"
-            description="Payments received, and the bill each amount was applied to."
-          >
-            <RecoveriesTable
-              recoveries={finance.recoveries}
-              sales={finance.sales}
-              bookFiltered={Boolean(billBookId)}
-            />
-          </Section>
+            <TabsContent value="recoveries" className="min-w-0">
+              <RecoveriesTable
+                recoveries={finance.recoveries}
+                sales={finance.sales}
+                bookFiltered={Boolean(billBookId)}
+              />
+            </TabsContent>
+          </Tabs>
         </>
       )}
     </main>

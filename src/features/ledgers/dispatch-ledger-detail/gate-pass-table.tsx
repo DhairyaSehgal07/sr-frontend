@@ -3,12 +3,21 @@ import { CircleCheck, CircleDashed, Truck } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
   Empty,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
 } from '@/components/ui/empty';
+import { Separator } from '@/components/ui/separator';
 import {
   Table,
   TableBody,
@@ -21,7 +30,7 @@ import { formatBags, formatIsoDate } from '@/features/finances/lib/format';
 
 import type { PartyGatePass } from '../api/types';
 import { formatBilti, formatWeight, gatePassBags, gatePassBillBookName } from './lib';
-import { RecordCard, RecordField, RecordList } from './record';
+import { RecordField } from './record';
 
 type GatePassTableProps = {
   passes: readonly PartyGatePass[];
@@ -73,89 +82,101 @@ export function GatePassTable({ passes, bookFiltered }: GatePassTableProps) {
 
   return (
     <>
-      <RecordList>
+      <div className="flex flex-col gap-3 md:hidden">
         {passes.map((pass) => {
           const route = `${pass.from} → ${pass.to}`;
           const bookName = gatePassBillBookName(pass);
+          const description = [
+            formatIsoDate(pass.date),
+            route,
+            pass.manualGatePassNumber != null ? `Manual ${pass.manualGatePassNumber}` : '',
+          ]
+            .filter(Boolean)
+            .join(' · ');
 
           return (
-            <RecordCard key={pass._id}>
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-sm text-muted-foreground">{formatIsoDate(pass.date)}</p>
+            <Card key={pass._id} size="sm">
+              <CardHeader>
+                <CardTitle>
                   <Link
                     to="/dispatch/$id"
                     params={{ id: pass._id }}
-                    className="inline-flex h-11 items-center font-mono text-base font-medium text-primary tabular-nums underline-offset-4 hover:underline"
+                    className="font-mono text-base font-medium text-primary tabular-nums underline-offset-4 hover:underline"
                     aria-label={`Open gate pass ${pass.gatePassNo}`}
                   >
                     GP {pass.gatePassNo}
                   </Link>
-                  {pass.manualGatePassNumber != null ? (
-                    <p className="font-mono text-sm text-muted-foreground tabular-nums">
-                      Manual {pass.manualGatePassNumber}
-                    </p>
-                  ) : null}
-                </div>
-                <BookedBadge booked={pass.isBooked} />
-              </div>
-              <p className="text-sm text-foreground" title={route}>
-                {route}
-              </p>
-              <RecordField label="Truck">
-                <span className="font-mono tabular-nums">{pass.truckNumber}</span>
-              </RecordField>
-              <RecordField label="Category">{pass.category}</RecordField>
-              <RecordField label="Bags">
-                <span className="font-medium tabular-nums">
-                  <Quantity value={formatBags(gatePassBags(pass))} unit="bags" />
-                </span>
-              </RecordField>
-              <RecordField label="Net weight">
-                {Number.isFinite(pass.netWeight) ? (
+                </CardTitle>
+                <CardDescription className="truncate" title={description}>
+                  {description}
+                </CardDescription>
+                <CardAction>
+                  <BookedBadge booked={pass.isBooked} />
+                </CardAction>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-2">
+                <RecordField label="Truck">
+                  <span className="font-mono tabular-nums">{pass.truckNumber}</span>
+                </RecordField>
+                <RecordField label="Category">{pass.category}</RecordField>
+                <RecordField label="Bags">
                   <span className="font-medium tabular-nums">
-                    <Quantity value={formatWeight(pass.netWeight)} unit="kg" />
+                    <Quantity value={formatBags(gatePassBags(pass))} unit="bags" />
                   </span>
-                ) : (
-                  '—'
-                )}
-              </RecordField>
-              <RecordField label="Bill book">{bookName}</RecordField>
-              <RecordField label="Bill no">
-                <span className="font-mono tabular-nums">
-                  {pass.billNumber != null ? pass.billNumber : '—'}
-                </span>
-              </RecordField>
-              <RecordField label="Bilti">
-                <span className="font-mono tabular-nums">{formatBilti(pass)}</span>
-              </RecordField>
-              {pass.bagSize.length > 0 ? (
-                <ul className="flex flex-col gap-2 border-t border-border pt-2.5">
-                  {pass.bagSize.map((row, index) => (
-                    <li
-                      key={`${row.variety}-${row.size}-${index}`}
-                      className="flex items-start justify-between gap-3 text-sm"
-                    >
-                      <span className="min-w-0 text-foreground">
-                        <span className="font-medium">{row.variety || 'Not specified'}</span>
-                        <span className="text-muted-foreground"> · </span>
-                        {row.size || 'Not specified'}
-                      </span>
-                      <span className="shrink-0 font-medium text-foreground tabular-nums">
-                        {formatBags(row.quantityIssued)}{' '}
-                        <span className="font-normal text-muted-foreground">bags</span>
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
-            </RecordCard>
+                </RecordField>
+                <RecordField label="Net weight">
+                  {Number.isFinite(pass.netWeight) ? (
+                    <span className="font-medium tabular-nums">
+                      <Quantity value={formatWeight(pass.netWeight)} unit="kg" />
+                    </span>
+                  ) : (
+                    '—'
+                  )}
+                </RecordField>
+                <RecordField label="Bill book">
+                  <span className="truncate" title={bookName}>
+                    {bookName}
+                  </span>
+                </RecordField>
+                <RecordField label="Bill no">
+                  <span className="font-mono tabular-nums">
+                    {pass.billNumber != null ? pass.billNumber : '—'}
+                  </span>
+                </RecordField>
+                <RecordField label="Bilti">
+                  <span className="font-mono tabular-nums">{formatBilti(pass)}</span>
+                </RecordField>
+                {pass.bagSize.length > 0 ? (
+                  <>
+                    <Separator className="my-1" />
+                    <ul className="flex flex-col gap-2">
+                      {pass.bagSize.map((row, index) => (
+                        <li
+                          key={`${row.variety}-${row.size}-${index}`}
+                          className="flex items-start justify-between gap-3 text-sm"
+                        >
+                          <span className="min-w-0 text-foreground">
+                            <span className="font-medium">{row.variety || 'Not specified'}</span>
+                            <span className="text-muted-foreground"> · </span>
+                            {row.size || 'Not specified'}
+                          </span>
+                          <span className="shrink-0 font-medium text-foreground tabular-nums">
+                            {formatBags(row.quantityIssued)}{' '}
+                            <span className="font-normal text-muted-foreground">bags</span>
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                ) : null}
+              </CardContent>
+            </Card>
           );
         })}
-      </RecordList>
+      </div>
 
-      <div className="hidden overflow-hidden rounded-lg border border-border md:block">
-        <Table className="min-w-[68rem]">
+      <div className="hidden min-w-0 overflow-hidden rounded-lg border border-border md:block">
+        <Table className="w-max min-w-full">
           <TableHeader className="sticky top-0 z-20 bg-muted/50">
             <TableRow className="hover:bg-transparent">
               <TableHead className="sticky left-0 z-30 h-10 bg-muted/50 px-3 font-medium text-muted-foreground">

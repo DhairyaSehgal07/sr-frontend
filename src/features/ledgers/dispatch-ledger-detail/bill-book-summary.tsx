@@ -1,5 +1,6 @@
 import { BookOpen } from 'lucide-react';
 
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Empty,
   EmptyDescription,
@@ -20,7 +21,7 @@ import type { FinanceSummary } from '@/features/finances/api/types';
 import { formatInr, paiseToRupees } from '@/features/finances/lib/format';
 
 import type { DispatchLedgerBillBookRow } from '../api/types';
-import { RecordCard, RecordField, RecordList } from './record';
+import { RecordField } from './record';
 
 type BillBookSummaryProps = {
   rows: DispatchLedgerBillBookRow[];
@@ -55,39 +56,47 @@ export function BillBookSummary({ rows, summary, bookFiltered }: BillBookSummary
 
   return (
     <>
-      <RecordList>
+      <div className="flex flex-col gap-3 md:hidden">
         {rows.map((row) => (
-          <RecordCard key={row.billBookId}>
-            <p className="truncate text-sm font-medium text-foreground" title={row.billBookName}>
-              {row.billBookName}
-            </p>
+          <Card key={row.billBookId} size="sm">
+            <CardHeader>
+              <CardTitle className="truncate" title={row.billBookName}>
+                {row.billBookName}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-2">
+              <RecordField label="Billed">
+                <span className="font-medium tabular-nums">{money(row.billedPaise)}</span>
+              </RecordField>
+              <RecordField label="Recovered">
+                <span className="font-medium tabular-nums">{money(row.recoveredPaise)}</span>
+              </RecordField>
+              <RecordField label="Outstanding">
+                <span className="font-medium tabular-nums">{money(row.outstandingPaise)}</span>
+              </RecordField>
+            </CardContent>
+          </Card>
+        ))}
+        <Card size="sm">
+          <CardHeader>
+            <CardTitle>Total</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2">
             <RecordField label="Billed">
-              <span className="font-medium tabular-nums">{money(row.billedPaise)}</span>
+              <span className="font-medium tabular-nums">{money(summary.billedPaise)}</span>
             </RecordField>
             <RecordField label="Recovered">
-              <span className="font-medium tabular-nums">{money(row.recoveredPaise)}</span>
+              <span className="font-medium tabular-nums">{money(summary.recoveredPaise)}</span>
             </RecordField>
             <RecordField label="Outstanding">
-              <span className="font-medium tabular-nums">{money(row.outstandingPaise)}</span>
+              <span className="font-medium tabular-nums">{money(summary.outstandingPaise)}</span>
             </RecordField>
-          </RecordCard>
-        ))}
-        <RecordCard>
-          <p className="text-sm font-medium text-foreground">Total</p>
-          <RecordField label="Billed">
-            <span className="font-medium tabular-nums">{money(summary.billedPaise)}</span>
-          </RecordField>
-          <RecordField label="Recovered">
-            <span className="font-medium tabular-nums">{money(summary.recoveredPaise)}</span>
-          </RecordField>
-          <RecordField label="Outstanding">
-            <span className="font-medium tabular-nums">{money(summary.outstandingPaise)}</span>
-          </RecordField>
-        </RecordCard>
-      </RecordList>
+          </CardContent>
+        </Card>
+      </div>
 
-      <div className="hidden overflow-hidden rounded-lg border border-border md:block">
-        <Table>
+      <div className="hidden min-w-0 overflow-hidden rounded-lg border border-border md:block">
+        <Table className="w-max min-w-full">
           <TableHeader className="sticky top-0 z-20 bg-muted/50">
             <TableRow className="hover:bg-transparent">
               <TableHead className="sticky left-0 z-30 h-10 bg-muted/50 px-3 font-medium text-muted-foreground">

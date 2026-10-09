@@ -66,8 +66,8 @@ export function StockSummary({ passes, bookFiltered }: StockSummaryProps) {
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-border">
-      <Table>
+    <div className="min-w-0 overflow-hidden rounded-lg border border-border">
+      <Table className="w-max min-w-full">
         <TableHeader>
           <TableRow className="hover:bg-transparent">
             <TableHead className="sticky left-0 z-30 h-10 min-w-28 border-r border-border bg-muted px-3 text-left font-medium text-muted-foreground">

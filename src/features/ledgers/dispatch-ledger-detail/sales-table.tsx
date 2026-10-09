@@ -1,6 +1,14 @@
 import { Receipt } from 'lucide-react';
 
 import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
   Empty,
   EmptyDescription,
   EmptyHeader,
@@ -25,7 +33,7 @@ import {
 } from '@/features/finances/lib/format';
 
 import { formatWeight } from './lib';
-import { RecordCard, RecordField, RecordList } from './record';
+import { RecordField } from './record';
 
 type SalesTableProps = {
   sales: readonly FinanceSale[];
@@ -57,53 +65,54 @@ export function SalesTable({ sales, bookFiltered }: SalesTableProps) {
 
   return (
     <>
-      <RecordList>
+      <div className="flex flex-col gap-3 md:hidden">
         {sales.map((sale) => (
-          <RecordCard key={sale._id}>
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className="text-sm text-muted-foreground">{formatIsoDate(sale.date)}</p>
-                <p className="font-mono text-base font-medium text-foreground tabular-nums">
-                  GP {sale.gatePassNo}
-                </p>
-              </div>
-              <SaleStatusBadge status={sale.status} />
-            </div>
-            <p className="text-right text-base font-medium text-foreground tabular-nums">
-              {money(sale.amountPaise)}
-            </p>
-            <RecordField label="Bill book">{sale.billBookName}</RecordField>
-            <RecordField label="Bill no">
-              <span className="font-mono tabular-nums">
-                {sale.billNumber != null ? sale.billNumber : '—'}
-              </span>
-            </RecordField>
-            <RecordField label="Bags">
-              <span className="tabular-nums">
-                {formatBags(sale.bags)} <span className="text-muted-foreground">bags</span>
-              </span>
-            </RecordField>
-            <RecordField label="Net weight">
-              {sale.netWeight != null ? (
-                <span className="tabular-nums">
-                  {formatWeight(sale.netWeight)} <span className="text-muted-foreground">kg</span>
+          <Card key={sale._id} size="sm">
+            <CardHeader>
+              <CardTitle className="font-mono tabular-nums">GP {sale.gatePassNo}</CardTitle>
+              <CardDescription className="truncate" title={sale.billBookName}>
+                {formatIsoDate(sale.date)} · {sale.billBookName}
+              </CardDescription>
+              <CardAction>
+                <SaleStatusBadge status={sale.status} />
+              </CardAction>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-2">
+              <RecordField label="Amount">
+                <span className="font-medium tabular-nums">{money(sale.amountPaise)}</span>
+              </RecordField>
+              <RecordField label="Recovered">
+                <span className="font-medium tabular-nums">{money(sale.recoveredPaise)}</span>
+              </RecordField>
+              <RecordField label="Outstanding">
+                <span className="font-medium tabular-nums">{money(sale.outstandingPaise)}</span>
+              </RecordField>
+              <RecordField label="Bill no">
+                <span className="font-mono tabular-nums">
+                  {sale.billNumber != null ? sale.billNumber : '—'}
                 </span>
-              ) : (
-                '—'
-              )}
-            </RecordField>
-            <RecordField label="Recovered">
-              <span className="font-medium tabular-nums">{money(sale.recoveredPaise)}</span>
-            </RecordField>
-            <RecordField label="Outstanding">
-              <span className="font-medium tabular-nums">{money(sale.outstandingPaise)}</span>
-            </RecordField>
-          </RecordCard>
+              </RecordField>
+              <RecordField label="Bags">
+                <span className="tabular-nums">
+                  {formatBags(sale.bags)} <span className="text-muted-foreground">bags</span>
+                </span>
+              </RecordField>
+              <RecordField label="Net weight">
+                {sale.netWeight != null ? (
+                  <span className="tabular-nums">
+                    {formatWeight(sale.netWeight)} <span className="text-muted-foreground">kg</span>
+                  </span>
+                ) : (
+                  '—'
+                )}
+              </RecordField>
+            </CardContent>
+          </Card>
         ))}
-      </RecordList>
+      </div>
 
-      <div className="hidden overflow-hidden rounded-lg border border-border md:block">
-        <Table className="min-w-[60rem]">
+      <div className="hidden min-w-0 overflow-hidden rounded-lg border border-border md:block">
+        <Table className="w-max min-w-full">
           <TableHeader className="sticky top-0 z-20 bg-muted/50">
             <TableRow className="hover:bg-transparent">
               <TableHead className="sticky left-0 z-30 h-10 bg-muted/50 px-3 font-medium text-muted-foreground">

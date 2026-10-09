@@ -11,7 +11,7 @@ export function AuthenticatedLayout() {
         <AppTopbar />
         <section
           data-main-scroll
-          className="flex min-h-0 flex-1 flex-col overflow-y-auto p-4 sm:p-6"
+          className="flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-y-auto p-4 sm:p-6"
         >
           <div className="mx-auto flex w-full min-w-0 max-w-7xl flex-1 flex-col gap-4 sm:gap-6">
             <Outlet />

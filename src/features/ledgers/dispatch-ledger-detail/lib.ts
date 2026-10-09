@@ -55,10 +55,6 @@ export function materialFromPasses(passes: readonly PartyGatePass[]) {
   };
 }
 
-export function countNoun(count: number, singular: string, plural: string): string {
-  return count === 1 ? singular : plural;
-}
-
 export type StockMatrixRow = {
   variety: string;
   quantities: number[];

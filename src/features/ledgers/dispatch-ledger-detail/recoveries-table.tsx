@@ -1,6 +1,7 @@
 import { Banknote } from 'lucide-react';
 import { useMemo } from 'react';
 
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Empty,
   EmptyDescription,
@@ -8,6 +9,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@/components/ui/empty';
+import { Separator } from '@/components/ui/separator';
 import {
   Table,
   TableBody,
@@ -23,7 +25,7 @@ import type {
 } from '@/features/finances/api/types';
 import { formatInr, formatIsoDate, paiseToRupees } from '@/features/finances/lib/format';
 
-import { RecordCard, RecordField, RecordList } from './record';
+import { RecordField } from './record';
 
 type RecoveriesTableProps = {
   recoveries: readonly FinanceRecovery[];
@@ -97,29 +99,33 @@ export function RecoveriesTable({ recoveries, sales, bookFiltered }: RecoveriesT
 
   return (
     <>
-      <RecordList>
+      <div className="flex flex-col gap-3 md:hidden">
         {recoveries.map((recovery) => (
-          <RecordCard key={recovery._id}>
-            <div className="flex items-start justify-between gap-3">
-              <p className="text-sm text-muted-foreground">{formatIsoDate(recovery.date)}</p>
-              <p className="text-base font-medium text-foreground tabular-nums">
+          <Card key={recovery._id} size="sm">
+            <CardHeader>
+              <CardTitle className="tabular-nums">
                 {formatInr(paiseToRupees(recovery.amountPaise))}
-              </p>
-            </div>
-            <RecordField label="Bill book">{recovery.billBookName}</RecordField>
-            <RecordField label="Remark">
-              {recovery.remark?.trim() ? recovery.remark : '—'}
-            </RecordField>
-            <div className="flex flex-col gap-1 border-t border-border pt-2.5">
-              <p className="text-sm text-muted-foreground">Applied to</p>
-              <AllocationLines allocations={recovery.allocations} salesById={salesById} />
-            </div>
-          </RecordCard>
+              </CardTitle>
+              <CardDescription className="truncate" title={recovery.billBookName}>
+                {formatIsoDate(recovery.date)} · {recovery.billBookName}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-2">
+              <RecordField label="Remark">
+                {recovery.remark?.trim() ? recovery.remark : '—'}
+              </RecordField>
+              <Separator className="my-1" />
+              <div className="flex flex-col gap-1">
+                <p className="text-sm text-muted-foreground">Applied to</p>
+                <AllocationLines allocations={recovery.allocations} salesById={salesById} />
+              </div>
+            </CardContent>
+          </Card>
         ))}
-      </RecordList>
+      </div>
 
-      <div className="hidden overflow-hidden rounded-lg border border-border md:block">
-        <Table className="min-w-[44rem]">
+      <div className="hidden min-w-0 overflow-hidden rounded-lg border border-border md:block">
+        <Table className="w-max min-w-full">
           <TableHeader className="sticky top-0 z-20 bg-muted/50">
             <TableRow className="hover:bg-transparent">
               <TableHead className="sticky left-0 z-30 h-10 bg-muted/50 px-3 font-medium text-muted-foreground">
