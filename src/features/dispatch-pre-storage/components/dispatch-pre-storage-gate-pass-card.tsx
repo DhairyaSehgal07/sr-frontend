@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import {
+  Ban,
   Building2,
   ChevronDown,
   ChevronUp,
   FileText,
+  Loader2,
   Package,
   Pencil,
   Printer,
@@ -13,7 +15,17 @@ import {
   User,
   type LucideIcon,
 } from 'lucide-react';
+import { toast } from 'sonner';
 
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import {
   Card,
   CardContent,
@@ -27,6 +39,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { useMarkNikasiGatePassNull } from '@/features/dispatch-pre-storage/api/use-mark-nikasi-gate-pass-null';
 import type {
   NikasiGatePass,
   NikasiGatePassBagSizeItem,
@@ -96,7 +109,10 @@ export function DispatchPreStorageGatePassCard({
   data: gatePass,
 }: DispatchPreStorageGatePassCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [markNullOpen, setMarkNullOpen] = useState(false);
   const navigate = useNavigate();
+  const { mutateAsync: markNikasiGatePassNull, isPending: isMarkingNull } =
+    useMarkNikasiGatePassNull();
 
   const farmerStorageLink = gatePass.farmerStorageLinkId;
   const farmer = farmerStorageLink?.farmerId;
@@ -106,6 +122,27 @@ export function DispatchPreStorageGatePassCard({
   const showCostPerBag = gatePass.bagSize.some(
     (row) => row.costPerBag != null && Number.isFinite(row.costPerBag),
   );
+
+  const handleMarkNullOpenChange = (open: boolean) => {
+    if (isMarkingNull) return;
+    setMarkNullOpen(open);
+  };
+
+  const handleConfirmMarkNull = async () => {
+    try {
+      const { message } = await markNikasiGatePassNull(gatePass._id);
+
+      toast.success(message ?? 'Nikasi gate pass marked null.', {
+        position: 'bottom-right',
+      });
+      setMarkNullOpen(false);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to mark nikasi gate pass as null',
+        { position: 'bottom-right' },
+      );
+    }
+  };
 
   return (
     <Card className="card-hover overflow-hidden border-border/60">
@@ -372,6 +409,16 @@ export function DispatchPreStorageGatePassCard({
           </Button>
           <Button
             variant="secondary"
+            size="sm"
+            className="h-8 text-muted-foreground hover:text-destructive"
+            aria-label={`Mark nikasi gate pass ${gatePass.gatePassNo} as null`}
+            onClick={() => setMarkNullOpen(true)}
+          >
+            <Ban className="mr-2 h-3.5 w-3.5" />
+            Mark as null
+          </Button>
+          <Button
+            variant="secondary"
             size="icon-sm"
             className="h-8 w-8"
             title="Print invoice"
@@ -394,6 +441,30 @@ export function DispatchPreStorageGatePassCard({
           </Button>
         </div>
       </CardFooter>
+
+      <AlertDialog open={markNullOpen} onOpenChange={handleMarkNullOpenChange}>
+        <AlertDialogContent className="sm:max-w-lg">
+          <AlertDialogHeader className="sm:text-left">
+            <AlertDialogTitle>Mark NGP #{gatePass.gatePassNo} as null?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Shed and booking quantities are restored, and the linked sale is marked null. This
+              pass is removed from the daybook, search, and dispatch report. The gate pass number
+              stays taken.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isMarkingNull}>Keep active</AlertDialogCancel>
+            <Button
+              variant="destructive"
+              disabled={isMarkingNull}
+              onClick={() => void handleConfirmMarkNull()}
+            >
+              {isMarkingNull ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Mark as null
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }
@@ -429,6 +500,7 @@ export function DispatchPreStorageGatePassCardSkeleton() {
         <Skeleton className="h-8 w-32" />
         <div className="flex items-center gap-2">
           <Skeleton className="h-8 w-8 rounded-md" />
+          <Skeleton className="h-8 w-28 rounded-md" />
           <Skeleton className="h-8 w-8 rounded-md" />
           <Skeleton className="h-8 w-8 rounded-md" />
         </div>

@@ -176,6 +176,12 @@ export type GetNikasiGatePassByIdResponse = {
   message?: string;
 };
 
+export type MarkNikasiGatePassNullResponse = {
+  status: 'Success' | 'error';
+  message?: string;
+  data: Record<string, unknown> | null;
+};
+
 export type DispatchPreStorageFormValues = {
   manualGatePassNumber: string;
   date: string;
@@ -212,4 +218,5 @@ export const nikasiGatePassKeys = {
   details: () => [...nikasiGatePassKeys.all, 'detail'] as const,
   detail: (id: string) => [...nikasiGatePassKeys.details(), id] as const,
   update: (id: string) => [...nikasiGatePassKeys.all, 'update', id] as const,
+  markNull: () => [...nikasiGatePassKeys.all, 'mark-null'] as const,
 };
