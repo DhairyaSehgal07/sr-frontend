@@ -84,6 +84,7 @@ export type UpdateOutgoingGatePassBody = {
   category: string;
   shed?: string | null;
   'pre-sowing-treatment': boolean;
+  dispatchLedgerId?: string | null;
   billNumber?: number | null;
   biltiNumber?: number | null;
   billBook?: string | null;
@@ -136,6 +137,7 @@ export type UpdateOutgoingGatePassInput = {
     category: string;
     shed: string;
     preSowingTreatment: boolean;
+    dispatchLedgerId: string;
     billNumber: string;
     biltiNumber: string;
     billBook: string;

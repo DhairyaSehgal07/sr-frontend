@@ -118,6 +118,15 @@ export type DaybookOutgoingEntry = DaybookEntryBase & {
   billBook?: string | number;
   biltiBook?: string | number;
   costPerBag?: number;
+  /** Populated party, or a bare id when the daybook payload does not expand it. */
+  dispatchLedgerId?:
+    | string
+    | {
+        _id?: string;
+        name?: string;
+        address?: string;
+        mobileNumber?: string;
+      };
   orderDetails: DaybookOrderDetail[];
   storageGatePassSnapshots: DaybookStorageGatePassSnapshot[];
   status: 'ACTIVE';

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import {
   Ban,
+  Building2,
   ChevronDown,
   ChevronUp,
   FileText,
@@ -52,7 +53,9 @@ import {
   totalIssuedBags,
   uniqueOutgoingWeightsKg,
 } from '@/features/daybook/utils/daybook-display';
+import { resolveOutgoingDispatchLedger } from '@/features/daybook/utils/outgoing-dispatch-ledger';
 import { outgoingEntryToNikasiPrintModel } from '@/features/daybook/utils/outgoing-to-nikasi-print';
+import { useDispatchLedgers } from '@/features/people/api/use-dispatch-ledgers';
 import { isDirectSaleOutgoing } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
@@ -195,6 +198,15 @@ export function DaybookOutgoingGatePassCard({ data: gatePass }: DaybookOutgoingG
   const { mutateAsync: cancelOutgoingGatePass, isPending: isCancelling } =
     useCancelOutgoingGatePass();
 
+  const { data: dispatchLedgers = [] } = useDispatchLedgers();
+  const dispatchParty = useMemo(
+    () => resolveOutgoingDispatchLedger(gatePass.dispatchLedgerId, dispatchLedgers),
+    [dispatchLedgers, gatePass.dispatchLedgerId],
+  );
+  const dispatchPartyName = dispatchParty?.name.trim() || '—';
+  const dispatchPartyMobile = dispatchParty?.mobileNumber?.trim() || '—';
+  const dispatchPartyAddress = dispatchParty?.address?.trim() || '—';
+
   const farmer = gatePass.farmerStorageLinkId.farmerId;
   const farmerStorageLink = gatePass.farmerStorageLinkId;
   const issuedBags = totalIssuedBags(gatePass);
@@ -327,13 +339,21 @@ export function DaybookOutgoingGatePassCard({ data: gatePass }: DaybookOutgoingG
       </CardHeader>
 
       <CardContent className="pt-5">
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5">
+        <div
+          className={cn(
+            'grid grid-cols-1 gap-6 sm:grid-cols-2',
+            isDirectSale ? 'lg:grid-cols-3' : 'lg:grid-cols-5',
+          )}
+        >
           <InfoBlock label="Farmer" value={farmer.name ?? '—'} icon={User} />
           <InfoBlock
             label="Account"
             value={farmerStorageLink.accountNumber ?? '—'}
             valueClassName="tabular-nums"
           />
+          {isDirectSale ? (
+            <InfoBlock label="Dispatch party" value={dispatchPartyName} icon={Building2} />
+          ) : null}
           <InfoBlock label="From" value={gatePass.from || '—'} icon={Truck} />
           <InfoBlock label="To" value={gatePass.to || '—'} />
           <InfoBlock label="Shed" value={shed || '—'} icon={Warehouse} />
@@ -384,18 +404,40 @@ export function DaybookOutgoingGatePassCard({ data: gatePass }: DaybookOutgoingG
               <OutgoingDetailedBreakdown gatePass={gatePass} />
 
               <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                <div>
-                  <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
-                    <User className={cn('h-4 w-4', nikasiAccent.icon)} />
-                    Farmer information
-                  </h4>
-                  <div className="grid grid-cols-2 gap-4 rounded-xl border border-border/50 bg-muted/20 p-4">
-                    <InfoBlock label="Name" value={farmer.name ?? '—'} />
-                    <InfoBlock label="Mobile" value={farmer.mobileNumber ?? '—'} />
-                    <div className="col-span-2">
-                      <InfoBlock label="Address" value={farmer.address ?? '—'} />
+                <div className="space-y-6">
+                  <div>
+                    <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
+                      <User className={cn('h-4 w-4', nikasiAccent.icon)} />
+                      Farmer information
+                    </h4>
+                    <div className="grid grid-cols-2 gap-4 rounded-xl border border-border/50 bg-muted/20 p-4">
+                      <InfoBlock label="Name" value={farmer.name ?? '—'} />
+                      <InfoBlock label="Mobile" value={farmer.mobileNumber ?? '—'} />
+                      <div className="col-span-2">
+                        <InfoBlock label="Address" value={farmer.address ?? '—'} />
+                      </div>
                     </div>
                   </div>
+
+                  {isDirectSale ? (
+                    <div>
+                      <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
+                        <Building2 className={cn('h-4 w-4', nikasiAccent.icon)} />
+                        Dispatch party
+                      </h4>
+                      <div className="grid grid-cols-2 gap-4 rounded-xl border border-border/50 bg-muted/20 p-4">
+                        <InfoBlock label="Name" value={dispatchPartyName} />
+                        <InfoBlock
+                          label="Mobile"
+                          value={dispatchPartyMobile}
+                          valueClassName="tabular-nums"
+                        />
+                        <div className="col-span-2">
+                          <InfoBlock label="Address" value={dispatchPartyAddress} />
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
 
                 <div>
@@ -558,7 +600,7 @@ export function DaybookOutgoingGatePassCard({ data: gatePass }: DaybookOutgoingG
                 onClick={() =>
                   void openNikasiGatePassPrint(
                     'invoice',
-                    outgoingEntryToNikasiPrintModel(gatePass),
+                    outgoingEntryToNikasiPrintModel(gatePass, dispatchParty),
                     { invoiceLayout: 'sale' },
                   )
                 }
@@ -572,7 +614,10 @@ export function DaybookOutgoingGatePassCard({ data: gatePass }: DaybookOutgoingG
                 title="Print bilti"
                 aria-label={`Print bilti for outgoing gate pass ${gatePass.gatePassNo}`}
                 onClick={() =>
-                  void openNikasiGatePassPrint('bilti', outgoingEntryToNikasiPrintModel(gatePass))
+                  void openNikasiGatePassPrint(
+                    'bilti',
+                    outgoingEntryToNikasiPrintModel(gatePass, dispatchParty),
+                  )
                 }
               >
                 <FileText className="h-3.5 w-3.5" />

@@ -1,6 +1,6 @@
 import { useForm } from '@tanstack/react-form';
-import { Loader2, Pencil } from 'lucide-react';
-import { useMemo, useRef, useState, type RefObject } from 'react';
+import { Loader2, Pencil, UserPlus } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState, type RefObject } from 'react';
 import { toast } from 'sonner';
 
 import { DatePickerInput } from '@/components/date-picker';
@@ -31,9 +31,13 @@ import {
 } from '@/components/ui/sheet';
 import { Textarea } from '@/components/ui/textarea';
 import type { DaybookOutgoingEntry } from '@/features/daybook/api/types';
+import { resolveOutgoingDispatchLedger } from '@/features/daybook/utils/outgoing-dispatch-ledger';
 import { useUpdateOutgoingGatePass } from '@/features/outgoing/api/use-update-outgoing-gate-pass';
 import { editOutgoingFormSchema } from '@/features/outgoing/schemas/edit-outgoing-form-schema';
 import { outgoingGatePassToEditFormValues } from '@/features/outgoing/utils/outgoing-gate-pass-to-edit-form-values';
+import { useDispatchLedgers } from '@/features/people/api/use-dispatch-ledgers';
+import { AddDispatchLedgerDialog } from '@/features/people/components/add-dispatch-ledger-dialog';
+import type { DispatchLedger } from '@/features/people/types';
 import { useBillBooks } from '@/features/settings/api/use-bill-books';
 import {
   isDirectSaleOutgoing,
@@ -100,8 +104,13 @@ function EditOutgoingFormFields({
   const { data: billBooksData, isLoading: isLoadingBillBooks } = useBillBooks({
     isActive: 'true',
   });
+  const { data: dispatchLedgers = [], isFetched: dispatchLedgersFetched } = useDispatchLedgers();
 
   const defaultValues = useMemo(() => outgoingGatePassToEditFormValues(gatePass), [gatePass]);
+  const savedLedgerName = useMemo(
+    () => resolveOutgoingDispatchLedger(gatePass.dispatchLedgerId)?.name.trim() ?? '',
+    [gatePass.dispatchLedgerId],
+  );
 
   const categoryOptions = useMemo(
     () => ensureOptionInList(CATEGORY_ITEMS, defaultValues.category),
@@ -122,6 +131,16 @@ function EditOutgoingFormFields({
     }
     return options;
   }, [billBooksData, defaultValues.billBook]);
+  const dispatchLedgerOptions = useMemo<ComboboxOption[]>(() => {
+    const base = dispatchLedgers.map((ledger) => ({
+      id: ledger._id,
+      label: ledger.name,
+    }));
+    const savedId = defaultValues.dispatchLedgerId;
+    if (!savedId || base.some((option) => option.id === savedId)) return base;
+    if (!dispatchLedgersFetched && !savedLedgerName) return base;
+    return [...base, { id: savedId, label: savedLedgerName || savedId }];
+  }, [defaultValues.dispatchLedgerId, dispatchLedgers, dispatchLedgersFetched, savedLedgerName]);
   const biltiBookOptions = useMemo<ComboboxOption[]>(
     () =>
       ensureOptionInList(
@@ -138,6 +157,10 @@ function EditOutgoingFormFields({
   const [categoryComboboxOpen, setCategoryComboboxOpen] = useState(false);
   const [shedSearch, setShedSearch] = useState(() => defaultValues.shed);
   const [shedComboboxOpen, setShedComboboxOpen] = useState(false);
+  const [ledgerSearch, setLedgerSearch] = useState(savedLedgerName);
+  const ledgerSearchSynced = useRef(savedLedgerName.length > 0);
+  const [ledgerComboboxOpen, setLedgerComboboxOpen] = useState(false);
+  const [addLedgerOpen, setAddLedgerOpen] = useState(false);
   const [billBookSearch, setBillBookSearch] = useState('');
   const [billBookComboboxOpen, setBillBookComboboxOpen] = useState(false);
   const [biltiBookSearch, setBiltiBookSearch] = useState('');
@@ -151,6 +174,10 @@ function EditOutgoingFormFields({
     () => filterAndSortOptions(shedSearch, shedOptions),
     [shedSearch, shedOptions],
   );
+  const sortedLedgers = useMemo(
+    () => filterAndSortOptions(ledgerSearch, dispatchLedgerOptions),
+    [ledgerSearch, dispatchLedgerOptions],
+  );
   const sortedBillBooks = useMemo(
     () => filterAndSortOptions(billBookSearch, billBookOptions),
     [billBookSearch, billBookOptions],
@@ -159,6 +186,31 @@ function EditOutgoingFormFields({
     () => filterAndSortOptions(biltiBookSearch, biltiBookOptions),
     [biltiBookSearch, biltiBookOptions],
   );
+
+  useEffect(() => {
+    if (ledgerComboboxOpen || ledgerSearchSynced.current || !dispatchLedgersFetched) return;
+    const label = dispatchLedgerOptions.find(
+      (option) => option.id === defaultValues.dispatchLedgerId,
+    )?.label;
+    if (!label) return;
+    ledgerSearchSynced.current = true;
+    setLedgerSearch(label);
+  }, [
+    defaultValues.dispatchLedgerId,
+    dispatchLedgerOptions,
+    dispatchLedgersFetched,
+    ledgerComboboxOpen,
+  ]);
+
+  const handleLedgerSearch = (value: string) => {
+    if (ledgerComboboxOpen) ledgerSearchSynced.current = true;
+    setLedgerSearch(value);
+  };
+
+  const handleLedgerOpen = (open: boolean) => {
+    if (open) ledgerSearchSynced.current = true;
+    setLedgerComboboxOpen(open);
+  };
 
   const form = useForm({
     defaultValues,
@@ -193,6 +245,9 @@ function EditOutgoingFormFields({
     setCategoryComboboxOpen(false);
     setShedSearch(defaultValues.shed);
     setShedComboboxOpen(false);
+    ledgerSearchSynced.current = savedLedgerName.length > 0;
+    setLedgerSearch(savedLedgerName);
+    setLedgerComboboxOpen(false);
     setBillBookSearch('');
     setBillBookComboboxOpen(false);
     setBiltiBookSearch('');
@@ -202,6 +257,13 @@ function EditOutgoingFormFields({
   const handleReset = () => {
     form.reset(defaultValues);
     resetComboboxState();
+  };
+
+  const handleLedgerCreated = (ledger: DispatchLedger) => {
+    form.setFieldValue('dispatchLedgerId', ledger._id);
+    ledgerSearchSynced.current = true;
+    setLedgerSearch(ledger.name);
+    setLedgerComboboxOpen(false);
   };
 
   return (
@@ -371,6 +433,63 @@ function EditOutgoingFormFields({
               children={(category) =>
                 isDirectSaleOutgoing(category) ? (
                   <>
+                    <FieldSet>
+                      <FieldLegend className="font-heading text-base font-semibold">
+                        Dispatch ledger
+                      </FieldLegend>
+                      <FieldDescription>
+                        Select the dispatch ledger this direct sale belongs to.
+                      </FieldDescription>
+                      <FieldGroup className="mt-5 grid grid-cols-1 gap-6">
+                        <form.Field name="dispatchLedgerId">
+                          {(field) => {
+                            const isInvalid = isFieldInvalid(field.state.meta);
+                            return (
+                              <Field data-invalid={isInvalid}>
+                                <FieldLabel htmlFor="edit-outgoing-dispatch-ledger">
+                                  Dispatch ledger
+                                </FieldLabel>
+                                <div className="flex gap-2">
+                                  <div className="min-w-0 flex-1">
+                                    <SearchableOptionCombobox
+                                      id="edit-outgoing-dispatch-ledger"
+                                      name={field.name}
+                                      value={field.state.value}
+                                      onValueChange={field.handleChange}
+                                      onBlur={field.handleBlur}
+                                      isInvalid={isInvalid}
+                                      placeholder="Search dispatch ledgers..."
+                                      emptyMessage="No dispatch ledgers found."
+                                      options={dispatchLedgerOptions}
+                                      sortedOptions={sortedLedgers}
+                                      search={ledgerSearch}
+                                      setSearch={handleLedgerSearch}
+                                      open={ledgerComboboxOpen}
+                                      setOpen={handleLedgerOpen}
+                                      disabled={isPending}
+                                      portalContainer={comboboxPortalContainer}
+                                    />
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    variant="secondary"
+                                    className="h-11 shrink-0 gap-1.5 px-3"
+                                    onClick={() => setAddLedgerOpen(true)}
+                                    disabled={isPending}
+                                    aria-label="Add dispatch ledger"
+                                  >
+                                    <UserPlus className="size-4 shrink-0" />
+                                    <span className="hidden sm:inline">Add</span>
+                                  </Button>
+                                </div>
+                                {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                              </Field>
+                            );
+                          }}
+                        </form.Field>
+                      </FieldGroup>
+                    </FieldSet>
+
                     <FieldSet>
                       <FieldLegend className="font-heading text-base font-semibold">
                         Route &amp; vehicle
@@ -805,6 +924,11 @@ function EditOutgoingFormFields({
           />
         </SheetFooter>
       </form>
+      <AddDispatchLedgerDialog
+        open={addLedgerOpen}
+        onOpenChange={setAddLedgerOpen}
+        onSuccess={handleLedgerCreated}
+      />
     </>
   );
 }
@@ -840,7 +964,8 @@ export function EditOutgoingGatePassSheet({
                   Edit OGP <span className="font-mono tabular-nums">#{gatePass.gatePassNo}</span>
                 </SheetTitle>
                 <SheetDescription className="text-xs leading-snug text-muted-foreground">
-                  Update date, route, truck, billing details, and remarks for this outgoing pass.
+                  Update the dispatch ledger, route, truck, billing details, and remarks for this
+                  outgoing pass.
                 </SheetDescription>
               </div>
             </div>

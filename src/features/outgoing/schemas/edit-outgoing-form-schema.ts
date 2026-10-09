@@ -1,5 +1,6 @@
 import * as z from 'zod';
 
+import { objectId } from '@/features/outgoing/schemas/outgoing-form-schema';
 import {
   isDirectSaleOutgoing,
   isOutgoingToShed,
@@ -25,6 +26,16 @@ const optionalPositiveIntField = z.string().refine((value) => {
   const trimmed = value.trim();
   return trimmed.length === 0 || isPositiveIntString(trimmed);
 }, 'Must be a whole number greater than zero');
+
+function requireObjectId(value: string, ctx: z.RefinementCtx, path: string, message: string) {
+  if (!objectId.safeParse(value).success) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message,
+      path: [path],
+    });
+  }
+}
 
 function requireCostPerBag(value: string, ctx: z.RefinementCtx) {
   const trimmed = value.trim();
@@ -59,6 +70,7 @@ export const editOutgoingFormSchema = z
     category: z.string().trim().min(1, 'Category is required.').max(100),
     shed: optionalShedField,
     preSowingTreatment: z.boolean(),
+    dispatchLedgerId: z.string(),
     billNumber: optionalPositiveIntField,
     biltiNumber: optionalPositiveIntField,
     billBook: z.string().trim(),
@@ -76,6 +88,7 @@ export const editOutgoingFormSchema = z
     }
 
     if (!isDirectSaleOutgoing(value.category)) return;
+    requireObjectId(value.dispatchLedgerId, ctx, 'dispatchLedgerId', 'Select a dispatch ledger.');
     requireCostPerBag(value.costPerBag, ctx);
   });
 

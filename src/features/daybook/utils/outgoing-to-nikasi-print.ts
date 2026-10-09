@@ -1,7 +1,9 @@
 import type { DaybookOutgoingEntry } from '@/features/daybook/api/types';
+import { resolveOutgoingDispatchLedger } from '@/features/daybook/utils/outgoing-dispatch-ledger';
 import type {
   NikasiGatePass,
   NikasiGatePassBagSizeItem,
+  NikasiGatePassDispatchLedger,
 } from '@/features/dispatch-pre-storage/api/types';
 
 function trimmed(value: string | undefined): string {
@@ -58,7 +60,29 @@ function netWeightKg(entry: DaybookOutgoingEntry): number {
   return counted ? total : Number.NaN;
 }
 
-export function outgoingEntryToNikasiPrintModel(entry: DaybookOutgoingEntry): NikasiGatePass {
+function printParty(
+  entry: DaybookOutgoingEntry,
+  dispatchLedger: NikasiGatePassDispatchLedger | undefined,
+): NikasiGatePassDispatchLedger {
+  const party = dispatchLedger ?? resolveOutgoingDispatchLedger(entry.dispatchLedgerId);
+  if (!party) return { name: '' };
+
+  const name = party.name.trim();
+  const address = party.address?.trim();
+  const mobileNumber = party.mobileNumber?.trim();
+
+  return {
+    ...(party._id ? { _id: party._id } : {}),
+    name,
+    ...(address ? { address } : {}),
+    ...(mobileNumber ? { mobileNumber } : {}),
+  };
+}
+
+export function outgoingEntryToNikasiPrintModel(
+  entry: DaybookOutgoingEntry,
+  dispatchLedger?: NikasiGatePassDispatchLedger,
+): NikasiGatePass {
   const to = trimmed(entry.to);
   const netWeight = netWeightKg(entry);
   const bags = entry.orderDetails.reduce((sum, row) => sum + row.quantityIssued, 0);
@@ -87,7 +111,7 @@ export function outgoingEntryToNikasiPrintModel(entry: DaybookOutgoingEntry): Ni
     netWeight,
     averageWeightPerBag: Number.isFinite(netWeight) && bags > 0 ? netWeight / bags : Number.NaN,
     remarks: optionalTrimmed(entry.remarks),
-    dispatchLedgerId: { name: to },
+    dispatchLedgerId: printParty(entry, dispatchLedger),
     createdBy: entry.createdBy,
     createdAt: entry.createdAt,
   };

@@ -89,6 +89,7 @@ describe('direct sale fields', () => {
       category: 'Direct Sale',
       shed: '',
       preSowingTreatment: false,
+      dispatchLedgerId: '64f1a2b3c4d5e6f7a8b9c0d4',
       billNumber: '',
       biltiNumber: '',
       billBook: '',
@@ -121,6 +122,30 @@ describe('direct sale fields', () => {
       costPerBag: '',
     });
     expect(otherCategory.success).toBe(true);
+
+    const editMissingLedger = editOutgoingFormSchema.safeParse({
+      date: form.step1.date,
+      manualGatePassNumber: undefined,
+      from: '',
+      to: '',
+      truckNumber: '',
+      transportCompany: '',
+      LSNumber: '',
+      driverName: '',
+      driverMobile: '',
+      owner: '',
+      category: 'Direct Sale',
+      shed: '',
+      preSowingTreatment: false,
+      dispatchLedgerId: '',
+      billNumber: '',
+      biltiNumber: '',
+      billBook: '',
+      biltiBook: '',
+      costPerBag: '450',
+      remarks: '',
+    });
+    expect(editMissingLedger.success).toBe(false);
   });
 
   it('requires a cost per bag for Direct Sale', () => {
@@ -187,6 +212,7 @@ describe('direct sale fields', () => {
       category: 'Outgoing to Shed',
       shed: '   ',
       preSowingTreatment: false,
+      dispatchLedgerId: '',
       billNumber: '',
       biltiNumber: '',
       billBook: '',
@@ -210,6 +236,7 @@ describe('direct sale fields', () => {
       category: 'Outgoing to Shed',
       shed: 'Vaddi shed',
       preSowingTreatment: false,
+      dispatchLedgerId: '',
       billNumber: '',
       biltiNumber: '',
       billBook: '',

@@ -1,4 +1,5 @@
 import type { DaybookOutgoingEntry } from '@/features/daybook/api/types';
+import { outgoingDispatchLedgerId } from '@/features/daybook/utils/outgoing-dispatch-ledger';
 import type { EditOutgoingFormValues } from '@/features/outgoing/schemas/edit-outgoing-form-schema';
 
 export function outgoingGatePassToEditFormValues(
@@ -18,6 +19,7 @@ export function outgoingGatePassToEditFormValues(
     category: gatePass.category ?? '',
     shed: gatePass.shed ?? '',
     preSowingTreatment: gatePass['pre-sowing-treatment'] ?? false,
+    dispatchLedgerId: outgoingDispatchLedgerId(gatePass.dispatchLedgerId),
     billNumber: gatePass.billNumber != null ? String(gatePass.billNumber) : '',
     biltiNumber: gatePass.biltiNumber != null ? String(gatePass.biltiNumber) : '',
     billBook: gatePass.billBook != null ? String(gatePass.billBook) : '',

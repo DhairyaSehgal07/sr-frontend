@@ -38,6 +38,7 @@ export function toUpdateOutgoingGatePassBody(
   };
 
   if (isDirectSaleOutgoing(form.category)) {
+    body.dispatchLedgerId = form.dispatchLedgerId;
     body.from = nullableTrimmed(form.from);
     body.to = nullableTrimmed(form.to);
     body.truckNumber = nullableTrimmed(form.truckNumber);
@@ -52,6 +53,7 @@ export function toUpdateOutgoingGatePassBody(
     body.biltiBook = nullableTrimmed(form.biltiBook);
     body.costPerBag = nullablePositiveAmount(form.costPerBag);
   } else {
+    body.dispatchLedgerId = null;
     body.from = null;
     body.to = null;
     body.truckNumber = null;

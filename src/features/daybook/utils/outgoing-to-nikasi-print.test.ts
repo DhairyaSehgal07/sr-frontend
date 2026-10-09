@@ -37,11 +37,50 @@ function entry(overrides: Partial<DaybookOutgoingEntry> = {}): DaybookOutgoingEn
 }
 
 describe('outgoingEntryToNikasiPrintModel', () => {
-  it('uses a blank destination as the billed party name', () => {
-    const model = outgoingEntryToNikasiPrintModel(entry({ to: '   ' }));
+  it('copies a populated dispatch ledger and keeps the destination separate', () => {
+    const model = outgoingEntryToNikasiPrintModel(
+      entry({
+        to: 'Market Yard',
+        dispatchLedgerId: {
+          _id: '64f1a2b3c4d5e6f7a8b9c0d4',
+          name: 'Kapur Traders',
+          address: 'Mandi Road',
+          mobileNumber: '9811122233',
+        },
+      }),
+    );
 
-    expect(model.to).toBe('');
+    expect(model.to).toBe('Market Yard');
+    expect(model.dispatchLedgerId).toEqual({
+      _id: '64f1a2b3c4d5e6f7a8b9c0d4',
+      name: 'Kapur Traders',
+      address: 'Mandi Road',
+      mobileNumber: '9811122233',
+    });
+  });
+
+  it('does not use the destination as the billed party when no ledger is present', () => {
+    const model = outgoingEntryToNikasiPrintModel(entry({ to: 'Market Yard' }));
+
+    expect(model.to).toBe('Market Yard');
     expect(model.dispatchLedgerId).toEqual({ name: '' });
+  });
+
+  it('uses a resolved ledger passed in for printing', () => {
+    const model = outgoingEntryToNikasiPrintModel(entry({ to: 'Market Yard' }), {
+      _id: '64f1a2b3c4d5e6f7a8b9c0d4',
+      name: 'Kapur Traders',
+      address: 'Mandi Road',
+      mobileNumber: '9811122233',
+    });
+
+    expect(model.to).toBe('Market Yard');
+    expect(model.dispatchLedgerId).toEqual({
+      _id: '64f1a2b3c4d5e6f7a8b9c0d4',
+      name: 'Kapur Traders',
+      address: 'Mandi Road',
+      mobileNumber: '9811122233',
+    });
   });
 
   it('sums issued bags of the same size into one line', () => {
