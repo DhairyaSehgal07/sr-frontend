@@ -1,4 +1,4 @@
-import { pdf, type DocumentProps } from '@react-pdf/renderer';
+import { type DocumentProps, pdf } from '@react-pdf/renderer';
 import type { ReactElement } from 'react';
 import { toast } from 'sonner';
 
@@ -6,6 +6,8 @@ import BiltiDocumentPdf from '@/components/pdfs/BiltiDocumentPdf';
 import InvoiceDocumentPdf, {
   type InvoiceDocumentLayout,
 } from '@/components/pdfs/InvoiceDocumentPdf';
+import { pdfIssuerFromUser, withEmbeddedLogo } from '@/components/pdfs/pdf-issuer';
+import { useAuthStore } from '@/features/auth/store/use-auth-store';
 import type { NikasiGatePass } from '@/features/dispatch-pre-storage/api/types';
 
 async function openPdfDocument(document: ReactElement<DocumentProps>): Promise<void> {
@@ -37,14 +39,16 @@ export async function openNikasiGatePassPrint(
   options?: { invoiceLayout?: InvoiceDocumentLayout },
 ): Promise<void> {
   try {
+    const issuer = await withEmbeddedLogo(pdfIssuerFromUser(useAuthStore.getState().user));
+
     if (doc === 'invoice') {
       await openPdfDocument(
-        <InvoiceDocumentPdf data={gatePass} layout={options?.invoiceLayout} />,
+        <InvoiceDocumentPdf data={gatePass} layout={options?.invoiceLayout} issuer={issuer} />,
       );
       return;
     }
 
-    await openPdfDocument(<BiltiDocumentPdf data={gatePass} />);
+    await openPdfDocument(<BiltiDocumentPdf data={gatePass} issuer={issuer} />);
   } catch (error) {
     toast.error(error instanceof Error ? error.message : 'Failed to open PDF.', {
       position: 'bottom-right',

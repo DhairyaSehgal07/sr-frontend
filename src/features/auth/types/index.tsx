@@ -12,6 +12,11 @@ export interface ColdStorage {
   capacity: number;
   imageUrl: string;
   isPaid: boolean;
+  /** JPGA membership number only, e.g. "01083". The PDF prefixes "JPGA NO.". */
+  jpgaNumber?: string;
+  tagline?: string;
+  /** Full letterhead phone line, e.g. "M. 98152-09363, WhatsApp 95926-09363". */
+  contactNumbers?: string;
 }
 
 export interface AuthUser {

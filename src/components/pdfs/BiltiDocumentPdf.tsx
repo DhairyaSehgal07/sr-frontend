@@ -1,5 +1,6 @@
 import { Document, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 
+import { type PdfIssuer, pdfIssuerFromUser } from '@/components/pdfs/pdf-issuer';
 import { SrfLogo } from '@/components/pdfs/srf-logo';
 
 import type { NikasiGatePass } from '@/features/dispatch-pre-storage/api/types';
@@ -251,15 +252,11 @@ const styles = StyleSheet.create({
 
 type BiltiDocumentPdfProps = {
   data?: NikasiGatePass;
+  issuer?: PdfIssuer;
 };
 
-function biltiHeading(billBook: NikasiGatePass['billBook'] | undefined): string {
-  const name = billBook == null ? '' : String(billBook).trim();
-  return name || 'ASHOK KUMAR PAHUJA';
-}
-
-const BiltiDocumentPdf = ({ data }: BiltiDocumentPdfProps) => {
-  const heading = biltiHeading(data?.billBook);
+const BiltiDocumentPdf = ({ data, issuer }: BiltiDocumentPdfProps) => {
+  const letterhead = issuer ?? pdfIssuerFromUser(null);
   const billNo = data ? biltiBillNo(data) : '';
   const dated = data ? formatPdfDate(data.date) : '';
   const party = data?.dispatchLedgerId;
@@ -284,20 +281,26 @@ const BiltiDocumentPdf = ({ data }: BiltiDocumentPdfProps) => {
         <View style={styles.headerContainer}>
           {/* Logo & Membership */}
           <View style={styles.logoSection}>
-            <View style={styles.logoRow}>
-              <SrfLogo size={72} />
-              <Text style={styles.jpgaText}>JPGA NO. 01083</Text>
-            </View>
+            {letterhead.logoUrl || letterhead.jpgaNumber ? (
+              <View style={styles.logoRow}>
+                {letterhead.logoUrl ? <SrfLogo src={letterhead.logoUrl} size={72} /> : null}
+                {letterhead.jpgaNumber ? (
+                  <Text style={styles.jpgaText}>JPGA NO. {letterhead.jpgaNumber}</Text>
+                ) : null}
+              </View>
+            ) : null}
           </View>
 
           {/* Company Identity */}
           <View style={styles.companyInfoSection}>
-            <Text style={styles.companyName}>{heading}</Text>
-            <Text style={styles.tagline}>Producers of Top Quality Potatoes of Punjab</Text>
-            <Text style={styles.addressText}>V.P.O Uggi , Distt. Jalandhar</Text>
-            <Text style={styles.addressText}>
-              M. 98152-09363, 99159-83498, WhatsApp 95926-09363
-            </Text>
+            {letterhead.name ? <Text style={styles.companyName}>{letterhead.name}</Text> : null}
+            {letterhead.tagline ? <Text style={styles.tagline}>{letterhead.tagline}</Text> : null}
+            {letterhead.address ? (
+              <Text style={styles.addressText}>{letterhead.address}</Text>
+            ) : null}
+            {letterhead.contactNumbers ? (
+              <Text style={styles.addressText}>{letterhead.contactNumbers}</Text>
+            ) : null}
           </View>
 
           {/* Bill No & Date Boxes */}
@@ -512,7 +515,9 @@ const BiltiDocumentPdf = ({ data }: BiltiDocumentPdfProps) => {
 
           {/* Signature Block */}
           <View style={styles.signatureSection}>
-            <Text style={styles.signatureText}>For {heading}</Text>
+            <Text style={styles.signatureText}>
+              {letterhead.name ? `For ${letterhead.name}` : 'For'}
+            </Text>
           </View>
         </View>
       </Page>

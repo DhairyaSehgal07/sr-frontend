@@ -1,5 +1,6 @@
 import { Document, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 
+import { type PdfIssuer, pdfIssuerFromUser } from '@/components/pdfs/pdf-issuer';
 import { SrfLogo } from '@/components/pdfs/srf-logo';
 
 import type {
@@ -342,6 +343,7 @@ export type InvoiceDocumentLayout = 'freight' | 'sale';
 type InvoiceDocumentPdfProps = {
   data?: NikasiGatePass;
   layout?: InvoiceDocumentLayout;
+  issuer?: PdfIssuer;
 };
 
 function FillField({ value, style }: { value?: string; style?: { marginRight?: number } }) {
@@ -455,13 +457,8 @@ function SaleInvoiceLines({ rows }: { rows: readonly NikasiGatePassBagSizeItem[]
   );
 }
 
-function invoiceHeading(billBook: NikasiGatePass['billBook'] | undefined): string {
-  const name = billBook == null ? '' : String(billBook).trim();
-  return name || 'ASHOK KUMAR PAHUJA';
-}
-
-const InvoiceDocumentPdf = ({ data, layout = 'freight' }: InvoiceDocumentPdfProps) => {
-  const heading = invoiceHeading(data?.billBook);
+const InvoiceDocumentPdf = ({ data, layout = 'freight', issuer }: InvoiceDocumentPdfProps) => {
+  const letterhead = issuer ?? pdfIssuerFromUser(null);
   const billNo = data ? invoiceBillNo(data) : '';
   const dated = data ? formatPdfDate(data.date) : '';
   const partyLines = data ? partyAddressLines(data) : [];
@@ -503,19 +500,25 @@ const InvoiceDocumentPdf = ({ data, layout = 'freight' }: InvoiceDocumentPdfProp
         {/* --- Header Section --- */}
         <View style={styles.headerContainer}>
           <View style={styles.logoSection}>
-            <View style={styles.logoRow}>
-              <SrfLogo size={72} />
-              <Text style={styles.jpgaText}>JPGA NO. 01083</Text>
-            </View>
+            {letterhead.logoUrl || letterhead.jpgaNumber ? (
+              <View style={styles.logoRow}>
+                {letterhead.logoUrl ? <SrfLogo src={letterhead.logoUrl} size={72} /> : null}
+                {letterhead.jpgaNumber ? (
+                  <Text style={styles.jpgaText}>JPGA NO. {letterhead.jpgaNumber}</Text>
+                ) : null}
+              </View>
+            ) : null}
           </View>
 
           <View style={styles.companyInfoSection}>
-            <Text style={styles.companyName}>{heading}</Text>
-            <Text style={styles.tagline}>Producers of Top Quality Potatoes of Punjab</Text>
-            <Text style={styles.addressText}>V.P.O Uggi , Distt. Jalandhar</Text>
-            <Text style={styles.addressText}>
-              M. 98152-09363, 99159-83498, WhatsApp 95926-09363
-            </Text>
+            {letterhead.name ? <Text style={styles.companyName}>{letterhead.name}</Text> : null}
+            {letterhead.tagline ? <Text style={styles.tagline}>{letterhead.tagline}</Text> : null}
+            {letterhead.address ? (
+              <Text style={styles.addressText}>{letterhead.address}</Text>
+            ) : null}
+            {letterhead.contactNumbers ? (
+              <Text style={styles.addressText}>{letterhead.contactNumbers}</Text>
+            ) : null}
           </View>
         </View>
 
