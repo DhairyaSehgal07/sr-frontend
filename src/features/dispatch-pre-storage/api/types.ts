@@ -170,6 +170,29 @@ export type UpdateNikasiGatePassResponse = {
   message?: string;
 };
 
+/** Partial body for PUT /nikasi-gate-pass/:id. Omit fields that should stay unchanged. */
+export type UpdateNikasiGatePassPatch = {
+  manualGatePassNumber?: number | null;
+  category?: string;
+  date?: string;
+  dispatchLedgerId?: string;
+  from?: string;
+  to?: string;
+  truckNumber?: string;
+  transportCompany?: string;
+  LSNumber?: string;
+  driverName?: string;
+  owner?: string;
+  remarks?: string;
+};
+
+export type PatchNikasiGatePassResponse = {
+  status?: 'Success' | 'error' | string;
+  success?: boolean;
+  message?: string;
+  data: NikasiGatePass | null;
+};
+
 export type GetNikasiGatePassByIdResponse = {
   success: boolean;
   data: NikasiGatePass | null;
@@ -218,5 +241,6 @@ export const nikasiGatePassKeys = {
   details: () => [...nikasiGatePassKeys.all, 'detail'] as const,
   detail: (id: string) => [...nikasiGatePassKeys.details(), id] as const,
   update: (id: string) => [...nikasiGatePassKeys.all, 'update', id] as const,
+  patch: (id: string) => [...nikasiGatePassKeys.all, 'patch', id] as const,
   markNull: () => [...nikasiGatePassKeys.all, 'mark-null'] as const,
 };

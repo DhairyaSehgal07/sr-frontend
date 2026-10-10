@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from '@tanstack/react-router';
 import {
   Ban,
   Building2,
@@ -45,6 +44,7 @@ import type {
   NikasiGatePassBagSizeItem,
 } from '@/features/dispatch-pre-storage/api/types';
 import { nikasiAccent } from '@/features/dispatch-pre-storage/constants/nikasi-accent';
+import { EditNikasiGatePassSheet } from '@/features/dispatch-pre-storage/forms/edit-nikasi-gate-pass-sheet';
 import { openNikasiGatePassPrint } from '@/features/dispatch-pre-storage/utils/nikasi-gate-pass-print';
 
 interface InfoBlockProps {
@@ -110,7 +110,7 @@ export function DispatchPreStorageGatePassCard({
 }: DispatchPreStorageGatePassCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [markNullOpen, setMarkNullOpen] = useState(false);
-  const navigate = useNavigate();
+  const [editOpen, setEditOpen] = useState(false);
   const { mutateAsync: markNikasiGatePassNull, isPending: isMarkingNull } =
     useMarkNikasiGatePassNull();
 
@@ -398,12 +398,7 @@ export function DispatchPreStorageGatePassCard({
             size="icon-sm"
             className="h-8 w-8"
             aria-label={`Edit nikasi gate pass ${gatePass.gatePassNo}`}
-            onClick={() =>
-              navigate({
-                to: '/dispatch/$id',
-                params: { id: gatePass._id },
-              })
-            }
+            onClick={() => setEditOpen(true)}
           >
             <Pencil className="h-3.5 w-3.5" />
           </Button>
@@ -441,6 +436,8 @@ export function DispatchPreStorageGatePassCard({
           </Button>
         </div>
       </CardFooter>
+
+      <EditNikasiGatePassSheet open={editOpen} onOpenChange={setEditOpen} gatePass={gatePass} />
 
       <AlertDialog open={markNullOpen} onOpenChange={handleMarkNullOpenChange}>
         <AlertDialogContent className="sm:max-w-lg">
