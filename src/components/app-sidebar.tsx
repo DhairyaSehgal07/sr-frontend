@@ -1,6 +1,14 @@
 import { Link, useRouterState } from '@tanstack/react-router';
 import type { LucideIcon } from 'lucide-react';
-import { BookOpen, ChevronRight, FileBarChart, IndianRupee, Settings, Users } from 'lucide-react';
+import {
+  BookOpen,
+  ChartColumn,
+  ChevronRight,
+  FileBarChart,
+  IndianRupee,
+  Settings,
+  Users,
+} from 'lucide-react';
 import { Collapsible } from 'radix-ui';
 import { useState } from 'react';
 import {
@@ -49,6 +57,12 @@ const coreNavItems: NavItem[] = [
     icon: IndianRupee,
     to: '/finances',
     activePaths: ['/finances'],
+  },
+  {
+    name: 'Analytics',
+    icon: ChartColumn,
+    to: '/analytics',
+    activePaths: ['/analytics'],
   },
 ];
 

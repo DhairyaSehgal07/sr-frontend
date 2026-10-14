@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
+import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
 import { Route as AuthenticatedDaybookRouteImport } from './routes/_authenticated/daybook'
 import { Route as AuthenticatedPdfReportRouteImport } from './routes/_authenticated/pdf-report'
 import { Route as AuthenticatedDispatchPreStorageIndexRouteImport } from './routes/_authenticated/dispatch-pre-storage.index'
@@ -24,6 +25,7 @@ import { Route as AuthenticatedLedgersIndexRouteImport } from './routes/_authent
 import { Route as AuthenticatedLedgersIdRouteImport } from './routes/_authenticated/ledgers.$id'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings.index'
 import { Route as AuthenticatedSettingsBillBooksRouteImport } from './routes/_authenticated/settings.bill-books'
+import { Route as AuthenticatedSettingsStockFiltersRouteImport } from './routes/_authenticated/settings.stock-filters'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -33,6 +35,11 @@ const IndexRoute = IndexRouteImport.update({
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedDaybookRoute = AuthenticatedDaybookRouteImport.update({
   id: '/daybook',
@@ -108,9 +115,16 @@ const AuthenticatedSettingsBillBooksRoute =
     path: '/settings/bill-books',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedSettingsStockFiltersRoute =
+  AuthenticatedSettingsStockFiltersRouteImport.update({
+    id: '/settings/stock-filters',
+    path: '/settings/stock-filters',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/analytics': typeof AuthenticatedAnalyticsRoute
   '/daybook': typeof AuthenticatedDaybookRoute
   '/pdf-report': typeof AuthenticatedPdfReportRoute
   '/dispatch-pre-storage/$id': typeof AuthenticatedDispatchPreStorageIdRoute
@@ -119,6 +133,7 @@ export interface FileRoutesByFullPath {
   '/dispatch/report': typeof AuthenticatedDispatchReportRoute
   '/ledgers/$id': typeof AuthenticatedLedgersIdRoute
   '/settings/bill-books': typeof AuthenticatedSettingsBillBooksRoute
+  '/settings/stock-filters': typeof AuthenticatedSettingsStockFiltersRoute
   '/dispatch-pre-storage/': typeof AuthenticatedDispatchPreStorageIndexRoute
   '/dispatch/': typeof AuthenticatedDispatchIndexRoute
   '/finances/': typeof AuthenticatedFinancesIndexRoute
@@ -127,6 +142,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/analytics': typeof AuthenticatedAnalyticsRoute
   '/daybook': typeof AuthenticatedDaybookRoute
   '/pdf-report': typeof AuthenticatedPdfReportRoute
   '/dispatch-pre-storage/$id': typeof AuthenticatedDispatchPreStorageIdRoute
@@ -135,6 +151,7 @@ export interface FileRoutesByTo {
   '/dispatch/report': typeof AuthenticatedDispatchReportRoute
   '/ledgers/$id': typeof AuthenticatedLedgersIdRoute
   '/settings/bill-books': typeof AuthenticatedSettingsBillBooksRoute
+  '/settings/stock-filters': typeof AuthenticatedSettingsStockFiltersRoute
   '/dispatch-pre-storage': typeof AuthenticatedDispatchPreStorageIndexRoute
   '/dispatch': typeof AuthenticatedDispatchIndexRoute
   '/finances': typeof AuthenticatedFinancesIndexRoute
@@ -145,6 +162,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/daybook': typeof AuthenticatedDaybookRoute
   '/_authenticated/pdf-report': typeof AuthenticatedPdfReportRoute
   '/_authenticated/dispatch-pre-storage/$id': typeof AuthenticatedDispatchPreStorageIdRoute
@@ -153,6 +171,7 @@ export interface FileRoutesById {
   '/_authenticated/dispatch/report': typeof AuthenticatedDispatchReportRoute
   '/_authenticated/ledgers/$id': typeof AuthenticatedLedgersIdRoute
   '/_authenticated/settings/bill-books': typeof AuthenticatedSettingsBillBooksRoute
+  '/_authenticated/settings/stock-filters': typeof AuthenticatedSettingsStockFiltersRoute
   '/_authenticated/dispatch-pre-storage/': typeof AuthenticatedDispatchPreStorageIndexRoute
   '/_authenticated/dispatch/': typeof AuthenticatedDispatchIndexRoute
   '/_authenticated/finances/': typeof AuthenticatedFinancesIndexRoute
@@ -163,6 +182,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/analytics'
     | '/daybook'
     | '/pdf-report'
     | '/dispatch-pre-storage/$id'
@@ -171,6 +191,7 @@ export interface FileRouteTypes {
     | '/dispatch/report'
     | '/ledgers/$id'
     | '/settings/bill-books'
+    | '/settings/stock-filters'
     | '/dispatch-pre-storage/'
     | '/dispatch/'
     | '/finances/'
@@ -179,6 +200,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/analytics'
     | '/daybook'
     | '/pdf-report'
     | '/dispatch-pre-storage/$id'
@@ -187,6 +209,7 @@ export interface FileRouteTypes {
     | '/dispatch/report'
     | '/ledgers/$id'
     | '/settings/bill-books'
+    | '/settings/stock-filters'
     | '/dispatch-pre-storage'
     | '/dispatch'
     | '/finances'
@@ -196,6 +219,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/_authenticated/analytics'
     | '/_authenticated/daybook'
     | '/_authenticated/pdf-report'
     | '/_authenticated/dispatch-pre-storage/$id'
@@ -204,6 +228,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dispatch/report'
     | '/_authenticated/ledgers/$id'
     | '/_authenticated/settings/bill-books'
+    | '/_authenticated/settings/stock-filters'
     | '/_authenticated/dispatch-pre-storage/'
     | '/_authenticated/dispatch/'
     | '/_authenticated/finances/'
@@ -231,6 +256,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/analytics': {
+      id: '/_authenticated/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AuthenticatedAnalyticsRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/daybook': {
       id: '/_authenticated/daybook'
@@ -323,10 +355,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsBillBooksRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/settings/stock-filters': {
+      id: '/_authenticated/settings/stock-filters'
+      path: '/settings/stock-filters'
+      fullPath: '/settings/stock-filters'
+      preLoaderRoute: typeof AuthenticatedSettingsStockFiltersRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
   AuthenticatedDaybookRoute: typeof AuthenticatedDaybookRoute
   AuthenticatedPdfReportRoute: typeof AuthenticatedPdfReportRoute
   AuthenticatedDispatchPreStorageIdRoute: typeof AuthenticatedDispatchPreStorageIdRoute
@@ -335,6 +375,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDispatchReportRoute: typeof AuthenticatedDispatchReportRoute
   AuthenticatedLedgersIdRoute: typeof AuthenticatedLedgersIdRoute
   AuthenticatedSettingsBillBooksRoute: typeof AuthenticatedSettingsBillBooksRoute
+  AuthenticatedSettingsStockFiltersRoute: typeof AuthenticatedSettingsStockFiltersRoute
   AuthenticatedDispatchPreStorageIndexRoute: typeof AuthenticatedDispatchPreStorageIndexRoute
   AuthenticatedDispatchIndexRoute: typeof AuthenticatedDispatchIndexRoute
   AuthenticatedFinancesIndexRoute: typeof AuthenticatedFinancesIndexRoute
@@ -343,6 +384,7 @@ interface AuthenticatedRouteChildren {
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
   AuthenticatedDaybookRoute: AuthenticatedDaybookRoute,
   AuthenticatedPdfReportRoute: AuthenticatedPdfReportRoute,
   AuthenticatedDispatchPreStorageIdRoute:
@@ -353,6 +395,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDispatchReportRoute: AuthenticatedDispatchReportRoute,
   AuthenticatedLedgersIdRoute: AuthenticatedLedgersIdRoute,
   AuthenticatedSettingsBillBooksRoute: AuthenticatedSettingsBillBooksRoute,
+  AuthenticatedSettingsStockFiltersRoute:
+    AuthenticatedSettingsStockFiltersRoute,
   AuthenticatedDispatchPreStorageIndexRoute:
     AuthenticatedDispatchPreStorageIndexRoute,
   AuthenticatedDispatchIndexRoute: AuthenticatedDispatchIndexRoute,

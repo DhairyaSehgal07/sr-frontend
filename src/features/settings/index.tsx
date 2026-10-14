@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import { ArrowRight, BookCopy } from 'lucide-react';
+import { ArrowRight, BookCopy, Tags } from 'lucide-react';
 import { Card, CardAction, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export function SettingsPage() {
@@ -26,6 +26,30 @@ export function SettingsPage() {
                 Manage Bill Books
               </CardTitle>
               <CardDescription>Create and manage bill books used on gate passes.</CardDescription>
+              <CardAction>
+                <ArrowRight
+                  className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5"
+                  aria-hidden="true"
+                />
+              </CardAction>
+            </CardHeader>
+          </Card>
+        </Link>
+
+        <Link
+          to="/settings/stock-filters"
+          aria-label="Manage stock filters"
+          className="group min-w-0 rounded-4xl focus-visible:ring-[3px] focus-visible:ring-ring/30 focus-visible:outline-none"
+        >
+          <Card className="h-full transition-colors group-hover:bg-muted/50">
+            <CardHeader>
+              <div className="mb-2 flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <Tags className="size-5" aria-hidden="true" />
+              </div>
+              <CardTitle className="text-base font-semibold text-foreground">
+                Manage Stock Filters
+              </CardTitle>
+              <CardDescription>Create and manage names used to group stock.</CardDescription>
               <CardAction>
                 <ArrowRight
                   className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5"
