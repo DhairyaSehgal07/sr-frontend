@@ -52,6 +52,7 @@ export const POTATO_VARIETIES = [
   'Pushkar',
   'SU - Khyati',
   'Super Six',
+  '7008',
 ] as const;
 
 export type PotatoVariety = (typeof POTATO_VARIETIES)[number];
