@@ -45,11 +45,13 @@ import { useGetReceiptVoucherNumber, voucherNumberKeys } from '@/hooks/use-get-v
 import { queryClient } from '@/lib/queryClient';
 import { useCreateNikasiGatePass } from '@/features/dispatch-pre-storage/api/use-create-nikasi-gate-pass';
 import { useBillBooks } from '@/features/settings/api/use-bill-books';
+import { useStockFilters } from '@/features/settings/api/use-stock-filters';
 import { DispatchPreStorageSummarySheet } from '@/features/dispatch-pre-storage/forms/dispatch-pre-storage-summary-sheet';
 import {
   buildCreateApiBody,
   buildSummaryValues,
   calculateAverageWeightPerBagKg,
+  canonicalStockFilter,
   canSubmitSummaryValues,
   createDefaultBagSizeRows,
   createEmptyBagSizeRow,
@@ -62,6 +64,7 @@ import {
   isValidCostPerBag,
   numericInputProps,
   parseOptionalNumber,
+  stockFilterSelectOptions,
   totalBilledAmount,
   type DispatchPreStorageBagSizeRow,
 } from '@/features/dispatch-pre-storage/forms/dispatch-pre-storage-form-utils';
@@ -73,6 +76,7 @@ const CATEGORY_ITEMS: ComboboxOption[] = DISPATCH_PRE_STORAGE_CATEGORIES.map((va
 
 const CreateDispatchPreStorageForm = () => {
   const { data: dispatchLedgersData } = useDispatchLedgers();
+  const { data: stockFilters = [], isLoading: isLoadingStockFilters } = useStockFilters();
   const {
     data: nextVoucherNumber,
     isLoading: isLoadingVoucherNumber,
@@ -115,6 +119,7 @@ const CreateDispatchPreStorageForm = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [dispatchLedgerId, setDispatchLedgerId] = useState('');
   const [category, setCategory] = useState('');
+  const [stockFilter, setStockFilter] = useState('');
   const [billNumber, setBillNumber] = useState('');
   const [biltiNo, setBiltiNo] = useState('');
   const [billBookId, setBillBookId] = useState('');
@@ -149,6 +154,15 @@ const CreateDispatchPreStorageForm = () => {
   const sortedCategories = useMemo(
     () => filterAndSortOptions(categorySearch, CATEGORY_ITEMS),
     [categorySearch],
+  );
+  const stockFilterNames = useMemo(
+    () => stockFilters.map((option) => option.name.trim()).filter((name) => name !== ''),
+    [stockFilters],
+  );
+  const stockFilterRequired = stockFilterNames.length > 0;
+  const stockFilterOptions = useMemo(
+    () => stockFilterSelectOptions(stockFilterNames, stockFilter),
+    [stockFilterNames, stockFilter],
   );
   const sortedBillBooks = useMemo(
     () => filterAndSortOptions(billBookSearch, billBookOptions),
@@ -194,6 +208,9 @@ const CreateDispatchPreStorageForm = () => {
         date,
         dispatchLedgerId,
         category,
+        stockFilter: stockFilterRequired
+          ? canonicalStockFilter(stockFilter, stockFilterOptions)
+          : '',
         billNumber,
         biltiNo,
         billBook: billBookLabel,
@@ -217,6 +234,9 @@ const CreateDispatchPreStorageForm = () => {
       date,
       dispatchLedgerId,
       category,
+      stockFilter,
+      stockFilterRequired,
+      stockFilterOptions,
       billNumber,
       biltiNo,
       billBookLabel,
@@ -244,6 +264,7 @@ const CreateDispatchPreStorageForm = () => {
   const canSubmit = canSubmitSummaryValues(summaryValues, {
     gatePassNumberReady: isGatePassNumberReady,
     requireBillBookId: true,
+    requireStockFilter: stockFilterRequired,
   });
 
   const handleOpenReview = () => {
@@ -260,8 +281,16 @@ const CreateDispatchPreStorageForm = () => {
       );
       return;
     }
+    if (isLoadingStockFilters) {
+      toast.error('Loading stock filters, please wait…', { position: 'bottom-right' });
+      return;
+    }
     if (!summaryValues.dispatchLedgerId || !summaryValues.category) {
       toast.error('Select dispatch ledger and category.', { position: 'bottom-right' });
+      return;
+    }
+    if (stockFilterRequired && !summaryValues.stockFilter?.trim()) {
+      toast.error('Select a stock filter.', { position: 'bottom-right' });
       return;
     }
     if (!isMongoObjectId(summaryValues.billBookId)) {
@@ -306,7 +335,9 @@ const CreateDispatchPreStorageForm = () => {
 
     let body;
     try {
-      body = buildCreateApiBody(summaryValues, gatePassNo, false);
+      body = buildCreateApiBody(summaryValues, gatePassNo, false, {
+        requireStockFilter: stockFilterRequired,
+      });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Invalid form data.', {
         position: 'bottom-right',
@@ -357,6 +388,7 @@ const CreateDispatchPreStorageForm = () => {
     setDate(new Date());
     setDispatchLedgerId('');
     setCategory('');
+    setStockFilter('');
     setBillNumber('');
     setBiltiNo('');
     setBillBookId('');
@@ -402,9 +434,7 @@ const CreateDispatchPreStorageForm = () => {
                 <FieldLegend className="font-heading text-base font-semibold">
                   Gate Pass Details
                 </FieldLegend>
-                <FieldDescription>
-                  Manual reference, date, and category.
-                </FieldDescription>
+                <FieldDescription>Manual reference, date, and category.</FieldDescription>
                 <FieldGroup className="mt-5 grid grid-cols-1 gap-6 @md/field-group:grid-cols-2">
                   <Field>
                     <FieldLabel htmlFor="dispatch-pre-storage-manual-gate-pass">
@@ -449,6 +479,32 @@ const CreateDispatchPreStorageForm = () => {
                       setOpen={setCategoryComboboxOpen}
                     />
                   </Field>
+
+                  {stockFilterRequired ? (
+                    <Field>
+                      <FieldLabel htmlFor="dispatch-pre-storage-stock-filter">
+                        Stock filter
+                      </FieldLabel>
+                      <Select
+                        value={canonicalStockFilter(stockFilter, stockFilterOptions) || undefined}
+                        onValueChange={setStockFilter}
+                      >
+                        <SelectTrigger
+                          id="dispatch-pre-storage-stock-filter"
+                          className="h-11 w-full text-base"
+                        >
+                          <SelectValue placeholder="Select stock filter" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {stockFilterOptions.map((name) => (
+                            <SelectItem key={name} value={name}>
+                              {name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                  ) : null}
                 </FieldGroup>
               </FieldSet>
 
@@ -956,8 +1012,12 @@ const CreateDispatchPreStorageForm = () => {
             <Button variant="outline" type="button" onClick={resetForm}>
               Reset Form
             </Button>
-            <Button type="button" onClick={handleOpenReview} disabled={isLoadingVoucherNumber}>
-              {isLoadingVoucherNumber ? 'Loading…' : 'Review'}
+            <Button
+              type="button"
+              onClick={handleOpenReview}
+              disabled={isLoadingVoucherNumber || isLoadingStockFilters}
+            >
+              {isLoadingVoucherNumber || isLoadingStockFilters ? 'Loading…' : 'Review'}
             </Button>
           </CardFooter>
         </form>

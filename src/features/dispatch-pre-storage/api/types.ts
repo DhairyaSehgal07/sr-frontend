@@ -16,6 +16,7 @@ export type CreateNikasiGatePassBody = {
   dispatchLedgerId: string;
   gatePassNo: number;
   category: string;
+  stockFilter?: string;
   isBooked: boolean;
   date: string;
   from: string;
@@ -77,6 +78,7 @@ export type NikasiGatePass = {
   manualGatePassNumber?: number;
   date: string;
   category: string;
+  stockFilter?: string;
   isBooked: boolean;
   from: string;
   to: string;
@@ -143,6 +145,7 @@ export type CreateNikasiGatePassResponse = {
 export type UpdateNikasiGatePassBody = {
   dispatchLedgerId: string;
   category: string;
+  stockFilter?: string;
   isBooked: boolean;
   date: string;
   from: string;
@@ -181,6 +184,7 @@ export type DispatchPreStorageFormValues = {
   date: string;
   dispatchLedgerId: string;
   category: string;
+  stockFilter?: string;
   billNumber: string;
   biltiNo: string;
   billBook: string;

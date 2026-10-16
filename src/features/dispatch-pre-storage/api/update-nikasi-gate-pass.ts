@@ -10,19 +10,23 @@ import type { UpdateNikasiGatePassBody, UpdateNikasiGatePassResponse } from './t
 export function toUpdateNikasiGatePassBody(
   summaryValues: DispatchPreStorageSummaryValues,
   isBooked: boolean,
+  options?: { requireStockFilter?: boolean },
 ): UpdateNikasiGatePassBody {
-  return buildUpdateApiBody(summaryValues, isBooked);
+  return buildUpdateApiBody(summaryValues, isBooked, options);
 }
 
 export async function updateNikasiGatePass(input: {
   id: string;
   summaryValues: DispatchPreStorageSummaryValues;
   isBooked: boolean;
+  requireStockFilter?: boolean;
 }): Promise<UpdateNikasiGatePassResponse> {
   try {
     const { data } = await apiClient.put<UpdateNikasiGatePassResponse>(
       `/nikasi-gate-pass/${input.id}`,
-      toUpdateNikasiGatePassBody(input.summaryValues, input.isBooked),
+      toUpdateNikasiGatePassBody(input.summaryValues, input.isBooked, {
+        requireStockFilter: input.requireStockFilter,
+      }),
     );
 
     if (data.success === false) {

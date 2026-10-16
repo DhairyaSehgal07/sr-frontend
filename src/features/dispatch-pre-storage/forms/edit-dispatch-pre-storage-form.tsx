@@ -40,6 +40,7 @@ import {
 } from '@/components/searchable-option-combobox';
 import { DISPATCH_PRE_STORAGE_CATEGORIES, POTATO_VARIETY_OPTIONS } from '@/lib/constants';
 import { useDispatchLedgers } from '@/features/ledgers/api/use-dispatch-ledgers';
+import { useStockFilters } from '@/features/settings/api/use-stock-filters';
 import type { NikasiGatePass } from '@/features/dispatch-pre-storage/api/types';
 import { useNikasiGatePassById } from '@/features/dispatch-pre-storage/api/use-nikasi-gate-pass-by-id';
 import { useUpdateNikasiGatePass } from '@/features/dispatch-pre-storage/api/use-update-nikasi-gate-pass';
@@ -47,6 +48,7 @@ import { DispatchPreStorageSummarySheet } from '@/features/dispatch-pre-storage/
 import {
   buildSummaryValues,
   calculateAverageWeightPerBagKg,
+  canonicalStockFilter,
   canSubmitSummaryValues,
   createDefaultBagSizeRows,
   createEmptyBagSizeRow,
@@ -54,6 +56,7 @@ import {
   formatWeightKg,
   numericInputProps,
   parseOptionalNumber,
+  stockFilterSelectOptions,
   type DispatchPreStorageBagSizeRow,
 } from '@/features/dispatch-pre-storage/forms/dispatch-pre-storage-form-utils';
 import {
@@ -116,6 +119,7 @@ function EditDispatchPreStorageFormFields({ gatePass }: EditDispatchPreStorageFo
   const initialValues = useMemo(() => nikasiGatePassToEditFormValues(gatePass), [gatePass]);
 
   const { data: dispatchLedgersData } = useDispatchLedgers();
+  const { data: stockFilters = [], isLoading: isLoadingStockFilters } = useStockFilters();
   const { mutateAsync: updateNikasiGatePass, isPending: isSubmitting } = useUpdateNikasiGatePass(
     gatePass._id,
   );
@@ -135,6 +139,7 @@ function EditDispatchPreStorageFormFields({ gatePass }: EditDispatchPreStorageFo
   const [date, setDate] = useState<Date | undefined>(() => new Date(initialValues.date));
   const [dispatchLedgerId, setDispatchLedgerId] = useState(initialValues.dispatchLedgerId);
   const [category, setCategory] = useState(initialValues.category);
+  const [stockFilter, setStockFilter] = useState(initialValues.stockFilter ?? '');
   const [billNumber, setBillNumber] = useState(initialValues.billNumber);
   const [biltiNo, setBiltiNo] = useState(initialValues.biltiNo);
   const [billBook, setBillBook] = useState(initialValues.billBook);
@@ -173,6 +178,15 @@ function EditDispatchPreStorageFormFields({ gatePass }: EditDispatchPreStorageFo
     () => filterAndSortOptions(categorySearch, CATEGORY_ITEMS),
     [categorySearch],
   );
+  const stockFilterNames = useMemo(
+    () => stockFilters.map((option) => option.name.trim()).filter((name) => name !== ''),
+    [stockFilters],
+  );
+  const stockFilterRequired = stockFilterNames.length > 0;
+  const stockFilterOptions = useMemo(
+    () => stockFilterSelectOptions(stockFilterNames, stockFilter),
+    [stockFilterNames, stockFilter],
+  );
 
   const totalQuantityIssued = useMemo(
     () =>
@@ -200,6 +214,9 @@ function EditDispatchPreStorageFormFields({ gatePass }: EditDispatchPreStorageFo
         date,
         dispatchLedgerId,
         category,
+        stockFilter: stockFilterRequired
+          ? canonicalStockFilter(stockFilter, stockFilterOptions)
+          : '',
         billNumber,
         biltiNo,
         billBook,
@@ -223,6 +240,9 @@ function EditDispatchPreStorageFormFields({ gatePass }: EditDispatchPreStorageFo
       date,
       dispatchLedgerId,
       category,
+      stockFilter,
+      stockFilterRequired,
+      stockFilterOptions,
       billNumber,
       biltiNo,
       billBook,
@@ -249,11 +269,20 @@ function EditDispatchPreStorageFormFields({ gatePass }: EditDispatchPreStorageFo
 
   const canSubmit = canSubmitSummaryValues(summaryValues, {
     requireGatePassNo: true,
+    requireStockFilter: stockFilterRequired,
   });
 
   const handleOpenReview = () => {
     if (!summaryValues) {
       toast.error('Pick a date before reviewing.', { position: 'bottom-right' });
+      return;
+    }
+    if (isLoadingStockFilters) {
+      toast.error('Loading stock filters, please wait…', { position: 'bottom-right' });
+      return;
+    }
+    if (stockFilterRequired && !summaryValues.stockFilter?.trim()) {
+      toast.error('Select a stock filter.', { position: 'bottom-right' });
       return;
     }
     setReviewOpen(true);
@@ -267,6 +296,7 @@ function EditDispatchPreStorageFormFields({ gatePass }: EditDispatchPreStorageFo
         id: gatePass._id,
         summaryValues,
         isBooked: false,
+        requireStockFilter: stockFilterRequired,
       });
       toast.success(message ?? 'Nikasi gate pass updated.', {
         position: 'bottom-right',
@@ -292,6 +322,7 @@ function EditDispatchPreStorageFormFields({ gatePass }: EditDispatchPreStorageFo
     setDate(new Date(initialValues.date));
     setDispatchLedgerId(initialValues.dispatchLedgerId);
     setCategory(initialValues.category);
+    setStockFilter(initialValues.stockFilter ?? '');
     setBillNumber(initialValues.billNumber);
     setBiltiNo(initialValues.biltiNo);
     setBillBook(initialValues.billBook);
@@ -328,9 +359,7 @@ function EditDispatchPreStorageFormFields({ gatePass }: EditDispatchPreStorageFo
               #{displayGatePassNo}
             </span>
           </CardTitle>
-          <CardDescription className="text-base">
-            Update this dispatch gate pass.
-          </CardDescription>
+          <CardDescription className="text-base">Update this dispatch gate pass.</CardDescription>
         </CardHeader>
 
         <form id="edit-dispatch-pre-storage-form" noValidate onSubmit={(e) => e.preventDefault()}>
@@ -340,9 +369,7 @@ function EditDispatchPreStorageFormFields({ gatePass }: EditDispatchPreStorageFo
                 <FieldLegend className="font-heading text-base font-semibold">
                   Gate Pass Details
                 </FieldLegend>
-                <FieldDescription>
-                  Manual reference, date, and category.
-                </FieldDescription>
+                <FieldDescription>Manual reference, date, and category.</FieldDescription>
                 <FieldGroup className="mt-5 grid grid-cols-1 gap-6 @md/field-group:grid-cols-2">
                   <Field>
                     <FieldLabel htmlFor="dispatch-pre-storage-manual-gate-pass">
@@ -387,6 +414,32 @@ function EditDispatchPreStorageFormFields({ gatePass }: EditDispatchPreStorageFo
                       setOpen={setCategoryComboboxOpen}
                     />
                   </Field>
+
+                  {stockFilterRequired ? (
+                    <Field>
+                      <FieldLabel htmlFor="dispatch-pre-storage-stock-filter">
+                        Stock filter
+                      </FieldLabel>
+                      <Select
+                        value={canonicalStockFilter(stockFilter, stockFilterOptions) || undefined}
+                        onValueChange={setStockFilter}
+                      >
+                        <SelectTrigger
+                          id="dispatch-pre-storage-stock-filter"
+                          className="h-11 w-full text-base"
+                        >
+                          <SelectValue placeholder="Select stock filter" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {stockFilterOptions.map((name) => (
+                            <SelectItem key={name} value={name}>
+                              {name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                  ) : null}
                 </FieldGroup>
               </FieldSet>
 
@@ -870,8 +923,12 @@ function EditDispatchPreStorageFormFields({ gatePass }: EditDispatchPreStorageFo
             <Button variant="outline" type="button" onClick={resetForm}>
               Reset changes
             </Button>
-            <Button type="button" onClick={handleOpenReview} disabled={isSubmitting}>
-              {isSubmitting ? 'Saving…' : 'Review'}
+            <Button
+              type="button"
+              onClick={handleOpenReview}
+              disabled={isSubmitting || isLoadingStockFilters}
+            >
+              {isSubmitting ? 'Saving…' : isLoadingStockFilters ? 'Loading…' : 'Review'}
             </Button>
           </CardFooter>
         </form>

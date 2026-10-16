@@ -207,6 +207,9 @@ function DispatchPreStorageReviewSummary({
           ) : null}
           <DetailRow label="Date" value={formatReviewDate(values.date)} icon={Calendar} />
           <DetailRow label="Category" value={values.category} />
+          {values.stockFilter?.trim() ? (
+            <DetailRow label="Stock filter" value={values.stockFilter} />
+          ) : null}
         </SummaryCard>
       </div>
 

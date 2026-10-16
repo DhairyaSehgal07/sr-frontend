@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from '@tanstack/react-router';
 
+import { coldStoreStockKeys } from '@/features/analytics/api/query-keys';
 import { voucherNumberKeys } from '@/hooks/use-get-voucher-number';
 import { queryClient } from '@/lib/queryClient';
 
@@ -21,6 +22,9 @@ export function useCreateNikasiGatePass() {
       });
       void queryClient.invalidateQueries({
         queryKey: voucherNumberKeys.detail('nikasi-gate-pass'),
+      });
+      void queryClient.invalidateQueries({
+        queryKey: coldStoreStockKeys.lists(),
       });
 
       void router.navigate({ to: '/daybook', search: { tab: 'dispatch' } });

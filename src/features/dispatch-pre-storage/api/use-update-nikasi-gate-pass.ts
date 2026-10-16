@@ -1,5 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 
+import { coldStoreStockKeys } from '@/features/analytics/api/query-keys';
 import type { DispatchPreStorageSummaryValues } from '@/features/dispatch-pre-storage/forms/dispatch-pre-storage-form-utils';
 import { queryClient } from '@/lib/queryClient';
 
@@ -10,6 +11,7 @@ type UpdateNikasiGatePassMutationInput = {
   id: string;
   summaryValues: DispatchPreStorageSummaryValues;
   isBooked: boolean;
+  requireStockFilter?: boolean;
 };
 
 export function useUpdateNikasiGatePass(id: string) {
@@ -24,6 +26,9 @@ export function useUpdateNikasiGatePass(id: string) {
       });
       void queryClient.invalidateQueries({
         queryKey: nikasiGatePassKeys.detail(id),
+      });
+      void queryClient.invalidateQueries({
+        queryKey: coldStoreStockKeys.lists(),
       });
     },
   });

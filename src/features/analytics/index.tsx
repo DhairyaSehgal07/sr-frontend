@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { AlertCircle, Plus, RefreshCw } from 'lucide-react';
+import { AlertCircle, Loader2, Plus, RefreshCw } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -103,10 +103,26 @@ export function AnalyticsPage() {
         <h1 className="font-heading text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
           Analytics
         </h1>
-        <Button type="button" className="h-11 w-full sm:w-auto" onClick={openCreate}>
-          <Plus className="size-4" aria-hidden="true" />
-          Add stock
-        </Button>
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+          <Button
+            type="button"
+            variant="outline"
+            className="h-11 w-full sm:w-auto"
+            onClick={() => void refetch()}
+            disabled={isFetching}
+          >
+            {isFetching ? (
+              <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+            ) : (
+              <RefreshCw className="size-4" aria-hidden="true" />
+            )}
+            Refresh
+          </Button>
+          <Button type="button" className="h-11 w-full sm:w-auto" onClick={openCreate}>
+            <Plus className="size-4" aria-hidden="true" />
+            Add stock
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (

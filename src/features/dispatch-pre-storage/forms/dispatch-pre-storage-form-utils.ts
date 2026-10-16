@@ -32,6 +32,7 @@ export type DispatchPreStorageSummaryValues = {
   date: string;
   dispatchLedgerId: string;
   category: string;
+  stockFilter?: string;
   billNumber: string;
   biltiNo: string;
   billBook: string;
@@ -226,6 +227,7 @@ export function buildSummaryValues(input: {
   date: Date | undefined;
   dispatchLedgerId: string;
   category: string;
+  stockFilter: string;
   billNumber: string;
   biltiNo: string;
   billBook: string;
@@ -257,6 +259,7 @@ export function buildSummaryValues(input: {
     date: input.date.toISOString(),
     dispatchLedgerId: input.dispatchLedgerId,
     category: input.category,
+    stockFilter: input.stockFilter.trim() || undefined,
     billNumber: input.billNumber,
     biltiNo: input.biltiNo,
     billBook: input.billBook,
@@ -396,10 +399,43 @@ function applyOptionalFieldsToBody<
   return body;
 }
 
+function applyStockFilterToBody<T extends { stockFilter?: string }>(
+  body: T,
+  values: DispatchPreStorageSummaryValues,
+  requireStockFilter?: boolean,
+): T {
+  const stockFilter = values.stockFilter?.trim() ?? '';
+  if (requireStockFilter && stockFilter === '') {
+    throw new Error('Select a stock filter.');
+  }
+  if (stockFilter) {
+    body.stockFilter = stockFilter;
+  }
+  return body;
+}
+
+export function stockFilterSelectOptions(names: readonly string[], current: string): string[] {
+  const sorted = [...names].sort((left, right) =>
+    left.localeCompare(right, 'en-IN', { sensitivity: 'base' }),
+  );
+  const trimmed = current.trim();
+  if (!trimmed) return sorted;
+  const existing = sorted.find((name) => name.toLowerCase() === trimmed.toLowerCase());
+  if (existing) return sorted;
+  return [trimmed, ...sorted];
+}
+
+export function canonicalStockFilter(current: string, options: readonly string[]): string {
+  const trimmed = current.trim();
+  if (!trimmed) return '';
+  return options.find((option) => option.toLowerCase() === trimmed.toLowerCase()) ?? trimmed;
+}
+
 export function buildCreateApiBody(
   values: DispatchPreStorageSummaryValues,
   gatePassNo: number,
   isBooked: boolean,
+  options?: { requireStockFilter?: boolean },
 ): CreateNikasiGatePassBody {
   if (!isMongoObjectId(values.billBookId)) {
     throw new Error('Select a bill book.');
@@ -421,6 +457,7 @@ export function buildCreateApiBody(
   };
 
   applyOptionalFieldsToBody(body, values, { includeBillBook: false });
+  applyStockFilterToBody(body, values, options?.requireStockFilter);
   body.idempotencyKey = crypto.randomUUID();
 
   return body;
@@ -429,6 +466,7 @@ export function buildCreateApiBody(
 export function buildUpdateApiBody(
   values: DispatchPreStorageSummaryValues,
   isBooked: boolean,
+  options?: { requireStockFilter?: boolean },
 ): UpdateNikasiGatePassBody {
   const body: UpdateNikasiGatePassBody = {
     dispatchLedgerId: values.dispatchLedgerId,
@@ -444,6 +482,7 @@ export function buildUpdateApiBody(
   };
 
   applyOptionalFieldsToBody(body, values, { clearEmptyTransportFields: true });
+  applyStockFilterToBody(body, values, options?.requireStockFilter);
 
   const manualTrimmed = values.manualGatePassNumber?.trim() ?? '';
   if (manualTrimmed === '') {
@@ -467,11 +506,13 @@ export function canSubmitSummaryValues(
     requireGatePassNo?: boolean;
     gatePassNumberReady?: boolean;
     requireBillBookId?: boolean;
+    requireStockFilter?: boolean;
   },
 ): boolean {
   if (!values) return false;
   if (options?.requireGatePassNo !== false && !values.gatePassNo) return false;
   if (options?.gatePassNumberReady === false) return false;
+  if (options?.requireStockFilter && !values.stockFilter?.trim()) return false;
 
   const hasActiveBags = values.bagSize.some((row) => row.quantityIssued > 0);
 
