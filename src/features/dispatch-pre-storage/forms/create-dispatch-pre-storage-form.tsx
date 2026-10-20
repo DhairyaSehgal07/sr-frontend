@@ -365,7 +365,7 @@ const CreateDispatchPreStorageForm = () => {
 
     let body;
     try {
-      body = buildCreateApiBody(summaryValues, gatePassNo, isBooked);
+      body = buildCreateApiBody(summaryValues, gatePassNo, isBooked, bookingId);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Invalid form data.', {
         position: 'bottom-right',

@@ -424,16 +424,17 @@ export function buildCreateApiBody(
   values: DispatchPreStorageSummaryValues,
   gatePassNo: number,
   isBooked: boolean,
+  bookingGatePassId?: string,
 ): CreateNikasiGatePassBody {
   if (!isMongoObjectId(values.billBookId)) {
     throw new Error('Select a bill book.');
   }
 
+  const linkedBookingId = bookingGatePassId?.trim() ?? '';
   const body: CreateNikasiGatePassBody = {
     dispatchLedgerId: values.dispatchLedgerId,
     gatePassNo,
     category: values.category,
-    isBooked,
     date: values.date,
     from: values.from,
     to: values.to,
@@ -443,6 +444,12 @@ export function buildCreateApiBody(
     netWeight: values.netWeight,
     averageWeightPerBag: values.averageWeightPerBag,
   };
+
+  if (linkedBookingId) {
+    body.bookingGatePassId = linkedBookingId;
+  } else {
+    body.isBooked = isBooked;
+  }
 
   applyOptionalFieldsToBody(body, values, { includeBillBook: false });
   body.idempotencyKey = crypto.randomUUID();

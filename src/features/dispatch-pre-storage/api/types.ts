@@ -14,9 +14,10 @@ export type CreateNikasiGatePassBagSizeItem = {
 
 export type CreateNikasiGatePassBody = {
   dispatchLedgerId: string;
+  bookingGatePassId?: string;
   gatePassNo: number;
   category: string;
-  isBooked: boolean;
+  isBooked?: boolean;
   date: string;
   from: string;
   to: string;
