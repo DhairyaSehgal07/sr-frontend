@@ -19,6 +19,7 @@ import {
   Package,
   Pencil,
   Printer,
+  Truck,
   User,
   type LucideIcon,
 } from 'lucide-react';
@@ -101,6 +102,13 @@ export function BookingGatePassCard({ data: booking, canUpdate = true }: Booking
   const totalBags = bookingTotalBags(booking.bagSizes);
   const createdBy = booking.createdBy?.name ?? '—';
   const showCostColumn = booking.bagSizes.some((slot) => hasCostPerBag(slot.costPerBag));
+
+  const handleAddDispatchClick = () => {
+    navigate({
+      to: '/dispatch',
+      search: { bookingId: booking._id },
+    });
+  };
 
   const handleEditClick = () => {
     if (!canUpdate) return;
@@ -309,6 +317,16 @@ export function BookingGatePassCard({ data: booking, canUpdate = true }: Booking
         </Button>
 
         <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleAddDispatchClick}
+            className="h-8 bg-background"
+          >
+            <Truck className="mr-2 h-3.5 w-3.5" />
+            Add dispatch
+          </Button>
           {canUpdate && (
             <Button
               variant="outline"

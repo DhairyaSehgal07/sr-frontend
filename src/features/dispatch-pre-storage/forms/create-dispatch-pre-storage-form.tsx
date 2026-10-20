@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { getRouteApi } from '@tanstack/react-router';
 import { Plus, Trash2, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -36,10 +37,13 @@ import { AddDispatchLedgerDialog } from '@/features/people/components/add-dispat
 import type { DispatchLedger } from '@/features/people/types';
 import { useGetReceiptVoucherNumber, voucherNumberKeys } from '@/hooks/use-get-voucher-number';
 import { queryClient } from '@/lib/queryClient';
+import { useBookingById } from '@/features/booking/api/use-booking-by-id';
+import { bookingBillBookId } from '@/features/booking/forms/booking-to-form-values';
 import { useCreateNikasiGatePass } from '@/features/dispatch-pre-storage/api/use-create-nikasi-gate-pass';
 import { useBillBooks } from '@/features/settings/api/use-bill-books';
 import { DispatchPreStorageSummarySheet } from '@/features/dispatch-pre-storage/forms/dispatch-pre-storage-summary-sheet';
 import {
+  bookingBagSizesToDispatchRows,
   buildCreateApiBody,
   buildSummaryValues,
   calculateAverageWeightPerBagKg,
@@ -64,7 +68,31 @@ const CATEGORY_ITEMS: ComboboxOption[] = DISPATCH_PRE_STORAGE_CATEGORIES.map((va
   label: value,
 }));
 
+const dispatchRouteApi = getRouteApi('/_authenticated/dispatch/');
+
+function bookingBillBookLabel(booking: {
+  billBook?: string | number;
+  billBookId?: string | number | { name?: string };
+}): string {
+  if (booking.billBook != null && String(booking.billBook).trim() !== '') {
+    return String(booking.billBook).trim();
+  }
+  if (booking.billBookId && typeof booking.billBookId === 'object' && booking.billBookId.name) {
+    return booking.billBookId.name.trim();
+  }
+  return '';
+}
+
 const CreateDispatchPreStorageForm = () => {
+  const { bookingId } = dispatchRouteApi.useSearch();
+  const {
+    booking,
+    isLoading: isLoadingBooking,
+    isError: isBookingError,
+    error: bookingError,
+  } = useBookingById(bookingId ?? '');
+  const appliedBookingId = useRef<string | null>(null);
+  const reportedBookingError = useRef(false);
   const { data: dispatchLedgersData } = useDispatchLedgers();
   const {
     data: nextVoucherNumber,
@@ -77,32 +105,42 @@ const CreateDispatchPreStorageForm = () => {
   const isGatePassNumberReady =
     !isLoadingVoucherNumber && !isVoucherNumberError && nextVoucherNumber != null;
 
-  const dispatchLedgerOptions = useMemo<ComboboxOption[]>(
-    () =>
-      (dispatchLedgersData ?? []).map((ledger) => ({
-        id: ledger._id,
-        label: ledger.name,
-      })),
-    [dispatchLedgersData],
-  );
+  const dispatchLedgerOptions = useMemo<ComboboxOption[]>(() => {
+    const options = (dispatchLedgersData ?? []).map((ledger) => ({
+      id: ledger._id,
+      label: ledger.name,
+    }));
+    const ledger = booking?.dispatchLedgerId;
+    if (ledger?._id && !options.some((option) => option.id === ledger._id)) {
+      return [...options, { id: ledger._id, label: ledger.name ?? ledger._id }];
+    }
+    return options;
+  }, [booking, dispatchLedgersData]);
 
-  const billBookOptions = useMemo<ComboboxOption[]>(
-    () =>
-      (billBooksData ?? []).map((book) => ({
-        id: book._id,
-        label: book.name,
-      })),
-    [billBooksData],
-  );
+  const savedBillBookId = booking ? bookingBillBookId(booking.billBookId) : '';
+  const savedBillBookLabel = booking ? bookingBillBookLabel(booking) : '';
 
-  const biltiBookOptions = useMemo<ComboboxOption[]>(
-    () =>
-      (billBooksData ?? []).map((book) => ({
-        id: book.name,
-        label: book.name,
-      })),
-    [billBooksData],
-  );
+  const billBookOptions = useMemo<ComboboxOption[]>(() => {
+    const options = (billBooksData ?? []).map((book) => ({
+      id: book._id,
+      label: book.name,
+    }));
+    if (savedBillBookId && !options.some((option) => option.id === savedBillBookId)) {
+      return [...options, { id: savedBillBookId, label: savedBillBookLabel || savedBillBookId }];
+    }
+    return options;
+  }, [billBooksData, savedBillBookId, savedBillBookLabel]);
+
+  const biltiBookOptions = useMemo<ComboboxOption[]>(() => {
+    const options = (billBooksData ?? []).map((book) => ({
+      id: book.name,
+      label: book.name,
+    }));
+    if (savedBillBookLabel && !options.some((option) => option.id === savedBillBookLabel)) {
+      return [...options, { id: savedBillBookLabel, label: savedBillBookLabel }];
+    }
+    return options;
+  }, [billBooksData, savedBillBookLabel]);
 
   const [manualGatePassNumber, setManualGatePassNumber] = useState('');
   const [date, setDate] = useState<Date | undefined>(new Date());
@@ -123,15 +161,43 @@ const CreateDispatchPreStorageForm = () => {
   const [bagSize, setBagSize] = useState(createDefaultBagSizeRows);
   const [netWeight, setNetWeight] = useState('');
   const [remarks, setRemarks] = useState('');
-
   const [dispatchLedgerSearch, setDispatchLedgerSearch] = useState('');
   const [dispatchLedgerComboboxOpen, setDispatchLedgerComboboxOpen] = useState(false);
-  const [categorySearch, setCategorySearch] = useState('');
-  const [categoryComboboxOpen, setCategoryComboboxOpen] = useState(false);
   const [billBookSearch, setBillBookSearch] = useState('');
   const [billBookComboboxOpen, setBillBookComboboxOpen] = useState(false);
   const [biltiBookSearch, setBiltiBookSearch] = useState('');
   const [biltiBookComboboxOpen, setBiltiBookComboboxOpen] = useState(false);
+
+  useEffect(() => {
+    if (!bookingId || !booking || appliedBookingId.current === bookingId) return;
+
+    appliedBookingId.current = bookingId;
+    const billBookLabel = bookingBillBookLabel(booking);
+    setDispatchLedgerId(booking.dispatchLedgerId._id);
+    setDispatchLedgerSearch(booking.dispatchLedgerId.name ?? '');
+    setBillBookId(bookingBillBookId(booking.billBookId));
+    setBillBookSearch(billBookLabel);
+    setBiltiBook(billBookLabel);
+    setBiltiBookSearch(billBookLabel);
+    setBagSize(bookingBagSizesToDispatchRows(booking.bagSizes));
+    setRemarks(booking.remarks ?? '');
+  }, [booking, bookingId]);
+
+  useEffect(() => {
+    if (!bookingId || reportedBookingError.current) return;
+    if (isLoadingBooking) return;
+
+    if (isBookingError || !booking) {
+      reportedBookingError.current = true;
+      toast.error(
+        bookingError instanceof Error ? bookingError.message : 'Could not load this booking.',
+        { position: 'bottom-right' },
+      );
+    }
+  }, [booking, bookingError, bookingId, isBookingError, isLoadingBooking]);
+
+  const [categorySearch, setCategorySearch] = useState('');
+  const [categoryComboboxOpen, setCategoryComboboxOpen] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [addLedgerOpen, setAddLedgerOpen] = useState(false);
 

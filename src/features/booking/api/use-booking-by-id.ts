@@ -13,11 +13,15 @@ const FALLBACK_LIST_PARAMS = {
 
 export function useBookingById(id: string) {
   const queryClient = useQueryClient();
+  const hasId = id.trim() !== '';
 
-  const cachedBooking = useMemo(() => findBookingInCache(queryClient, id), [queryClient, id]);
+  const cachedBooking = useMemo(
+    () => (hasId ? findBookingInCache(queryClient, id) : undefined),
+    [hasId, queryClient, id],
+  );
 
   const fallbackQuery = useBookings(FALLBACK_LIST_PARAMS, {
-    enabled: cachedBooking == null,
+    enabled: hasId && cachedBooking == null,
   });
 
   const fetchedBooking = useMemo(
@@ -29,9 +33,9 @@ export function useBookingById(id: string) {
 
   return {
     booking,
-    isLoading: cachedBooking == null && fallbackQuery.isLoading,
-    isError: cachedBooking == null && fallbackQuery.isError,
-    error: cachedBooking == null ? fallbackQuery.error : null,
+    isLoading: hasId && cachedBooking == null && fallbackQuery.isLoading,
+    isError: hasId && cachedBooking == null && fallbackQuery.isError,
+    error: hasId && cachedBooking == null ? fallbackQuery.error : null,
     isFromCache: cachedBooking != null,
   };
 }

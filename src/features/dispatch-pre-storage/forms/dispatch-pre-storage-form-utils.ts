@@ -2,6 +2,7 @@ import type { WheelEvent } from 'react';
 
 import { BAG_SIZES, POTATO_VARIETY_OPTIONS } from '@/lib/constants';
 
+import type { BookingGatePassBagSize } from '@/features/booking/api/types';
 import type {
   CreateNikasiGatePassBagSizeItem,
   CreateNikasiGatePassBody,
@@ -117,6 +118,29 @@ export function gatePassBagSizeToRows(
   }
 
   return rows;
+}
+
+function varietyToComboboxId(value: string): string {
+  const trimmed = value.trim();
+  const byLabel = POTATO_VARIETY_OPTIONS.find(
+    (item) => item.label.toLowerCase() === trimmed.toLowerCase(),
+  );
+  if (byLabel) return byLabel.id;
+  const byId = POTATO_VARIETY_OPTIONS.find((item) => item.id === trimmed);
+  return byId?.id ?? trimmed;
+}
+
+export function bookingBagSizesToDispatchRows(
+  bagSizes: readonly BookingGatePassBagSize[],
+): DispatchPreStorageBagSizeRow[] {
+  return gatePassBagSizeToRows(
+    bagSizes.map((row) => ({
+      size: row.size,
+      variety: varietyToComboboxId(row.variety),
+      quantityIssued: row.currentQuantity,
+      costPerBag: row.costPerBag,
+    })),
+  );
 }
 
 export function formatOptionalNumber(value: string) {
