@@ -91,6 +91,7 @@ const reportNavItems = [
   { name: 'Transfer Stock', to: '/transfer/report' },
   { name: 'Dispatch', to: '/dispatch/report' },
   { name: 'Booking', to: '/dispatch-post-storage/report' },
+  { name: 'Shed Bifurcations', to: '/shed-bifurcations/report' },
 ] as const;
 
 function isReportPath(pathname: string) {

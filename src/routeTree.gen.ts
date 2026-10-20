@@ -42,6 +42,7 @@ import { Route as AuthenticatedPeopleIndexRouteImport } from './routes/_authenti
 import { Route as AuthenticatedPeopleIdRouteImport } from './routes/_authenticated/people.$id'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings.index'
 import { Route as AuthenticatedSettingsBillBooksRouteImport } from './routes/_authenticated/settings.bill-books'
+import { Route as AuthenticatedShedBifurcationsReportRouteImport } from './routes/_authenticated/shed-bifurcations.report'
 import { Route as AuthenticatedStorageIndexRouteImport } from './routes/_authenticated/storage.index'
 import { Route as AuthenticatedStorageIdRouteImport } from './routes/_authenticated/storage.$id'
 import { Route as AuthenticatedStorageEditHistoryRouteImport } from './routes/_authenticated/storage.edit-history'
@@ -237,6 +238,12 @@ const AuthenticatedSettingsBillBooksRoute =
     path: '/settings/bill-books',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedShedBifurcationsReportRoute =
+  AuthenticatedShedBifurcationsReportRouteImport.update({
+    id: '/shed-bifurcations/report',
+    path: '/shed-bifurcations/report',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedStorageIndexRoute =
   AuthenticatedStorageIndexRouteImport.update({
     id: '/storage/',
@@ -302,6 +309,7 @@ export interface FileRoutesByFullPath {
   '/outgoing/report': typeof AuthenticatedOutgoingReportRoute
   '/people/$id': typeof AuthenticatedPeopleIdRoute
   '/settings/bill-books': typeof AuthenticatedSettingsBillBooksRoute
+  '/shed-bifurcations/report': typeof AuthenticatedShedBifurcationsReportRoute
   '/storage/$id': typeof AuthenticatedStorageIdRoute
   '/storage/edit-history': typeof AuthenticatedStorageEditHistoryRoute
   '/storage/report': typeof AuthenticatedStorageReportRoute
@@ -343,6 +351,7 @@ export interface FileRoutesByTo {
   '/outgoing/report': typeof AuthenticatedOutgoingReportRoute
   '/people/$id': typeof AuthenticatedPeopleIdRoute
   '/settings/bill-books': typeof AuthenticatedSettingsBillBooksRoute
+  '/shed-bifurcations/report': typeof AuthenticatedShedBifurcationsReportRoute
   '/storage/$id': typeof AuthenticatedStorageIdRoute
   '/storage/edit-history': typeof AuthenticatedStorageEditHistoryRoute
   '/storage/report': typeof AuthenticatedStorageReportRoute
@@ -386,6 +395,7 @@ export interface FileRoutesById {
   '/_authenticated/outgoing/report': typeof AuthenticatedOutgoingReportRoute
   '/_authenticated/people/$id': typeof AuthenticatedPeopleIdRoute
   '/_authenticated/settings/bill-books': typeof AuthenticatedSettingsBillBooksRoute
+  '/_authenticated/shed-bifurcations/report': typeof AuthenticatedShedBifurcationsReportRoute
   '/_authenticated/storage/$id': typeof AuthenticatedStorageIdRoute
   '/_authenticated/storage/edit-history': typeof AuthenticatedStorageEditHistoryRoute
   '/_authenticated/storage/report': typeof AuthenticatedStorageReportRoute
@@ -429,6 +439,7 @@ export interface FileRouteTypes {
     | '/outgoing/report'
     | '/people/$id'
     | '/settings/bill-books'
+    | '/shed-bifurcations/report'
     | '/storage/$id'
     | '/storage/edit-history'
     | '/storage/report'
@@ -470,6 +481,7 @@ export interface FileRouteTypes {
     | '/outgoing/report'
     | '/people/$id'
     | '/settings/bill-books'
+    | '/shed-bifurcations/report'
     | '/storage/$id'
     | '/storage/edit-history'
     | '/storage/report'
@@ -512,6 +524,7 @@ export interface FileRouteTypes {
     | '/_authenticated/outgoing/report'
     | '/_authenticated/people/$id'
     | '/_authenticated/settings/bill-books'
+    | '/_authenticated/shed-bifurcations/report'
     | '/_authenticated/storage/$id'
     | '/_authenticated/storage/edit-history'
     | '/_authenticated/storage/report'
@@ -769,6 +782,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsBillBooksRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/shed-bifurcations/report': {
+      id: '/_authenticated/shed-bifurcations/report'
+      path: '/shed-bifurcations/report'
+      fullPath: '/shed-bifurcations/report'
+      preLoaderRoute: typeof AuthenticatedShedBifurcationsReportRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/storage/': {
       id: '/_authenticated/storage/'
       path: '/storage'
@@ -843,6 +863,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedOutgoingReportRoute: typeof AuthenticatedOutgoingReportRoute
   AuthenticatedPeopleIdRoute: typeof AuthenticatedPeopleIdRoute
   AuthenticatedSettingsBillBooksRoute: typeof AuthenticatedSettingsBillBooksRoute
+  AuthenticatedShedBifurcationsReportRoute: typeof AuthenticatedShedBifurcationsReportRoute
   AuthenticatedStorageIdRoute: typeof AuthenticatedStorageIdRoute
   AuthenticatedStorageEditHistoryRoute: typeof AuthenticatedStorageEditHistoryRoute
   AuthenticatedStorageReportRoute: typeof AuthenticatedStorageReportRoute
@@ -888,6 +909,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedOutgoingReportRoute: AuthenticatedOutgoingReportRoute,
   AuthenticatedPeopleIdRoute: AuthenticatedPeopleIdRoute,
   AuthenticatedSettingsBillBooksRoute: AuthenticatedSettingsBillBooksRoute,
+  AuthenticatedShedBifurcationsReportRoute:
+    AuthenticatedShedBifurcationsReportRoute,
   AuthenticatedStorageIdRoute: AuthenticatedStorageIdRoute,
   AuthenticatedStorageEditHistoryRoute: AuthenticatedStorageEditHistoryRoute,
   AuthenticatedStorageReportRoute: AuthenticatedStorageReportRoute,

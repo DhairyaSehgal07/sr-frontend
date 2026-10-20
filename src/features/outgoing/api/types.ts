@@ -121,6 +121,52 @@ export type ShedSummaryResponse = {
   message?: string;
 };
 
+export type ShedBifurcationLine = {
+  toSize: string;
+  quantity: number;
+};
+
+export type ShedBifurcationRecord = {
+  _id: string;
+  outgoingGatePassId: string;
+  farmerStorageLinkId: string;
+  variety: string;
+  fromSize: string;
+  lines: ShedBifurcationLine[];
+  remarks?: string;
+  createdAt: string;
+};
+
+export type ListShedBifurcationsResponse = {
+  success: boolean;
+  data?: {
+    bifurcations: ShedBifurcationRecord[];
+  };
+  message?: string;
+};
+
+export type CreateShedBifurcationBody = {
+  fromSize: string;
+  lines: ShedBifurcationLine[];
+  remarks?: string;
+};
+
+export type CreateShedBifurcationInput = {
+  id: string;
+  body: CreateShedBifurcationBody;
+};
+
+export type DeleteShedBifurcationInput = {
+  id: string;
+  bifurcationId: string;
+};
+
+export type ShedBifurcationMutationResponse = {
+  status: 'Success' | 'error';
+  message?: string;
+  data: Record<string, unknown> | null;
+};
+
 export type UpdateOutgoingGatePassInput = {
   id: string;
   form: {

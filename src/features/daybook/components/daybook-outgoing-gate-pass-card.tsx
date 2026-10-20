@@ -1,4 +1,3 @@
-import { useMemo, useState } from 'react';
 import {
   Ban,
   Building2,
@@ -6,16 +5,18 @@ import {
   ChevronUp,
   FileText,
   Loader2,
+  type LucideIcon,
   Pencil,
   Printer,
   Receipt,
   Scale,
+  Split,
   Sprout,
   Truck,
   User,
   Warehouse,
-  type LucideIcon,
 } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import {
@@ -27,6 +28,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -35,16 +38,10 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import type { DaybookOutgoingEntry } from '@/features/daybook/api/types';
-import { EditOutgoingGatePassSheet } from '@/features/outgoing/forms/edit-outgoing-form';
-import { useCancelOutgoingGatePass } from '@/features/outgoing/api/use-cancel-outgoing-gate-pass';
-import { nikasiAccent } from '@/features/dispatch-pre-storage/constants/nikasi-accent';
-import { openNikasiGatePassPrint } from '@/features/dispatch-pre-storage/utils/nikasi-gate-pass-print';
 import {
   buildOutgoingBreakdownRows,
   formatDaybookDateTime,
@@ -55,8 +52,13 @@ import {
 } from '@/features/daybook/utils/daybook-display';
 import { resolveOutgoingDispatchLedger } from '@/features/daybook/utils/outgoing-dispatch-ledger';
 import { outgoingEntryToNikasiPrintModel } from '@/features/daybook/utils/outgoing-to-nikasi-print';
+import { nikasiAccent } from '@/features/dispatch-pre-storage/constants/nikasi-accent';
+import { openNikasiGatePassPrint } from '@/features/dispatch-pre-storage/utils/nikasi-gate-pass-print';
+import { useCancelOutgoingGatePass } from '@/features/outgoing/api/use-cancel-outgoing-gate-pass';
+import { AddBifurcationSheet } from '@/features/outgoing/forms/add-bifurcation-sheet';
+import { EditOutgoingGatePassSheet } from '@/features/outgoing/forms/edit-outgoing-form';
 import { useDispatchLedgers } from '@/features/people/api/use-dispatch-ledgers';
-import { isDirectSaleOutgoing } from '@/lib/constants';
+import { isDirectSaleOutgoing, isOutgoingToShed } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
 interface InfoBlockProps {
@@ -191,6 +193,7 @@ interface DaybookOutgoingGatePassCardProps {
 export function DaybookOutgoingGatePassCard({ data: gatePass }: DaybookOutgoingGatePassCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [bifurcationOpen, setBifurcationOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
   const [remarks, setRemarks] = useState('');
   const [remarksError, setRemarksError] = useState<string | null>(null);
@@ -212,6 +215,7 @@ export function DaybookOutgoingGatePassCard({ data: gatePass }: DaybookOutgoingG
   const issuedBags = totalIssuedBags(gatePass);
   const uniqueWeightsKg = uniqueOutgoingWeightsKg(gatePass);
   const isDirectSale = isDirectSaleOutgoing(gatePass.category ?? '');
+  const isToShed = isOutgoingToShed(gatePass.category ?? '');
   const costPerBag =
     gatePass.costPerBag != null && Number.isFinite(gatePass.costPerBag) && gatePass.costPerBag > 0
       ? gatePass.costPerBag
@@ -579,6 +583,18 @@ export function DaybookOutgoingGatePassCard({ data: gatePass }: DaybookOutgoingG
           >
             <Pencil className="h-3.5 w-3.5" />
           </Button>
+          {isToShed ? (
+            <Button
+              variant="secondary"
+              size="sm"
+              className="h-8"
+              aria-label={`Add bifurcation for outgoing gate pass ${gatePass.gatePassNo}`}
+              onClick={() => setBifurcationOpen(true)}
+            >
+              <Split className="mr-2 h-3.5 w-3.5" />
+              Add bifurcation
+            </Button>
+          ) : null}
           <Button
             variant="secondary"
             size="sm"
@@ -633,6 +649,14 @@ export function DaybookOutgoingGatePassCard({ data: gatePass }: DaybookOutgoingG
       </CardFooter>
 
       <EditOutgoingGatePassSheet open={editOpen} onOpenChange={setEditOpen} gatePass={gatePass} />
+
+      {isToShed ? (
+        <AddBifurcationSheet
+          open={bifurcationOpen}
+          onOpenChange={setBifurcationOpen}
+          gatePass={gatePass}
+        />
+      ) : null}
 
       <AlertDialog open={cancelOpen} onOpenChange={handleCancelOpenChange}>
         <AlertDialogContent className="sm:max-w-lg">
